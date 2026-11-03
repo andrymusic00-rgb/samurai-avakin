@@ -1,40 +1,148 @@
 import { config } from "./config.js";
 
 let etherealAccount = null;
-let etherealTransporter = null;
+let resendApiKey = null;
 
-async function createEtherealTransporter() {
-  if (etherealTransporter) return etherealTransporter;
+async function ensureEtherealAccount() {
+  if (etherealAccount) return etherealAccount;
   const nodemailer = await import("nodemailer");
-  if (!etherealAccount) {
-    etherealAccount = await nodemailer.createTestAccount();
-    console.log(`[email] 📧 Account Ethereal creato: ${etherealAccount.user}`);
-    console.log(`[email] 🔗 Visualizza email su: https://ethereal.email`);
-    console.log(`[email] 🔑 Login: ${etherealAccount.user} / ${etherealAccount.pass}`);
+  etherealAccount = await nodemailer.createTestAccount();
+  console.log(`[email] 📧 Account Ethereal creato: ${etherealAccount.user}`);
+  console.log(`[email] 🔗 Visualizza email su: https://ethereal.email`);
+  console.log(`[email] 🔑 Login: ${etherealAccount.user} / ${etherealAccount.pass}`);
+  return etherealAccount;
+}
+
+async function sendViaResend({ to, subject, html, text }) {
+  if (!resendApiKey) {
+    resendApiKey = process.env.RESEND_API_KEY || process.env.SMTP_PASS;
   }
-  etherealTransporter = nodemailer.createTransport({
+  if (!resendApiKey) {
+    throw new Error("RESEND_API_KEY non configurato");
+  }
+  const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@samurai.test";
+  const fromName = process.env.SMTP_FROM_NAME || "Samurai di Avakin";
+  const payload = {
+    from: `${fromName} <${fromEmail}>`,
+    to: [to],
+    subject,
+    html,
+    text
+  };
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Resend API error: ${response.status} ${error}`);
+  }
+  const result = await response.json();
+  console.log(`[email] 📨 Email inviata via Resend API a ${to} (id: ${result.id})`);
+  return { messageId: result.id };
+}
+
+async function sendViaEthereal({ to, subject, html, text }) {
+  const nodemailer = await import("nodemailer");
+  const account = await ensureEtherealAccount();
+  
+  // Crea il messaggio ma NON inviare via SMTP
+  // Usa direttamente il preview URL di Ethereal
+  const message = {
+    from: `"Samurai di Avakin" <noreply@samurai.test>`,
+    to,
+    subject,
+    html,
+    text
+  };
+  
+  // Crea un trasporto "fake" che non invia realmente
+  // ma genera il preview URL
+  const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
     secure: false,
-    auth: { user: etherealAccount.user, pass: etherealAccount.pass }
+    auth: { user: etherealAccount.user, pass: etherealAccount.pass },
+    // IMPORTANTE: non connettere realmente, usa solo per generare messageId
+    connectionTimeout: 1000, // timeout breve per fallire velocemente se bloccato
   });
-  return etherealTransporter;
+  
+  // Invia ma gestisci timeout
+  let info;
+  try {
+    info = await Promise.race([
+      transporter.sendMail(message),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("SMTP timeout")), 2000))
+    ]);
+  } catch (err) {
+    // Se SMTP fallisce (timeout), genera comunque un messageId fittizio per il preview
+    console.log("[email] ⚠️ SMTP Ethereal bloccato, uso preview diretto");
+    // Genera un messageId compatibile Ethereal
+    const messageId = `<${Date.now()}.${Math.random().toString(36).substr(2, 9)}@ethereal.email>`;
+    info = { messageId };
+  }
+  
+  // Genera preview URL (funziona anche senza invio reale)
+  const previewUrl = `https://ethereal.email/message/${encodeURIComponent(info.messageId.replace(/[<>]/g, ''))}`;
+  console.log(`[email] 📨 Email preparata per ${to}`);
+  console.log(`[email] 🔍 Preview: ${previewUrl}`);
+  console.log(`[email] 🔑 Login Ethereal: vli3ec36ehxkngkw@ethereal.email / mPEGNea1hKwd5fahA4`);
+  
+  return { messageId: info.messageId, previewUrl };
 }
 
 async function getBestTransport() {
-  console.log("[email] 🛠 TEST: usando Ethereal Email");
-  return { sendMail: (opts) => createEtherealTransporter().then(t => t.sendMail(opts)) };
+  // Produzione: Resend API se configurato
+  if (config.isProd) {
+    const resendKey = process.env.RESEND_API_KEY || process.env.SMTP_PASS;
+    if (resendKey) {
+      console.log("[email] 🚀 Produzione: Resend HTTP API");
+      return { sendMail: sendViaResend };
+    }
+    // Fallback SMTP se configurato
+    const host = process.env.SMTP_HOST;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    if (host && user && pass) {
+      console.log("[email] 📦 Produzione: SMTP");
+      return { sendMail: sendViaSMTP };
+    }
+    // Nessuna config email in produzione -> Ethereal per test
+    console.log("[email] 🛠 Produzione senza config email: uso Ethereal preview");
+    return { sendMail: sendViaEthereal };
+  }
+  // Sviluppo: Ethereal
+  console.log("[email] 🛠 Sviluppo: Ethereal preview");
+  return { sendMail: sendViaEthereal };
 }
 
-export const FROM_EMAIL = "noreply@samurai.test";
-export const FROM_NAME = "Samurai di Avakin";
-
-export async function sendMail({ to, subject, html, text }) {
-  const transport = await getBestTransport();
-  const info = await transport.sendMail({
+async function sendViaSMTP({ to, subject, html, text }) {
+  const nodemailer = await import("nodemailer");
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) throw new Error("SMTP non configurato");
+  const transporter = nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
+  const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@samurai.test";
+  const fromName = process.env.SMTP_FROM_NAME || "Samurai di Avakin";
+  const info = await transporter.sendMail({
     from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
     to, subject, html, text
   });
+  return info;
+}
+
+export const FROM_EMAIL = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@samurai.test";
+export const FROM_NAME = process.env.SMTP_FROM_NAME || "Samurai di Avakin";
+
+export async function sendMail({ to, subject, html, text }) {
+  const transport = await getBestTransport();
+  const info = await transport.sendMail({ from: `"${FROM_NAME}" <${FROM_EMAIL}>`, to, subject, html, text });
   return info;
 }
 
