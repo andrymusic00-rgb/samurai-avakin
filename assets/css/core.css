@@ -1,0 +1,804 @@
+:root {
+  --blue-1000: #01030a;
+  --blue-950: #03060f;
+  --blue-900: #050b1c;
+  --blue-850: #071231;
+  --blue-800: #0a1a3d;
+  --blue-700: #0f2a5c;
+  --blue-600: #14418c;
+  --blue-500: #1d5cc0;
+  --blue-400: #2f83ef;
+  --blue-300: #5aa8ff;
+  --blue-200: #8fc6ff;
+  --blue-100: #c3e0ff;
+
+  --silver-100: #f4f8ff;
+  --silver-200: #dde6f4;
+  --silver-300: #bcc9dd;
+  --silver-400: #97a6bd;
+  --silver-500: #71809a;
+  --silver-600: #4e5b73;
+  --silver-700: #333d50;
+
+  --black-900: #04060c;
+  --black-800: #070a12;
+  --black-700: #0b0f1a;
+
+  --violet-50: #faf5ff;
+  --violet-100: #f3e8ff;
+  --violet-200: #e9d5ff;
+  --violet-300: #d8b4fe;
+  --violet-400: #c084fc;
+  --violet-500: #a855f7;
+  --violet-600: #9333ea;
+  --violet-700: #7e22ce;
+  --violet-800: #6b21a8;
+  --violet-900: #581c87;
+  --violet-950: #3b0764;
+  --violet-1000: #2e0654;
+
+  --violet-50-transparent: rgba(250, 245, 255, 0.1);
+  --violet-100-transparent: rgba(243, 232, 255, 0.15);
+  --violet-200-transparent: rgba(233, 213, 255, 0.2);
+  --violet-300-transparent: rgba(216, 180, 254, 0.25);
+  --violet-400-transparent: rgba(192, 132, 252, 0.3);
+  --violet-500-transparent: rgba(168, 85, 247, 0.35);
+  --violet-600-transparent: rgba(147, 51, 234, 0.4);
+  --violet-700-transparent: rgba(126, 34, 206, 0.45);
+  --violet-800-transparent: rgba(107, 33, 168, 0.5);
+  --violet-900-transparent: rgba(88, 28, 135, 0.55);
+  --violet-950-transparent: rgba(59, 7, 100, 0.6);
+  --violet-1000-transparent: rgba(46, 6, 84, 0.65);
+
+  --accent: #5aa8ff;
+  --accent-soft: #8fc6ff;
+  --accent-deep: #14418c;
+
+  --violet-accent: #a855f7;
+  --violet-accent-soft: #d8b4fe;
+  --violet-accent-deep: #581c87;
+  --violet-accent-glow: rgba(168, 85, 247, 0.55);
+  --violet-accent-glow-soft: rgba(216, 180, 254, 0.35);
+
+  --glass-bg: linear-gradient(150deg, rgba(143, 198, 255, 0.10) 0%, rgba(10, 26, 61, 0.28) 46%, rgba(4, 6, 12, 0.42) 100%);
+  --glass-brd: rgba(188, 201, 221, 0.20);
+  --glass-brd-hi: rgba(220, 236, 255, 0.55);
+  --glass-blur: 22px;
+  --glass-sat: 165%;
+
+  --glass-violet-bg: linear-gradient(150deg, rgba(216, 180, 254, 0.12) 0%, rgba(107, 33, 168, 0.22) 46%, rgba(46, 6, 84, 0.48) 100%);
+  --glass-violet-brd: rgba(192, 132, 252, 0.22);
+  --glass-violet-brd-hi: rgba(233, 213, 255, 0.5);
+  --glass-violet-blur: 22px;
+
+  --glass-blue-violet: linear-gradient(145deg, rgba(90, 168, 255, 0.08) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(107, 33, 168, 0.18) 100%);
+  --glass-blue-violet-brd: rgba(143, 198, 255, 0.18);
+
+  --shadow-1: 0 2px 10px rgba(1, 3, 10, 0.5);
+  --shadow-2: 0 18px 50px -18px rgba(1, 3, 10, 0.9);
+  --shadow-3: 0 40px 100px -30px rgba(1, 3, 10, 1);
+  --glow: 0 0 0 1px rgba(90, 168, 255, 0.28), 0 0 34px -6px rgba(45, 131, 239, 0.55);
+  --glow-soft: 0 0 40px -12px rgba(90, 168, 255, 0.45);
+
+  --violet-shadow-1: 0 2px 10px rgba(46, 6, 84, 0.5);
+  --violet-shadow-2: 0 18px 50px -18px rgba(46, 6, 84, 0.9);
+  --violet-shadow-3: 0 40px 100px -30px rgba(46, 6, 84, 1);
+  --violet-glow: 0 0 0 1px rgba(192, 132, 252, 0.3), 0 0 34px -6px rgba(168, 85, 247, 0.55);
+  --violet-glow-soft: 0 0 40px -12px rgba(168, 85, 247, 0.45);
+  --violet-glow-intense: 0 0 0 2px rgba(192, 132, 252, 0.4), 0 0 60px -10px rgba(168, 85, 247, 0.7), 0 0 100px -20px rgba(126, 34, 206, 0.5);
+
+  --blue-violet-glow: 0 0 0 1px rgba(143, 198, 255, 0.25), 0 0 34px -6px rgba(139, 92, 246, 0.5);
+  --blue-violet-glow-soft: 0 0 40px -12px rgba(124, 108, 244, 0.4);
+
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 36px;
+  --r-full: 999px;
+
+  --grad-violet: linear-gradient(135deg, var(--violet-500) 0%, var(--violet-700) 50%, var(--violet-900) 100%);
+  --grad-violet-soft: linear-gradient(135deg, var(--violet-300) 0%, var(--violet-500) 50%, var(--violet-700) 100%);
+  --grad-violet-radial: radial-gradient(circle at 30% 30%, var(--violet-400) 0%, var(--violet-600) 40%, var(--violet-900) 100%);
+  --grad-violet-conic: conic-gradient(from 180deg at 50% 50%, var(--violet-400), var(--violet-600), var(--violet-800), var(--violet-400));
+  --grad-blue-violet: linear-gradient(135deg, var(--blue-400) 0%, var(--violet-400) 50%, var(--violet-700) 100%);
+  --grad-blue-violet-radial: radial-gradient(ellipse at 50% 50%, var(--blue-500) 0%, var(--violet-600) 50%, var(--violet-950) 100%);
+  --grad-violet-gold: linear-gradient(135deg, var(--violet-500) 0%, var(--violet-300) 50%, #fde68a 100%);
+  --grad-violet-cyan: linear-gradient(135deg, var(--violet-500) 0%, var(--violet-300) 50%, #22d3ee 100%);
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 22px;
+  --sp-6: 30px;
+  --sp-7: 42px;
+  --sp-8: 60px;
+  --sp-9: 84px;
+  --sp-10: 120px;
+
+  --ff-display: "Cinzel", "Bodoni 72", "Didot", "Playfair Display", "Times New Roman", serif;
+  --ff-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ff-jp: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  --ff-mono: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --maxw: 1280px;
+  --topbar-h: 74px;
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+* { margin: 0; padding: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scrollbar-color: var(--violet-500) var(--blue-950);
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-sumi);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.is-locked { overflow: hidden; }
+
+img, svg, video, canvas { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: none; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+
+::selection { background: rgba(168, 85, 247, 0.4); color: var(--silver-100); }
+::-moz-selection { background: rgba(168, 85, 247, 0.4); color: var(--silver-100); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--blue-950); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--violet-500), var(--violet-700), var(--blue-600));
+  border-radius: var(--r-full);
+  border: 2px solid var(--blue-950);
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(var(--violet-400), var(--violet-600), var(--blue-500)); }
+
+:focus-visible {
+  outline: 2px solid var(--violet-400);
+  outline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+
+:focus-visible.blue { outline-color: var(--blue-300); }
+:focus-visible.violet { outline-color: var(--violet-400); }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.silver-text {
+  background: linear-gradient(100deg, #ffffff 0%, var(--silver-200) 26%, var(--silver-400) 52%, #ffffff 74%, var(--silver-300) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: silverFlow 9s linear infinite;
+}
+
+.violet-text {
+  background: linear-gradient(100deg, #ffffff 0%, var(--violet-200) 20%, var(--violet-400) 40%, var(--violet-600) 60%, var(--violet-300) 80%, #ffffff 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: violetFlow 10s linear infinite;
+}
+
+.blue-violet-text {
+  background: linear-gradient(100deg, var(--blue-200) 0%, var(--blue-300) 20%, var(--violet-300) 40%, var(--violet-500) 60%, var(--violet-400) 80%, var(--blue-200) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: blueVioletFlow 12s linear infinite;
+}
+
+.violet-text-static {
+  background: linear-gradient(135deg, var(--violet-200) 0%, var(--violet-400) 50%, var(--violet-600) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.kanji {
+  font-family: var(--ff-jp);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.mono { font-family: var(--ff-mono); letter-spacing: 0.14em; text-transform: uppercase; }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--blue-200);
+}
+.eyebrow.violet { color: var(--violet-300); }
+.eyebrow.violet::before { background: linear-gradient(90deg, transparent, var(--violet-400)); }
+.eyebrow::before {
+  content: "";
+  width: 34px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue-300));
+}
+
+.section-title {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  font-size: clamp(2.2rem, 5.2vw, 4.1rem);
+  background: var(--text-luminoso);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: testoLuminoso 6s linear infinite;
+}
+
+.section-title span.accent { color: var(--mizugatte); }
+.section-title span.accent-violet { color: var(--murasaki-light); }
+.section-title span.accent-blue-violet { background: linear-gradient(135deg, var(--mizugatte), var(--murasaki-light)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.section-lead {
+  max-width: 62ch;
+  color: var(--silver-400);
+  font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+}
+
+.ink-wave {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(180deg, transparent 0 5px, rgba(143, 198, 255, 0.012) 5px 6px);
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+@keyframes silverFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+@keyframes violetFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+@keyframes blueVioletFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.06); }
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-130%) skewX(-18deg); }
+  60%, 100% { transform: translateX(230%) skewX(-18deg); }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpPanel {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes shimmerEdge {
+  0%, 100% { border-color: var(--glass-brd); }
+  50% { border-color: var(--glass-brd-hi); }
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-1.6%, -1.4%, 0); }
+}
+
+@keyframes marqueeX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1400%); }
+}
+
+@keyframes breatheRing {
+  0% { transform: scale(0.86); opacity: 0.75; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes typingDot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+@keyframes driftSlow {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33% { transform: translate3d(3%, -4%, 0) rotate(6deg); }
+  66% { transform: translate3d(-3%, 3%, 0) rotate(-5deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%; }
+  50% { border-radius: 30% 70% 40% 60% / 70% 40% 60% 30%; }
+  75% { border-radius: 70% 30% 60% 40% / 30% 60% 40% 70%; }
+}
+
+@keyframes floatMorph {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-15px) rotate(3deg) scale(1.02); }
+  50% { transform: translateY(5px) rotate(-2deg) scale(0.98); }
+  75% { transform: translateY(-10px) rotate(1deg) scale(1.01); }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { opacity: 0.2; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes staggerFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes stageFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: var(--shadow-3), 0 0 80px -16px rgba(192,132,252,1), inset 0 0 60px rgba(233,213,255,0.3); }
+  50% { box-shadow: var(--shadow-3), 0 0 120px -10px rgba(192,132,252,1), inset 0 0 80px rgba(233,213,255,0.5); }
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.01); }
+}
+
+@keyframes logoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes logoBreathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 24px rgba(192,132,252,1)); }
+  50% { transform: scale(1.03); filter: drop-shadow(0 0 40px rgba(192,132,252,1)); }
+}
+
+@keyframes ringExpand {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes textReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes langCycle {
+  0%, 8.33% { opacity: 1; transform: translateY(0); }
+  16.66%, 100% { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.06); }
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-130%) skewX(-18deg); }
+  60%, 100% { transform: translateX(230%) skewX(-18deg); }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpPanel {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes shimmerEdge {
+  0%, 100% { border-color: var(--glass-brd); }
+  50% { border-color: var(--glass-brd-hi); }
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-1.6%, -1.4%, 0); }
+}
+
+@keyframes marqueeX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1400%); }
+}
+
+@keyframes breatheRing {
+  0% { transform: scale(0.86); opacity: 0.75; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes typingDot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+@keyframes driftSlow {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33% { transform: translate3d(3%, -4%, 0) rotate(6deg); }
+  66% { transform: translate3d(-3%, 3%, 0) rotate(-5deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%; }
+  50% { border-radius: 30% 70% 40% 60% / 70% 40% 60% 30%; }
+  75% { border-radius: 70% 30% 60% 40% / 30% 60% 40% 70%; }
+}
+
+@keyframes floatMorph {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-15px) rotate(3deg) scale(1.02); }
+  50% { transform: translateY(5px) rotate(-2deg) scale(0.98); }
+  75% { transform: translateY(-10px) rotate(1deg) scale(1.01); }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { opacity: 0.2; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+html.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+  transition-delay: var(--d, 0ms);
+  will-change: opacity, transform;
+}
+
+html.reveal-ready [data-reveal="left"] { transform: translateX(-40px); }
+html.reveal-ready [data-reveal="right"] { transform: translateX(40px); }
+html.reveal-ready [data-reveal="scale"] { transform: scale(0.92); }
+html.reveal-ready [data-reveal="up"] { transform: translateY(40px); }
+html.reveal-ready [data-reveal="down"] { transform: translateY(-40px); }
+html.reveal-ready [data-reveal="zoom"] { transform: scale(0.9); opacity: 0; }
+
+html.reveal-ready [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media print {
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .fx-stage, .fx-grain, .fx-vignette, .ink-wave, .fx-grid-lines, .cursor-glow, .cursor-dot, .hero-bg-logo { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.12s !important;
+  }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .silver-text { animation: none; }
+  .hero-bg-logo svg { animation: none !important; }
+}
+
+/* ── Samurai 35-color palette tokens ── */
+:root {
+  --shiro-kabe: #F4F2EC;
+  --kinari: #EAE5D9;
+  --iwa: #C8C4B7;
+  --suna: #A6A194;
+  --kura: #525662;
+  --kuro-kabe: #1E202C;
+  --sumi: #0B0C10;
+
+  --mizugatte: #CBE4F9;
+  --aizora: #93C5FD;
+  --ao: #3B82F6;
+  --ruri: #2563EB;
+  --kon: #1D4ED8;
+  --katsu-iro: #1E3A8A;
+  --gunjo: #172554;
+  --yoru: #0F172A;
+  --kuro-ao: #090D16;
+
+  --fuji: #E9D5FF;
+  --ayame: #D8B4FE;
+  --murasaki-light: #C084FC;
+  --murasaki: #A855F7;
+  --kikyo: #9333EA;
+  --shikon: #7E22CE;
+  --budou: #581C87;
+  --yami-murasaki: #3B0764;
+  --kokutan: #23053D;
+
+  --hinoki: #D4B28C;
+  --kigumi: #A8835C;
+  --ki-kabe: #4A3B32;
+  --kuro-ki: #29211C;
+  --kin: #F59E0B;
+  --kogan: #D97706;
+  --aka: #EF4444;
+  --shinku: #DC2626;
+  --hi: #B91C1C;
+  --akane: #991B1B;
+
+  --bg-sumi: var(--sumi);
+  --bg-kuro-kabe: var(--kuro-kabe);
+  --bg-yoru: var(--yoru);
+  --text-primary: var(--shiro-kabe);
+  --text-secondary: var(--suna);
+  --text-luminoso: linear-gradient(135deg, var(--mizugatte) 0%, var(--fuji) 60%, var(--mizugatte) 100%);
+  --accent-gold: var(--kin);
+  --accent-red: var(--aka);
+  --border-wood: var(--kigumi);
+}
+
+/* Testo luminoso sfumato (non bianco) per massima leggibilità su sfondo scuro */
+.testo-luminoso {
+  background: var(--text-luminoso);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: testoLuminoso 6s linear infinite;
+}
+
+@keyframes testoLuminoso {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Adattamento testi per stagione attiva ── */
+/* Primavera: sfondo chiaro (white/fuchsia/violet) → testi scuri per leggibilità */
+body.season-spring .section-title,
+body.season-spring .section-lead,
+body.season-spring .eyebrow,
+body.season-spring .kanji,
+body.season-spring .mono,
+body.season-spring .hero-sub,
+body.season-spring .type-line,
+body.season-spring .nav-link,
+body.season-spring .icon-btn,
+body.season-spring .card h3,
+body.season-spring .card p,
+body.season-spring .pillar h3,
+body.season-spring .pillar p,
+body.season-spring .pillar .pillar-foot,
+body.season-spring .stat-label,
+body.season-spring .leader b,
+body.season-spring .leader small,
+body.season-spring .faq-a p,
+body.season-spring .news-body p,
+body.season-spring .footer-col a,
+body.season-spring .footer-bottom,
+body.season-spring .stat-num .suffix,
+body.season-spring .acc-handle,
+body.season-spring .acc-name,
+body.season-spring .roster-card b,
+body.season-spring .sess-info b {
+  color: var(--kura) !important;
+}
+body.season-spring .section-title {
+  background: linear-gradient(135deg, var(--shikon) 0%, var(--murasaki) 50%, var(--kikyo) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: none !important;
+}
+body.season-spring .testo-luminoso {
+  background: linear-gradient(135deg, var(--shikon) 0%, var(--murasaki) 60%, var(--kikyo) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: none !important;
+}
+body.season-spring .eyebrow,
+body.season-spring .pillar-foot,
+body.season-spring .stat-label {
+  color: var(--murasaki) !important;
+}
+body.season-spring .nav-link,
+body.season-spring .icon-btn,
+body.season-spring .card p,
+body.season-spring .pillar p,
+body.season-spring .faq-a p,
+body.season-spring .news-body p,
+body.season-spring .footer-col a {
+  color: var(--kura) !important;
+}
+body.season-spring .hero-title .l3 {
+  color: var(--murasaki) !important;
+}
+body.season-spring .btn-primary {
+  background: linear-gradient(120deg, var(--murasaki) 0%, var(--shikon) 42%, var(--kikyo) 100%) !important;
+}
+body.season-spring .btn-violet {
+  background: linear-gradient(120deg, var(--fuji) 0%, var(--murasaki-light) 42%, var(--murasaki) 100%) !important;
+}
+
+body.season-spring .hero-bg-logo .logo-path { fill: var(--murasaki-light); opacity: 0.1; }
+body.season-spring .hero-bg-logo .logo-path-alt { fill: var(--murasaki); opacity: 0.08; }
+body.season-spring .hero-bg-logo .logo-accent { fill: var(--shikon); opacity: 0.12; }
+body.season-spring .hero-bg-logo svg { filter: drop-shadow(0 0 60px rgba(192, 132, 252, 0.2)); }
+
+body.season-summer .hero-bg-logo .logo-path { fill: var(--kin); opacity: 0.08; }
+body.season-summer .hero-bg-logo .logo-path-alt { fill: var(--kogan); opacity: 0.06; }
+body.season-summer .hero-bg-logo .logo-accent { fill: var(--hinoki); opacity: 0.1; }
+body.season-summer .hero-bg-logo svg { filter: drop-shadow(0 0 60px rgba(245, 158, 11, 0.2)); }
+
+body.season-autumn .hero-bg-logo .logo-path { fill: var(--hinoki); opacity: 0.08; }
+body.season-autumn .hero-bg-logo .logo-path-alt { fill: var(--kigumi); opacity: 0.06; }
+body.season-autumn .hero-bg-logo .logo-accent { fill: var(--akane); opacity: 0.1; }
+body.season-autumn .hero-bg-logo svg { filter: drop-shadow(0 0 60px rgba(168, 131, 92, 0.2)); }
+
+body.season-winter .hero-bg-logo .logo-path { fill: var(--mizugatte); opacity: 0.08; }
+body.season-winter .hero-bg-logo .logo-path-alt { fill: var(--aizora); opacity: 0.06; }
+body.season-winter .hero-bg-logo .logo-accent { fill: var(--ruri); opacity: 0.1; }
+body.season-winter .hero-bg-logo svg { filter: drop-shadow(0 0 60px rgba(90, 168, 255, 0.2)); }
+
+/* Estate/Autunno/Inverno: sfondo scuro → testi luminosi (già default) */
+body.season-summer .section-title,
+body.season-autumn .section-title,
+body.season-winter .section-title {
+  background: var(--text-luminoso) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: testoLuminoso 6s linear infinite !important;
+}

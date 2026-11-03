@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="violet-blue">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Samurai di Avakin — Il Clan</title>
+<meta name="description" content="Samurai di Avakin — il clan più disciplinato di Avakin Life. Gestisci il tuo account, galleria, video, eventi e area riservata.">
+<meta name="theme-color" content="#03060f">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Samurai di Avakin">
+
+<!-- Social -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Samurai di Avakin">
+<meta property="og:title" content="Samurai di Avakin — Il Clan">
+<meta property="og:description" content="Bushido digitale dal 2019: onestà, rispetto, lealtà. 78 samurai, 1.284 vittorie in war, nessun tradimento.">
+<meta property="og:image" content="/assets/icons/logo.svg">
+<meta property="og:image:width" content="1080">
+<meta property="og:image:height" content="1080">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Samurai di Avakin — Il Clan">
+<meta name="twitter:description" content="Bushido digitale dal 2019: onestà, rispetto, lealtà.">
+<meta name="twitter:image" content="/assets/icons/logo.svg">
+
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Samurai">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/features.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Samurai di Avakin",
+  "alternateName": "Samurai di Avakin Life",
+  "url": "/",
+  "logo": "/assets/icons/logo.svg",
+  "foundingDate": "2019",
+  "slogan": "Oath.sworn — No betrayal",
+  "description": "Clan di Avakin Life fondato nel 2019, basato su onestà, rispetto e lealtà.",
+  "sameAs": []
+}
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Salta al contenuto</a>
+
+<div class="fx-stage violet" aria-hidden="true">
+  <canvas id="fxCanvas"></canvas>
+</div>
+<div class="season-theme spring" aria-hidden="true"></div>
+<div class="fx-grid-lines violet" aria-hidden="true"></div>
+<div class="fx-grain" aria-hidden="true"></div>
+<div class="fx-vignette" aria-hidden="true"></div>
+<div class="ink-wave" aria-hidden="true"></div>
+<div class="cursor-glow violet" id="cursorGlow" aria-hidden="true"></div>
+<div class="cursor-dot violet" id="cursorDot" aria-hidden="true"></div>
+
+<header class="topbar glass is-compact violet" id="topbar">
+  <a class="brand" href="#/home" data-nav="home" aria-label="Samurai di Avakin — home">
+    <span class="brand-mark violet" aria-hidden="true">
+      <img src="/assets/icons/logo.svg" alt="" width="32" height="32" loading="lazy">
+    </span>
+    <span class="brand-text">
+      <b>SAMURAI</b>
+      <span>di Avakin</span>
+    </span>
+  </a>
+
+  <nav class="nav violet" id="nav" aria-label="Navigazione principale">
+    <a class="nav-link violet" href="#/home" data-nav="home">Home</a>
+    <a class="nav-link violet" href="#/chi-siamo" data-nav="chi-siamo">Chi Siamo</a>
+    <a class="nav-link violet" href="#/eventi" data-nav="eventi">Eventi</a>
+    <a class="nav-link violet" href="#/gallery" data-nav="gallery">Gallery</a>
+    <a class="nav-link violet" href="#/video" data-nav="video">Video</a>
+    <a class="nav-link violet" href="#/blog" data-nav="blog">Creatività</a>
+    <a class="nav-link violet" href="#/classifica" data-nav="classifica">Classifica</a>
+    <a class="nav-link violet is-staff" href="#/comando" data-nav="comando" hidden>Comando</a>
+    <a class="nav-link violet" href="#/account" data-nav="account">Account</a>
+  </nav>
+
+  <div class="topbar-actions">
+    <button class="icon-btn only-desktop violet" id="btnPalette" title="Comandi (⌘K)" aria-label="Apri palette comandi">⌘</button>
+    <button class="icon-btn only-desktop violet" id="btnSound" title="Suono UI" aria-label="Attiva/disattiva suono">♪</button>
+    <button class="icon-btn violet" id="btnNotif" title="Notifiche" aria-label="Notifiche" hidden>◔</button>
+    <button class="btn btn-primary btn-sm" id="btnEnter"><span class="lbl-full">Entra nella Gate</span><span class="lbl-short">Entra</span></button>
+    <button class="icon-btn violet" id="btnMenu" title="Menu" aria-label="Apri menu" aria-expanded="false">☰</button>
+  </div>
+
+  <div class="topbar-progress violet" aria-hidden="true"><i id="scrollProgress"></i></div>
+</header>
+
+<main id="main" class="shell">
+
+  <section class="view is-active" id="view-home" data-view="home">
+<div class="hero view-pad">
+      <div class="hero-bg-logo" aria-hidden="true">
+        <svg viewBox="0 0 1080 1080" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <style>
+              .logo-path { fill: var(--violet-400); opacity: 0.08; }
+              .logo-path-alt { fill: var(--blue-400); opacity: 0.06; }
+              .logo-accent { fill: var(--violet-600); opacity: 0.1; }
+            </style>
+          </defs>
+          <g class="logo-path">
+            <path d="M540 100c-243 0-440 197-440 440s197 440 440 440 440-197 440-440-197-440-440-440zm0 720c-155 0-280-125-280-280s125-280 280-280 280 125 280 280-125 280-280 280z"/>
+            <path d="M540 180c-199 0-360 161-360 360s161 360 360 360 360-161 360-360-161-360-360-360zm0 600c-132 0-240-108-240-240s108-240 240-240 240 108 240 240-108 240-240 240z"/>
+          </g>
+          <g class="logo-path-alt">
+            <path d="M540 320c-88 0-160 72-160 160s72 160 160 160 160-72 160-160-72-160-160-160zm0 280c-66 0-120-54-120-120s54-120 120-120 120 54 120 120-54 120-120 120z"/>
+          </g>
+          <g class="logo-accent">
+            <path d="M540 400c-44 0-80 36-80 80s36 80 80 80 80-36 80-80-36-80-80-80zm0 140c-33 0-60-27-60-60s27-60 60-60 60 27 60 60-27 60-60 60z"/>
+            <circle cx="540" cy="540" r="20"/>
+          </g>
+          <g class="logo-path" style="transform: rotate(45deg); transform-origin: 540px 540px; opacity: 0.04;">
+            <path d="M540 200c-66 0-120 54-120 120s54 120 120 120 120-54 120-120-54-120-120-120zm0 200c-44 0-80 36-80 80s36 80 80 80 80-36 80-80-36-80-80-80z"/>
+          </g>
+          <g class="logo-path-alt" style="transform: rotate(-30deg); transform-origin: 540px 540px; opacity: 0.03;">
+            <ellipse cx="540" cy="540" rx="200" ry="80"/>
+          </g>
+        </svg>
+      </div>
+      <div class="hero-orbs" aria-hidden="true">
+        <div class="hero-orb"></div>
+        <div class="hero-orb"></div>
+        <div class="hero-orb"></div>
+      </div>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <span class="eyebrow violet" data-reveal>Clan Attivo dal 2019 · Server IT</span>
+          <h1 class="hero-title" data-reveal style="--d:90ms">
+            <span class="silver-text">Samurai</span>
+            <span class="l2 silver-text">di Avakin</span>
+            <span class="l3">Bushido digitale</span>
+          </h1>
+          <p class="hero-sub" data-reveal style="--d:180ms">
+            Siamo una famiglia di <b>78 samurai</b> uniti da un solo codice: onestà, rispetto,
+            lealtà. Ogni battaglia vinta, ogni arena conquistata, ogni alleanza stretta
+            resta scritta nella storia del clan.
+          </p>
+          <div class="type-line" data-reveal style="--d:250ms">
+            <span class="type-cursor" aria-hidden="true"></span>
+            <span id="typeTarget">Oath.sworn — No betrayal</span>
+          </div>
+          <div class="hero-cta" data-reveal style="--d:320ms">
+            <a class="btn btn-primary btn-lg" href="#/account" data-nav="account">Entra nel tuo Account</a>
+            <a class="btn btn-glass btn-lg" href="#/chi-siamo" data-nav="chi-siamo">Il Codice del Clan</a>
+          </div>
+          <div class="row" style="margin-top:34px;--d:400ms" data-reveal>
+            <span class="tag violet"><i class="pulse-dot"></i> Guerra dei Clan — Vittoria #248</span>
+            <span class="tag violet">Ultimo raid: 2h fa</span>
+          </div>
+        </div>
+
+        <div class="hero-visual violet" data-reveal="scale" style="--d:200ms">
+          <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+          <div class="hero-mon violet"><span class="kanji">侍</span></div>
+          <div class="hero-float f1 violet"><i></i> Vittorie clan 1.284</div>
+          <div class="hero-float f2 violet"><i></i> Troppa ⋆ ⋆ ⋆ ⋆ ⋆</div>
+          <div class="hero-float f3 violet"><i></i> Reclutamento aperto</div>
+        </div>
+      </div>
+      <div class="scroll-cue violet" aria-hidden="true">
+        <span>Scorri</span>
+        <span class="line"></span>
+      </div>
+    </div>
+
+    <div class="marquee violet" aria-hidden="true">
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
+
+    <section class="view-pad-sm" style="padding-bottom:90px">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet">Stagioni del Clan</span>
+          <h2 class="section-title">Il ciclo delle <span class="accent-violet">quattro stagioni</span></h2>
+          <p class="section-lead">Ogni stagione porta un'atmosfera diversa al dojo. Cambia tema e osserva le particelle trasformarsi.</p>
+        </div>
+      </div>
+      <div id="seasonSelector" style="margin-top:24px"></div>
+    </section>
+
+    <section class="view-pad-sm" style="padding-bottom:80px">
+      <div class="stat-strip stat-violet" id="statStrip"></div>
+    </section>
+
+    <section class="view-pad-sm" style="padding-bottom:90px">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet">I Pilastri</span>
+          <h2 class="section-title">Cosa ci rende <span class="accent-violet">Samurai</span></h2>
+        </div>
+        <a class="btn btn-ghost" href="#/chi-siamo" data-nav="chi-siamo">Leggi il manifesto →</a>
+      </div>
+      <div class="grid g-3 reveal-stagger" id="pillarsGrid"></div>
+    </section>
+
+    <section class="view-pad-sm" style="padding-bottom:90px">
+      <div class="grid g-2" style="align-items:start;gap:34px">
+        <div class="glass-violet card card-pad-lg" data-reveal>
+          <span class="eyebrow violet">Gradi del Clan</span>
+          <h2 class="section-title" style="font-size:clamp(1.8rem,3.4vw,2.6rem);margin:16px 0 22px">La via del <span class="accent-violet">Ronin</span> al <span class="accent-violet">Shogun</span></h2>
+          <div id="ranksList" class="stack" style="gap:2px"></div>
+        </div>
+        <div class="glass-violet card card-pad-lg" data-reveal="right" style="--d:120ms">
+          <span class="eyebrow violet">Bollettino</span>
+          <h2 class="section-title" style="font-size:clamp(1.8rem,3.4vw,2.6rem);margin:16px 0 22px">Ultimi <span class="accent-violet">comunicati</span></h2>
+          <div id="newsList" class="stack" style="gap:4px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view-pad-sm" style="padding-bottom:100px">
+      <div class="glass-blue-violet card-pad-lg" style="text-align:center;padding:70px 30px" data-reveal="scale">
+        <span class="eyebrow violet" style="justify-content:center">Reclutamento</span>
+        <h2 class="section-title" style="margin:18px auto 14px">Prendi la spada, <span class="violet-text">entra nel cerchio</span></h2>
+        <p class="section-lead" style="margin:0 auto 28px">
+          Cerchiamo giocatori con rispetto, presenza costante e voglia di vincere.
+          Niente smurf, niente drama: solo onore e competenza. Bastano 5 minuti per candidarti.
+        </p>
+        <div class="row" style="justify-content:center">
+          <button class="btn btn-violet btn-lg" data-action="apply">Candidati ora</button>
+          <a class="btn btn-lg" href="#/gallery" data-nav="gallery">Vedi la gallery</a>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="view" id="view-chi-siamo" data-view="chi-siamo">
+    <div class="view-pad">
+      <div class="section-head center">
+        <span class="eyebrow violet" data-reveal>Chi Siamo</span>
+        <h1 class="section-title" data-reveal style="--d:80ms">Non siamo un gruppo.<br>Siamo un <span class="violet-text">giuramento</span>.</h1>
+        <p class="section-lead" data-reveal style="--d:160ms">
+          Samurai di Avakin nasce da un'idea semplice: il gioco è più bello quando lo affronti
+          con persone di cui ti fidi. Da allora non abbiamo mai rotto la parola.
+        </p>
+      </div>
+
+      <div class="grid g-4" id="valuesGrid" style="margin-bottom:100px"></div>
+    </div>
+
+    <section class="view-pad-sm" style="padding-bottom:100px">
+      <div class="grid g-2" style="gap:34px;align-items:start">
+        <div class="glass-violet card card-pad-lg" data-reveal>
+          <span class="eyebrow violet">Cronaca</span>
+          <h2 class="section-title" style="font-size:clamp(1.8rem,3.2vw,2.5rem);margin:16px 0 26px">La nostra <span class="accent-violet">storia</span></h2>
+          <div class="timeline violet" id="timelineList"></div>
+        </div>
+        <div class="stack" style="gap:24px">
+          <div class="glass-blue-violet card card-pad-lg" data-reveal="right">
+            <span class="eyebrow violet">Credo</span>
+            <h3 class="kanji" style="font-size:1.6rem;color:var(--silver-100);margin-bottom:16px">武士道</h3>
+            <p style="margin-bottom:16px">
+              Bushidō: il codice del guerriero. Ne prendiamo solo i lati che contano —
+              onestà, rispetto, coraggio e responsabilità. Il resto è lobby e chat.
+            </p>
+            <ul class="stack" style="gap:10px" id="credoList"></ul>
+          </div>
+          <div class="glass-violet card card-pad-lg" data-reveal="right" style="--d:120ms">
+            <span class="eyebrow violet">Domande frequenti</span>
+            <div id="faqList" style="margin-top:18px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view-pad-sm" style="padding-bottom:100px">
+      <div class="section-head center">
+        <span class="eyebrow violet">Comando</span>
+        <h2 class="section-title">I <span class="accent-violet">Capo</span></h2>
+        <p class="section-lead">Chi mantiene lo standard alto, giorno dopo giorno.</p>
+      </div>
+      <div class="grid g-auto-lg" id="leaderGrid"></div>
+    </section>
+  </section>
+
+  <section class="view" id="view-eventi" data-view="eventi">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Calendario</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Raidi, tornei e <span class="violet-text">briefing</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Tutto quello che è in programma. Iscriviti, scarica l'evento nel tuo calendario
+            e non perdere il prossimo raid.
+          </p>
+        </div>
+        <div class="row">
+          <a class="btn btn-ghost" href="/api/clan/events.ics" download>⇩ Scarica calendario</a>
+          <button class="btn btn-violet" id="btnCreaEvento">+ Crea evento</button>
+          <button class="btn btn-violet" data-action="apply">Candidati</button>
+        </div>
+      </div>
+      <p class="mono" id="eventsStatus" style="font-size:11px;color:var(--silver-600);margin-bottom:20px">—</p>
+    </div>
+    <div class="view-pad-sm" style="padding-bottom:100px">
+      <div class="stack" style="gap:18px" id="eventList"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-gallery" data-view="gallery">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Gallery</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Il nostro <span class="violet-text">museo</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Ogni scatto racconta una battaglia, un'alleanza, un traguardo.
+            Filtra per categoria e apri la luce piena.
+          </p>
+        </div>
+        <div class="row">
+          <button class="btn btn-violet" data-action="upload">+ Carica una tua foto</button>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="galleryFilters" style="margin-bottom:32px;--d:200ms" data-reveal></div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <p class="mono" style="color:var(--silver-600);font-size:11px;margin-top:20px" id="galleryCount"></p>
+    </div>
+
+    <div class="view-pad-sm" style="padding-bottom:100px"></div>
+  </section>
+
+  <section class="view" id="view-video" data-view="video">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Video</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Vedi, <span class="silver-text">impara</span>, <span class="accent-violet">vinci</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Raid, guide, compilazioni e dietro le quinte. Tutto quello che serve per
+            portare il livello di gioco da buono a leggendario.
+          </p>
+        </div>
+      </div>
+
+      <div class="vid-featured" id="vidFeatured" data-reveal style="margin-bottom:44px"></div>
+
+      <div class="filter-bar" id="videoFilters" style="margin-bottom:28px"></div>
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
+    <div class="view-pad-sm" style="padding-bottom:100px"></div>
+  </section>
+
+  <section class="view" id="view-classifica" data-view="classifica">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Classifica</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">I numeri del <span class="silver-text">clan</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Vittorie, raid, ore di presenza e win rate. Aggiornata dal database del clan,
+            non a mano: quello che vedi è quello che è stato registrato.
+          </p>
+        </div>
+        <button class="btn btn-ghost" id="btnRefreshLb">⟳ Aggiorna</button>
+      </div>
+
+      <p class="mono" id="lbStatus" style="font-size:11px;color:var(--silver-600);margin-bottom:26px">—</p>
+
+      <div class="lb-podium" id="lbPodium" style="margin-bottom:34px"></div>
+
+      <div class="stat-strip stat-violet" id="lbStat" style="margin-bottom:40px"></div>
+
+      <div class="grid g-2" style="align-items:start;gap:34px">
+        <section>
+          <span class="eyebrow violet" data-reveal>Gradatoria</span>
+          <h2 class="section-title" style="font-size:clamp(1.6rem,3.2vw,2.4rem);margin:14px 0 22px">I migliori <span class="accent-violet">samurai</span></h2>
+          <div class="lb-list" id="lbList"></div>
+        </section>
+        <section>
+          <span class="eyebrow violet" data-reveal>Registro raid</span>
+          <h2 class="section-title" style="font-size:clamp(1.6rem,3.2vw,2.4rem);margin:14px 0 22px">Ultimi <span class="accent-violet">scontri</span></h2>
+          <div class="stack" style="gap:2px" id="raidList"></div>
+        </section>
+      </div>
+    </div>
+    <div class="view-pad-sm" style="padding-bottom:100px"></div>
+  </section>
+
+  <section class="view" id="view-comando" data-view="comando">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Comando</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Area <span class="violet-text">riservata</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Valuta le candidature, assegna i ruoli e tieni d'occhio le statistiche.
+            Accesso riservato a Bushi, Shogun e admin.
+          </p>
+        </div>
+        <button class="btn btn-ghost" id="btnRefreshCmd">⟳ Aggiorna</button>
+      </div>
+    </div>
+    <div class="view-pad-sm" style="padding-bottom:100px">
+      <div id="cmdBody"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-account" data-view="account">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow violet" data-reveal>Area Riservata</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Il tuo <span class="violet-text">Account</span></h1>
+          <p class="section-lead" data-reveal style="--d:140ms">
+            Gestisci il tuo profilo samurai, i tuoi dati, la sicurezza e le preferenze.
+            Tutto salvato in locale sul tuo dispositivo.
+          </p>
+        </div>
+        <div class="row">
+          <button class="btn btn-violet" data-action="link-avakin">+ Collega account Avakin</button>
+          <button class="btn btn-ghost" id="btnExport">Esporta profilo</button>
+          <button class="btn btn-ghost" data-action="create-avatar">Crea Avatar Samurai</button>
+        </div>
+      </div>
+
+      <div class="glass-violet card-pad-lg" id="accGate" style="display:none;text-align:center;padding:60px 28px">
+        <div class="samurai-seal violet" style="margin:0 auto 22px;width:88px;height:88px;font-size:2.4rem"><span>侍</span></div>
+        <h2 class="section-title" style="font-size:clamp(1.6rem,3.4vw,2.4rem)">Questa sezione è <span class="accent-violet">riservata</span></h2>
+        <p class="section-lead" style="margin:14px auto 26px" id="accGateText">
+          Accedi per gestire il tuo profilo samurai. I dati restano protetti: password hashate con scrypt e sessioni con token a rotazione.
+        </p>
+        <div class="row" style="justify-content:center">
+          <button class="btn btn-primary btn-lg" data-action="login">Accedi</button>
+          <button class="btn btn-lg" data-action="register">Crea un account</button>
+        </div>
+        <p class="mono" style="font-size:10px;color:var(--silver-600);margin-top:22px" id="accGateStatus">—</p>
+      </div>
+
+      <div class="acc-shell" id="accShell">
+        <aside class="acc-side glass-violet">
+          <div class="acc-profile">
+            <div class="acc-avatar violet" id="accAvatar" title="Cambia avatar">
+              <span id="accAvatarGlyph">侍</span>
+              <span class="edit-badge" aria-hidden="true">✎</span>
+              <input type="file" id="avatarInput" accept="image/*" class="sr-only">
+            </div>
+           <div>
+             <div class="acc-name" id="accNameDisplay">Samuraj</div>
+             <div class="acc-handle violet" id="accHandleDisplay">@SAMURAJ</div>
+             <div class="mono" id="accMeta" style="margin-top:4px;font-size:10px;letter-spacing:.16em;color:var(--silver-600);text-transform:uppercase;display:none"></div>
+             <div class="row" style="justify-content:center;margin-top:6px">
+               <span class="tag violet" id="accRoleTag">Ronin</span>
+               <span class="tag violet" id="accLinkTag">Non collegato</span>
+               <span class="tag silver" id="accVerifiedTag" style="display:none">Email non verificata</span>
+             </div>
+           </div>
+         </div>
+
+         <div class="lvl-wrap">
+           <div class="lvl-top"><span>Livello</span><span id="accLevelText">1 / 50</span></div>
+           <div class="lvl-bar violet"><i id="accLevelBar"></i></div>
+           <div class="lvl-top" style="margin-top:6px"><span>XP</span><span id="accXpText">0%</span></div>
+           <div class="lvl-bar violet"><i id="accXpBar"></i></div>
+         </div>
+
+         <div class="divider violet"></div>
+
+         <nav class="acc-tabs" id="accTabs" aria-label="Sezioni account">
+           <button class="acc-tab is-active" data-apanel="profilo"><span class="ico">◈</span> Profilo</button>
+           <button class="acc-tab" data-apanel="statistiche"><span class="ico">◮</span> Statistiche</button>
+           <button class="acc-tab" data-apanel="traguardi"><span class="ico">✧</span> Traguardi</button>
+           <button class="acc-tab" data-apanel="sicurezza"><span class="ico">⛨</span> Sicurezza</button>
+           <button class="acc-tab" data-apanel="preferenze"><span class="ico">✦</span> Preferenze</button>
+           <button class="acc-tab" data-apanel="compagni"><span class="ico">⛩</span> Compagni</button>
+           <button class="acc-tab" data-apanel="badge"><span class="ico">✪</span> Stemma</button>
+         </nav>
+
+         <button class="btn btn-violet btn-block" data-action="link-avakin" id="btnLinkAvakin">Collega il tuo Avakin</button>
+         <div class="row" style="gap:8px">
+           <button class="btn btn-sm btn-block" id="btnRefreshSession" title="Rinnova la sessione">⟳ Rinnova</button>
+           <button class="btn btn-sm btn-block btn-danger" data-action="logout">Esci</button>
+         </div>
+        </aside>
+
+        <div class="acc-panels">
+          <section class="acc-panel glass-violet is-active" data-apanel="profilo">
+            <h3>Dati del samurai</h3>
+            <p class="panel-sub">Le informazioni con cui ti presenti al clan.</p>
+            <form id="profileForm" novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="pf-name">Nome visibile <span class="hint" id="cnt-name">0/24</span></label>
+                  <input class="input violet" id="pf-name" maxlength="24" placeholder="Il tuo nome samurai" required>
+                  <span class="err-msg" data-for="pf-name"></span>
+                </div>
+                <div class="field">
+                  <label for="pf-handle">Handle / Tag <span class="hint">A-Z 0-9 _</span></label>
+                  <input class="input violet" id="pf-handle" maxlength="16" placeholder="TAG_SAMURAI" required>
+                  <span class="err-msg" data-for="pf-handle"></span>
+                </div>
+                <div class="field">
+                  <label for="pf-email">Email <span class="hint" id="cnt-email">0/40</span></label>
+                  <input class="input violet" id="pf-email" maxlength="40" placeholder="samurai@esempio.it" required>
+                  <span class="err-msg" data-for="pf-email"></span>
+                </div>
+                <div class="field">
+                  <label for="pf-region">Regione / Server</label>
+                  <select class="input violet" id="pf-region">
+                    <option>Europa</option><option>America</option>
+                    <option>Asia</option><option>Oceania</option><option>MENA</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pf-main">Personaggio principale</label>
+                  <select class="input violet" id="pf-main">
+                    <option>Troppa ⋆ ⋆ ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆ ⋆ ⋆</option>
+                    <option>Troppa ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆</option><option>Troppa ⋆</option>
+                    <option>Senza scudiero</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pf-device">Dispositivo</label>
+                  <select class="input violet" id="pf-device">
+                    <option>iOS</option><option>Android</option><option>PC</option>
+                    <option>Console</option><option>Altro</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label for="pf-bio">Bio samurai <span class="hint" id="cnt-bio">0/140</span></label>
+                  <textarea class="input violet" id="pf-bio" maxlength="140" placeholder="Una riga sul tuo stile di combattimento..."></textarea>
+                  <span class="err-msg" data-for="pf-bio"></span>
+                </div>
+              </div>
+              <div class="row" style="margin-top:22px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" id="btnResetProfile">Ripristina</button>
+                <button type="submit" class="btn btn-violet">Salva profilo</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="statistiche">
+            <h3>Le tue numeri</h3>
+            <p class="panel-sub">Performance e progressi registrati dal tuo profilo.</p>
+            <div class="acc-stat-row stat-blue-violet" id="accStats"></div>
+            <div class="divider violet" style="margin:26px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:16px">Competenze</h4>
+            <div id="accSkills"></div>
+            <div class="divider violet" style="margin:26px 0"></div>
+            <div class="row-between">
+              <div>
+                <b style="color:var(--silver-100)">Distintivo personale</b>
+                <p style="font-size:.86rem;color:var(--silver-500)">Genera il tuo stemma samurai pronto da condividere.</p>
+              </div>
+              <div class="row">
+                <button class="btn btn-sm" data-action="badge-preview">Anteprima</button>
+                <button class="btn btn-violet btn-sm" data-action="badge-download">Scarica SVG</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="traguardi">
+            <h3>Traguardi</h3>
+            <p class="panel-sub">Obiettivi calcolati dal server sui tuoi numeri reali. Si sbloccano da soli.</p>
+            <div id="accAchievements"></div>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="sicurezza">
+            <h3>Sicurezza</h3>
+            <p class="panel-sub">Password, email, accessi e protezione del tuo account.</p>
+            <form id="passForm" novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="pw-old">Password attuale</label>
+                  <input class="input violet" type="password" id="pw-old" placeholder="••••••••" required autocomplete="current-password">
+                  <span class="err-msg" data-for="pw-old"></span>
+                </div>
+                <div class="field">
+                  <label for="pw-new">Nuova password</label>
+                  <input class="input violet" type="password" id="pw-new" placeholder="Almeno 8 caratteri con lettere e numeri" required autocomplete="new-password">
+                  <span class="err-msg" data-for="pw-new"></span>
+                </div>
+              </div>
+              <div class="row" style="margin-top:18px;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+                <button type="submit" class="btn btn-violet">Aggiorna password</button>
+              </div>
+            </form>
+            <div class="divider violet" style="margin:28px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:16px">Gestione email</h4>
+            <form id="emailForm" novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="em-current">Email attuale</label>
+                  <input class="input violet" id="em-current" title="Email attuale del tuo account" readonly>
+                </div>
+                <div class="field">
+                  <label for="em-new">Nuova email</label>
+                  <input class="input violet" type="email" id="em-new" autocomplete="email" placeholder="nuova@email.it" required>
+                  <span class="err-msg" data-for="em-new"></span>
+                </div>
+                <div class="field">
+                  <label for="em-pass">Password attuale</label>
+                  <input class="input violet" type="password" id="em-pass" placeholder="••••••••" required autocomplete="current-password">
+                  <span class="err-msg" data-for="em-pass"></span>
+                </div>
+              </div>
+              <p class="mono" style="margin-top:10px;font-size:10px;color:var(--silver-600)">Cambiando email potresti doverla verificare di nuovo.</p>
+              <div class="row" style="margin-top:14px;justify-content:flex-end">
+                <button type="submit" class="btn btn-violet">Cambia email</button>
+              </div>
+            </form>
+            <div class="divider violet" style="margin:28px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:16px">Account social collegati</h4>
+            <div id="accSocial" style="margin-bottom:26px"></div>
+            <div class="row" style="gap:8px;margin-bottom:26px">
+              <button class="btn btn-sm btn-block" data-action="social-link" data-provider="google" style="background:#ea4335;color:#fff;border:none">Collega Google</button>
+              <button class="btn btn-sm btn-block" data-action="social-link" data-provider="microsoft" style="background:#0078d4;color:#fff;border:none">Collega Microsoft</button>
+              <button class="btn btn-sm btn-block" data-action="social-link" data-provider="apple" style="background:#000000;color:#fff;border:none">Collega Apple</button>
+            </div>
+            <div class="divider violet" style="margin:28px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:16px">Sessioni attive</h4>
+            <div id="accSessions"></div>
+            <div class="row" style="margin-top:16px;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <button class="btn btn-sm" id="btnRefreshSessions">Aggiorna sessioni</button>
+              <button class="btn btn-danger btn-sm" data-action="logout-all">Disconnetti ovunque</button>
+            </div>
+            <div class="divider violet" style="margin:28px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:16px">Registro attività</h4>
+            <div id="accAudit"></div>
+            <div class="row" style="margin-top:14px;justify-content:flex-end">
+              <button class="btn btn-sm" id="btnRefreshAudit">Aggiorna log</button>
+            </div>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="preferenze">
+            <h3>Preferenze</h3>
+            <p class="panel-sub">Personalizza l'esperienza del sito.</p>
+            <div class="stack" style="gap:12px">
+              <div id="accSwitches"></div>
+            </div>
+            <div class="divider violet" style="margin:26px 0"></div>
+            <h4 style="font-family:var(--ff-mono);font-size:11px;letter-spacing:.24em;color:var(--violet-300);text-transform:uppercase;margin-bottom:14px">Colore d'accento</h4>
+            <div class="accent-dots" id="accentDots" aria-label="Scegli colore d'accento"></div>
+            <div class="divider violet" style="margin:26px 0"></div>
+            <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px">
+              <div>
+                <b style="color:var(--silver-100)">Zona dati</b>
+                <p style="font-size:.86rem;color:var(--silver-500);max-width:36ch">
+                  Esporta il tuo profilo completo (statistiche, preferenze, sessioni, log, upload) o cancella tutto ciò che hai salvato.
+                  L'eliminazione dell'account richiede la password e la conferma "ELIMINA".
+                </p>
+              </div>
+              <div class="row" style="flex-wrap:wrap;gap:10px;justify-content:flex-end">
+                <button class="btn btn-sm" data-action="export">Esporta JSON</button>
+                <button class="btn btn-danger btn-sm" data-action="wipe">Cancella tutto / Elimina account</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="compagni">
+            <h3>I tuoi compagni</h3>
+            <p class="panel-sub">I samurai che condividono la stessa Gate con te.</p>
+            <div class="row" style="margin-bottom:20px">
+              <input class="input violet" id="rosterSearch" placeholder="Cerca un compagno…" style="max-width:280px">
+            </div>
+            <div class="roster-grid" id="accRoster"></div>
+          </section>
+
+          <section class="acc-panel glass-violet" data-apanel="badge">
+            <h3>Il tuo stemma samurai</h3>
+            <p class="panel-sub">Generato in tempo reale dai tuoi dati. Scaricalo o condividilo.</p>
+            <div class="badge-svg-wrap" id="badgeWrap"></div>
+            <div class="row" style="justify-content:center;margin-top:20px">
+              <button class="btn btn-violet" data-action="badge-download">Scarica SVG</button>
+              <button class="btn" data-action="badge-copy">Copia markup</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="view-pad-sm" style="padding-bottom:100px"></div>
+  </section>
+
+<section class="seasons glass-violet" style="margin:40px auto;max-width:1200px">
+    <h2 class="section-title"><i class="bi bi-snow2"></i> Stagioni del Clan <i class="bi bi-flower1"></i></h2>
+    <div class="season-grid">
+      <div class="season-card" data-season="spring"><i class="bi bi-flower3"></i><span>Primavera</span></div>
+      <div class="season-card" data-season="summer"><i class="bi bi-sun-fill"></i><span>Estate</span></div>
+      <div class="season-card" data-season="autumn"><i class="bi bi-leaf-fill"></i><span>Autunno</span></div>
+      <div class="season-card" data-season="winter"><i class="bi bi-snow2"></i><span>Inverno</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer violet">
+  <div class="shell">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="row" style="margin-bottom:18px">
+          <div class="samurai-seal violet" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center">
+            <img src="/assets/icons/logo.svg" alt="" width="48" height="48" style="filter:drop-shadow(0 0 8px rgba(192,132,252,0.6))">
+          </div>
+          <div class="brand-text" style="align-items:flex-start">
+            <b style="font-size:1.1rem">SAMURAI</b>
+            <span style="margin-top:6px">di Avakin</span>
+          </div>
+        </div>
+        <p style="color:var(--silver-500);font-size:.9rem;max-width:34ch">
+          Il clan con il codice più antico di Avakin Life. Onestà, rispetto, lealtà —
+          dal 2019 a oggi, senza un solo tradimento.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Naviga</h4>
+        <ul>
+          <li><a href="#/home" data-nav="home">Home</a></li>
+          <li><a href="#/chi-siamo" data-nav="chi-siamo">Chi Siamo</a></li>
+          <li><a href="#/gallery" data-nav="gallery">Gallery</a></li>
+          <li><a href="#/video" data-nav="video">Video</a></li>
+          <li><a href="#/blog" data-nav="blog">Creatività</a></li>
+          <li><a href="#/account" data-nav="account">Account</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Clan</h4>
+        <ul>
+          <li><a href="#/chi-siamo" data-nav="chi-siamo">Il manifesto</a></li>
+          <li><a href="#/chi-siamo" data-nav="chi-siamo">Gradi</a></li>
+          <li><a href="#/gallery" data-nav="gallery">Trophies</a></li>
+          <li><button class="footer-linklike" data-action="apply">Candidati</button></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Newsletter</h4>
+        <p style="color:var(--silver-500);font-size:.86rem;margin-bottom:14px">Un aggiornamento al mese. Niente spam, promesso da samurai.</p>
+        <form id="newsletterForm" class="row" style="gap:8px;flex-wrap:nowrap">
+          <input class="input violet" id="nl-email" type="email" placeholder="la-tua@email.it" style="min-width:0">
+          <button class="btn btn-violet" type="submit" aria-label="Iscriviti">→</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Samurai di Avakin — Progetto fan non ufficiale. Avakin Life™ è di Life Ninja.</span>
+      <span class="mono" style="font-size:10px;color:var(--silver-700)">Costruito con acciaio, onore e CSS</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal violet" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph welcome-box" style="width:min(100%, 520px);text-align:center;overflow:hidden">
+    <!-- Stage 1: Large Logo Animation -->
+    <div class="welcome-stage" id="welcomeStage1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:var(--sp-8) var(--sp-6);animation:stageFadeIn 0.8s var(--ease-out) both">
+      <div class="welcome-logo-anim" style="width:180px;height:180px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,rgba(233,213,255,0.5),rgba(35,5,61,0.95) 65%);border:2px solid var(--glass-violet-brd-hi);box-shadow:var(--shadow-3),0 0 80px -16px rgba(192,132,252,1),inset 0 0 60px rgba(233,213,255,0.3);animation:logoPulse 2.5s var(--ease-in-out) infinite,logoFloat 6s var(--ease-in-out) infinite;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:-20%;background:conic-gradient(from 0deg,transparent,rgba(192,132,252,0.4),transparent 30%);animation:logoSpin 8s linear infinite"></div>
+        <img src="/assets/icons/logo.svg" alt="Samurai" width="120" height="120" style="position:relative;z-index:1;filter:drop-shadow(0 0 24px rgba(192,132,252,1));animation:logoBreathe 3s var(--ease-in-out) infinite">
+        <div class="logo-ring" style="position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(233,213,255,0.3);animation:ringExpand 2s var(--ease-out) infinite"></div>
+        <div class="logo-ring" style="position:absolute;inset:18px;border-radius:50%;border:1px dashed rgba(233,213,255,0.2);animation:ringExpand 2s var(--ease-out) 0.5s infinite"></div>
+      </div>
+      <div class="welcome-text-multilang" style="margin-top:var(--sp-6);opacity:0;animation:textReveal 0.8s var(--ease-out) 0.6s both">
+        <div class="lang-carousel" id="langCarousel" style="font-family:var(--ff-display);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:var(--shiro-kabe);min-height:2.8rem;display:flex;align-items:center;justify-content:center;gap:var(--sp-4);overflow:hidden">
+          <span class="lang-word" data-lang="it" style="display:block;animation:langCycle 12s var(--ease-in-out) infinite">Benvenuto</span>
+          <span class="lang-word" data-lang="en" style="display:none;animation:langCycle 12s var(--ease-in-out) -1.5s infinite">Welcome</span>
+          <span class="lang-word" data-lang="ja" style="display:none;animation:langCycle 12s var(--ease-in-out) -3s infinite">ようこそ</span>
+          <span class="lang-word" data-lang="zh" style="display:none;animation:langCycle 12s var(--ease-in-out) -4.5s infinite">欢迎</span>
+          <span class="lang-word" data-lang="ko" style="display:none;animation:langCycle 12s var(--ease-in-out) -6s infinite">환영합니다</span>
+          <span class="lang-word" data-lang="es" style="display:none;animation:langCycle 12s var(--ease-in-out) -7.5s infinite">Bienvenido</span>
+          <span class="lang-word" data-lang="fr" style="display:none;animation:langCycle 12s var(--ease-in-out) -9s infinite">Bienvenue</span>
+          <span class="lang-word" data-lang="de" style="display:none;animation:langCycle 12s var(--ease-in-out) -10.5s infinite">Willkommen</span>
+          <span class="lang-word" data-lang="pt" style="display:none;animation:langCycle 12s var(--ease-in-out) -12s infinite">Bem-vindo</span>
+          <span class="lang-word" data-lang="ru" style="display:none;animation:langCycle 12s var(--ease-in-out) -13.5s infinite">Добро пожаловать</span>
+          <span class="lang-word" data-lang="ar" style="display:none;animation:langCycle 12s var(--ease-in-out) -15s infinite">مرحباً</span>
+        </div>
+        <div class="lang-subtitle" style="font-family:var(--ff-mono);font-size:0.7rem;letter-spacing:0.3em;color:var(--murasaki-light);margin-top:var(--sp-3);opacity:0.8">Samurai di Avakin — Il Clan</div>
+      </div>
+    </div>
+
+    <!-- Stage 2: Options (shown after continue) -->
+    <div class="welcome-stage" id="welcomeStage2" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:var(--sp-8) var(--sp-6);animation:stageFadeIn 0.6s var(--ease-out) both">
+      <div class="welcome-mon" style="width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,rgba(233,213,255,0.45),rgba(35,5,61,0.9) 65%);border:1px solid var(--glass-violet-brd-hi);box-shadow:var(--shadow-3),0 0 50px -12px rgba(192,132,252,0.9);animation:floatY 6s var(--ease-in-out) infinite;margin-bottom:var(--sp-5)">
+        <img src="/assets/icons/logo.svg" alt="" width="48" height="48" style="filter:drop-shadow(0 0 12px rgba(192,132,252,0.8))">
+      </div>
+      <span class="eyebrow violet" style="justify-content:center;margin-bottom:var(--sp-2)">Benvenuto alla Gate</span>
+      <h2 class="welcome-title violet-text" id="welcomeTitle" style="font-size:clamp(1.4rem,3.5vw,2rem);margin-bottom:var(--sp-3)">Il cerchio ti stava aspettando</h2>
+      <p class="welcome-lead" style="color:var(--suna);max-width:50ch;margin:0 auto var(--sp-6);font-size:0.95rem;line-height:1.6">
+        Sei arrivato alla Gate dei Samurai di Avakin. Prima di entrare, dimmi come vuoi che questa esperienza si comporti.
+      </p>
+      <div class="welcome-opts reveal-stagger" style="display:grid;grid-template-columns:1fr;gap:var(--sp-3);width:100%;max-width:320px;margin-bottom:var(--sp-5)">
+        <div class="welcome-opt violet border-beam card-3d" style="padding:var(--sp-4);border-radius:var(--r-md);border:1px solid rgba(233,213,255,0.18);background:rgba(35,5,61,0.4);transition:all 0.3s var(--ease-out);cursor:pointer" data-action="name"><b style="color:var(--shiro-kabe)">① Scegli il tuo nome</b><small style="display:block;margin-top:4px;color:var(--suna);font-size:0.78rem">Personalizza il profilo nel pannello Account</small></div>
+        <div class="welcome-opt violet border-beam card-3d" style="padding:var(--sp-4);border-radius:var(--r-md);border:1px solid rgba(233,213,255,0.18);background:rgba(35,5,61,0.4);transition:all 0.3s var(--ease-out);cursor:pointer" data-action="link"><b style="color:var(--shiro-kabe)">② Collega Avakin</b><small style="display:block;margin-top:4px;color:var(--suna);font-size:0.78rem">Registra ID, server e personaggio principale</small></div>
+        <div class="welcome-opt violet border-beam card-3d" style="padding:var(--sp-4);border-radius:var(--r-md);border:1px solid rgba(233,213,255,0.18);background:rgba(35,5,61,0.4);transition:all 0.3s var(--ease-out);cursor:pointer" data-action="explore"><b style="color:var(--shiro-kabe)">③ Goditi lo spettacolo</b><small style="display:block;margin-top:4px;color:var(--suna);font-size:0.78rem">Motion graphic, vetro liquido e zero noia</small></div>
+      </div>
+      <div class="row" style="justify-content:center;gap:var(--sp-3);flex-wrap:wrap">
+        <button class="btn btn-violet btn-lg" id="btnEnterGate" style="min-width:200px">Entra nella Gate</button>
+        <button class="btn btn-ghost" id="welcomeSilent">Non mostrare più</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="view" id="view-blog" data-view="blog">
+  <div class="view-pad">
+    <div class="section-head section-head-row">
+      <div class="stack" style="gap:14px">
+        <span class="eyebrow violet" data-reveal>Blog del Clan</span>
+        <h1 class="section-title" data-reveal style="--d:80ms">Creatività <span class="violet-text">Samurai</span></h1>
+        <p class="section-lead" data-reveal style="--d:140ms">
+          Condividi foto, video, audio e testi del tuo percorso samurai. Ogni membro può pubblicare i propri contenuti creativi.
+        </p>
+      </div>
+      <button class="btn btn-violet btn-lg" id="btnNuovoPost" data-reveal style="--d:200ms">+ Nuovo post</button>
+    </div>
+
+    <div class="filter-bar" style="margin:18px 0 12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="chip violet is-active" data-btype="all">Tutti</button>
+      <button class="chip" data-btype="foto">Foto</button>
+      <button class="chip" data-btype="video">Video</button>
+      <button class="chip" data-btype="audio">Audio</button>
+      <button class="chip" data-btype="testo">Testo</button>
+      <button class="chip" data-btype="misto">Misto</button>
+      <button class="chip btn-ghost" id="btnRefreshBlog">Aggiorna</button>
+    </div>
+
+    <div id="blogStatus" style="color:var(--silver-500);font-size:.86rem;margin-bottom:10px">Caricamento...</div>
+
+    <div id="blogGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
+
+    <div id="blogEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--silver-500)">
+      <span style="font-size:2.5rem">📭</span>
+      <h3 style="margin:12px 0 6px">Nessun contenuto creativo ancora</h3>
+      <p>Sii il primo a condividere un'opera del tuo percorso samurai.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Modal: crea post creativo -->
+<div class="modal violet" id="createPostModal" role="dialog" aria-modal="true" aria-labelledby="cpTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph" style="width:min(92vw, 700px);max-height:90vh;overflow:auto;display:flex;flex-direction:column">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head" style="padding:16px 24px;border-bottom:1px solid var(--silver-800)">
+      <span class="eyebrow violet">Nuovo contenuto creativo</span>
+      <h3 id="cpTitle">Condividi con il clan</h3>
+    </div>
+    <form id="createPostForm" novalidate style="flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label for="cp-titolo">Titolo</label>
+        <input class="input violet" id="cp-titolo" maxlength="120" placeholder="Es. Il mio primo kata al tramonto" required>
+        <span class="err-msg" data-for="cp-titolo"></span>
+      </div>
+      <div class="field">
+        <label for="cp-corpo">Descrizione / racconto</label>
+        <textarea class="input violet" id="cp-corpo" rows="4" maxlength="5000" placeholder="Cosa hai creato? Raccontaci la tua storia..."></textarea>
+        <span class="err-msg" data-for="cp-corpo"></span>
+      </div>
+      <div class="form-grid" style="gap:10px">
+        <div class="field">
+          <label for="cp-tipo">Tipo di contenuto</label>
+          <select class="input violet" id="cp-tipo" required>
+            <option value="foto">Foto</option>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="testo">Solo testo</option>
+            <option value="misto">Misto (più file)</option>
+          </select>
+          <span class="err-msg" data-for="cp-tipo"></span>
+        </div>
+        <div class="field">
+          <label for="cp-tags">Tag (separati da virgola)</label>
+          <input class="input violet" id="cp-tags" placeholder="es. kata, forgia, duello">
+          <span class="err-msg" data-for="cp-tags"></span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="row" style="gap:10px;align-items:center;font-size:.9rem">
+          <input type="checkbox" id="cp-pubblico" checked> Visibile a tutto il clan
+        </label>
+      </div>
+      <div class="field">
+        <label for="cp-files">Scegli file (foto, video, audio)</label>
+        <input type="file" id="cp-files" multiple accept="image/*,video/*,audio/*">
+        <div id="cp-fileList" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+        <span class="err-msg" data-for="cp-files"></span>
+      </div>
+      <div id="cp-preview" style="display:none;border:1px dashed var(--silver-700);border-radius:8px;padding:10px;background:var(--glass)"></div>
+      <div style="margin-top:auto;display:flex;justify-content:flex-end;gap:10px">
+        <button type="button" class="btn btn-ghost" data-close>Annulla</button>
+        <button type="submit" class="btn btn-violet btn-lg" id="cpSubmit">Pubblica</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal violet" id="enterModal" role="dialog" aria-modal="true" aria-labelledby="enterTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head">
+      <span class="eyebrow violet">Accesso</span>
+      <h3 id="enterTitle">Entra nella Gate</h3>
+      <p id="enterLead">Accedi al tuo profilo samurai. I dati restano su questo dispositivo.</p>
+    </div>
+
+    <div class="filter-bar" style="margin-bottom:22px" role="tablist">
+      <button class="chip violet is-active" id="tabLogin" role="tab" aria-selected="true">Accedi</button>
+      <button class="chip violet" id="tabRegister" role="tab" aria-selected="false">Registrati</button>
+    </div>
+
+    <form id="enterForm" novalidate>
+      <div class="stack" style="gap:16px">
+        <div id="regOnly" style="display:none">
+          <div class="form-grid">
+            <div class="field">
+              <label for="en-name">Nome</label>
+              <input class="input violet" id="en-name" maxlength="24" placeholder="Il tuo nome">
+              <span class="err-msg" data-for="en-name"></span>
+            </div>
+            <div class="field">
+              <label for="en-cognome">Cognome</label>
+              <input class="input violet" id="en-cognome" maxlength="24" placeholder="Il tuo cognome">
+              <span class="err-msg" data-for="en-cognome"></span>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="field">
+              <label for="en-region">Regione</label>
+              <select class="input violet" id="en-region">
+                <option>Europa</option><option>America</option>
+                <option>Asia</option><option>Oceania</option><option>MENA</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="en-device">Dispositivo</label>
+              <select class="input violet" id="en-device">
+                <option>iOS</option><option>Android</option>
+                <option>PC</option><option>Console</option><option>Altro</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="field">
+              <label for="en-dob">Data di nascita</label>
+              <input class="input violet" id="en-dob" type="date" max="">
+              <span class="err-msg" data-for="en-dob"></span>
+            </div>
+            <div class="field">
+              <label for="en-sesso">Sesso</label>
+              <select class="input violet" id="en-sesso">
+                <option>maschio</option><option>femmina</option>
+                <option>altro</option><option>preferisco_non_dire</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label for="en-pronome">Pronome</label>
+            <input class="input violet" id="en-pronome" maxlength="20" placeholder="lui/lei / lei / loro / altro">
+            <span class="err-msg" data-for="en-pronome"></span>
+          </div>
+          <input type="hidden" id="en-tz" value="Europe/Rome">
+          <div class="field" style="margin-top:12px">
+            <label for="en-bio">Bio (breve presentazione)</label>
+            <textarea class="input violet" id="en-bio" maxlength="140" rows="2" placeholder="Chi sei, cosa cerchi nel clan..."></textarea>
+            <span class="err-msg" data-for="en-bio"></span>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label for="en-mainchar">Personaggio principale</label>
+            <select class="input violet" id="en-mainchar">
+              <option>Senza scudiero</option>
+              <option>Troppa ⋆</option>
+              <option>Troppa ⋆ ⋆</option>
+              <option>Troppa ⋆ ⋆ ⋆</option>
+              <option>Troppa ⋆ ⋆ ⋆ ⋆</option>
+              <option>Troppa ⋆ ⋆ ⋆ ⋆ ⋆</option>
+            </select>
+          </div>
+
+          <div class="attitude-box" style="margin-top:20px;padding:16px;background:var(--glass);border:1px solid var(--silver-800);border-radius:12px">
+            <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.1em">Attitudine samurai</span>
+            <p style="font-size:.86rem;color:var(--silver-400);margin-bottom:12px">Queste risposte definiscono le tue skill iniziali e il tuo stile di gioco. Onestà: non si possono barare.</p>
+            <div class="attitude-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+              <div class="att-row">
+                <label style="display:flex;justify-content:space-between;font-size:.86rem;color:var(--silver-300)">
+                  <span>Difesa con scudo</span>
+                  <span id="att-val-difesa">5</span>
+                </label>
+                <input type="range" id="en-att-difesa" min="1" max="10" value="5">
+              </div>
+              <div class="att-row">
+                <label style="display:flex;justify-content:space-between;font-size:.86rem;color:var(--silver-300)">
+                  <span>Attacco in terapia</span>
+                  <span id="att-val-attacco">5</span>
+                </label>
+                <input type="range" id="en-att-attacco" min="1" max="10" value="5">
+              </div>
+              <div class="att-row">
+                <label style="display:flex;justify-content:space-between;font-size:.86rem;color:var(--silver-300)">
+                  <span>Gestione risorse</span>
+                  <span id="att-val-risorse">5</span>
+                </label>
+                <input type="range" id="en-att-risorse" min="1" max="10" value="5">
+              </div>
+              <div class="att-row">
+                <label style="display:flex;justify-content:space-between;font-size:.86rem;color:var(--silver-300)">
+                  <span>Lettura dell'arena</span>
+                  <span id="att-val-arena">5</span>
+                </label>
+                <input type="range" id="en-att-arena" min="1" max="10" value="5">
+              </div>
+              <div class="att-row">
+                <label style="display:flex;justify-content:space-between;font-size:.86rem;color:var(--silver-300)">
+                  <span>Spirito di squadra</span>
+                  <span id="att-val-squadra">5</span>
+                </label>
+                <input type="range" id="en-att-squadra" min="1" max="10" value="5">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="en-email">Email</label>
+          <input class="input violet" id="en-email" type="email" autocomplete="email" placeholder="samurai@esempio.it" required>
+          <span class="err-msg" data-for="en-email"></span>
+        </div>
+        <div class="field">
+          <label for="en-pass">Password <span class="hint" id="enPassHint">almeno 8 caratteri</span></label>
+          <input class="input violet" id="en-pass" type="password" autocomplete="current-password" placeholder="••••••••" required>
+          <span class="err-msg" data-for="en-pass"></span>
+        </div>
+        <label class="row" style="gap:10px;font-size:.86rem;color:var(--silver-400)">
+          <input type="checkbox" id="en-remember" checked> Ricordami su questo dispositivo
+        </label>
+        <button class="btn btn-violet btn-block btn-lg" type="submit" id="enSubmit">Accedi</button>
+        <div class="divider violet"></div>
+        <button class="btn btn-ghost btn-block" type="button" data-action="forgot">Password dimenticata?</button>
+        <button class="btn btn-ghost btn-block" type="button" data-action="apply">Non ho un account — candidati al clan</button>
+        <div class="divider violet" style="margin:18px 0 10px"><span>Oppure continua con</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <button class="btn btn-lg btn-block" type="button" data-action="social" data-provider="google" style="background:#ea4335;color:#fff;border:none">Google</button>
+          <button class="btn btn-lg btn-block" type="button" data-action="social" data-provider="microsoft" style="background:#0078d4;color:#fff;border:none">Microsoft</button>
+          <button class="btn btn-lg btn-block" type="button" data-action="social" data-provider="apple" style="background:#000000;color:#fff;border:none">Apple</button>
+        </div>
+      </div>
+    </form>
+
+    <form id="resetForm" novalidate style="display:none">
+      <div class="stack" style="gap:16px">
+        <p style="color:var(--silver-400);font-size:.9rem">
+          Inserisci la tua email: se l'account esiste riceverai un link per reimpostare la password.
+        </p>
+        <div class="field">
+          <label for="rs-email">Email</label>
+          <input class="input violet" id="rs-email" type="email" placeholder="samurai@esempio.it" required>
+          <span class="err-msg" data-for="rs-email"></span>
+        </div>
+        <div id="rs-token-wrap" style="display:none">
+          <div class="field">
+            <label for="rs-token">Token ricevuto via email</label>
+            <input class="input violet" id="rs-token" placeholder="incollalo qui">
+          </div>
+          <div class="field">
+            <label for="rs-pass">Nuova password</label>
+            <input class="input violet" id="rs-pass" type="password" placeholder="Almeno 8 caratteri con numeri">
+            <span class="err-msg" data-for="rs-pass"></span>
+          </div>
+        </div>
+        <button class="btn btn-violet btn-block" type="submit" id="rsSubmit">Invia il link</button>
+        <button class="btn btn-ghost btn-block" type="button" id="rsBack">Torna all'accesso</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal violet" id="linkModal" role="dialog" aria-modal="true" aria-labelledby="linkTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head">
+      <span class="eyebrow violet">Collegamento</span>
+      <h3 id="linkTitle">Collega il tuo account Avakin</h3>
+      <p>Inserisci i dati del tuo profilo di gioco: li useremo per le statistiche e per il tuo stemma.</p>
+    </div>
+    <form id="linkForm" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label for="lk-id">ID Avakin</label>
+          <input class="input violet" id="lk-id" placeholder="Es. 4829137" required>
+          <span class="err-msg" data-for="lk-id"></span>
+        </div>
+        <div class="field">
+          <label for="lk-name">Nickname in gioco</label>
+          <input class="input violet" id="lk-name" placeholder="Il tuo nickname" required>
+          <span class="err-msg" data-for="lk-name"></span>
+        </div>
+        <div class="field">
+          <label for="lk-server">Server</label>
+          <select class="input violet" id="lk-server">
+            <option>Europa</option><option>America</option><option>Asia</option>
+            <option>Oceania</option><option>MENA</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="lk-alliance">Alleanza attuale</label>
+          <input class="input violet" id="lk-alliance" placeholder="Clan, se esistente">
+        </div>
+        <div class="field full">
+          <label for="lk-note">Nota al clan</label>
+          <textarea class="input violet" id="lk-note" maxlength="180" placeholder="Raccontaci come giochi e cosa cerchi nel clan..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Annulla</button>
+        <button type="submit" class="btn btn-violet">Collega account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal violet" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="upTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head">
+      <span class="eyebrow violet">Gallery</span>
+      <h3 id="upTitle">Carica una tua foto</h3>
+      <p>Le immagini vengono lette dal tuo dispositivo e mostrate in anteprima qui e nella tua galleria personale.</p>
+    </div>
+    <div class="upload-zone violet" id="dropZone">
+      <div class="up-ico">⛩</div>
+      <b style="color:var(--silver-100)">Trascina qui la foto</b>
+      <p style="font-size:.86rem;color:var(--silver-500);margin-top:6px">oppure clicca per sfogliare — PNG, JPG, WEBP</p>
+      <input type="file" id="uploadInput" accept="image/*" class="sr-only" multiple>
+    </div>
+    <div id="uploadPreview" class="grid g-3" style="margin-top:20px"></div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Annulla</button>
+      <button type="button" class="btn btn-violet" id="uploadSave">Salva in galleria</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal violet" id="lightbox" role="dialog" aria-modal="true" aria-label="Galleria">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph w-xl" style="padding:24px 24px 18px;max-height:92vh;overflow:auto">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="lightbox-stage">
+      <button class="lb-nav lb-prev violet" id="lbPrev" aria-label="Precedente">‹</button>
+      <img id="lbImg" alt="">
+      <button class="lb-nav lb-next violet" id="lbNext" aria-label="Successivo">›</button>
+    </div>
+    <div class="lb-bar">
+      <div>
+        <b id="lbTitle" style="color:var(--silver-100);font-family:var(--ff-display);font-size:1.1rem"></b>
+        <div class="mono" style="font-size:10px;color:var(--violet-300);margin-top:4px" id="lbMeta"></div>
+      </div>
+      <div class="row">
+        <button class="btn btn-sm" id="lbDownload">Scarica</button>
+        <span class="mono" style="font-size:11px;color:var(--silver-500)" id="lbCount"></span>
+      </div>
+    </div>
+    <div class="lb-thumbs" id="lbThumbs"></div>
+  </div>
+</div>
+
+<div class="modal violet" id="videoModal" role="dialog" aria-modal="true" aria-label="Player video">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph w-lg">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="player-wrap" id="playerWrap"></div>
+    <div style="margin-top:18px">
+      <div class="row" style="gap:8px;margin-bottom:10px">
+        <span class="tag violet" id="vmCat">—</span>
+        <span class="tag violet" id="vmDur">—</span>
+      </div>
+      <h3 id="vmTitle" style="font-family:var(--ff-display);font-size:1.4rem;color:var(--silver-100)"></h3>
+      <p id="vmDesc" style="color:var(--silver-400);font-size:.9rem;margin-top:8px"></p>
+    </div>
+  </div>
+</div>
+
+<div class="modal violet" id="avatarCreatorModal" role="dialog" aria-modal="true" aria-labelledby="acTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph w-xl" style="padding:24px 24px 18px;max-height:92vh;overflow:auto">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head">
+      <span class="eyebrow violet">Creazione Avatar</span>
+      <h3 id="acTitle">Trasforma la tua foto in Samurai</h3>
+      <p>Carica una foto e trasformala nel tuo avatar samurai in pochi clic. Puoi scegliere diversi stili, personalizzare ogni dettaglio in 3D e salvare direttamente sul tuo profilo.</p>
+    </div>
+
+    <div class="upload-zone violet" id="acDropZone" style="margin-bottom: 24px;">
+      <div class="up-ico">侍</div>
+      <b style="color:var(--silver-100)">Trascina qui la tua foto</b>
+      <p style="font-size:.86rem;color:var(--silver-500);margin-top:6px">oppure clicca per sfogliare — PNG, JPG, WEBP (max 5MB)</p>
+      <input type="file" id="acInput" accept="image/*" class="sr-only">
+    </div>
+
+    <div id="acStage" style="display:none;text-align:center;margin-bottom: 24px;">
+      <canvas id="acCanvas" style="max-width: 100%; max-height: 420px; border-radius: 20px; border: 1px solid rgba(143,198,255,.25); cursor: move; touch-action: none;"></canvas>
+      <div id="ac3d" style="display:none; max-width: 100%; max-height: 420px; margin: 0 auto; border-radius: 20px; border: 1px solid rgba(143,198,255,.25);"></div>
+      <div class="row" style="justify-content:center;margin-top:12px;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-sm btn-ghost" id="acToggleView">Passa a 3D</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="acExportGLB" disabled>Esporta GLB</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="acZoomIn" disabled>+ Zoom</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="acFit" disabled>Adatta</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="acResetPos" disabled>Centra</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="acToggleGuide" disabled>Nascondi guida</button>
+      </div>
+      <div class="mono" style="font-size:10px;color:var(--silver-500);margin-top:6px;text-align:center">Trascina per posizionare all'interno della sagoma · Stile Mii</div>
+    </div>
+
+    <div id="acControls" style="display:none;flex-direction:column;gap:20px;">
+      <div>
+        <h4 style="color:var(--silver-100);margin-bottom:12px;font-size:1rem;">Stile Avatar 2D</h4>
+        <div class="grid g-3" id="acStyles">
+          <button class="ac-style card glass-violet border-beam card-3d is-active" data-style="mii" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Mii Classico</b>
+            <small style="color:var(--silver-500)">Stile Nintendo Mii, rotondo e naturale</small>
+          </button>
+          <button class="ac-style card glass-violet border-beam card-3d" data-style="mii-neon" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Mii Bushido</b>
+            <small style="color:var(--silver-500)">Toni azzurro-violetti samurai</small>
+          </button>
+          <button class="ac-style card glass-violet border-beam card-3d" data-style="mii-ink" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Mii Ink</b>
+            <small style="color:var(--silver-500)">Minimalista, effetto inchiostro</small>
+          </button>
+          <button class="ac-style card glass-violet border-beam card-3d" data-style="classic" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Samurai Classico</b>
+            <small style="color:var(--silver-500)">Tonalità blu profonde</small>
+          </button>
+          <button class="ac-style card glass-violet border-beam card-3d" data-style="ink" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Ink Wash</b>
+            <small style="color:var(--silver-500)">Stile sumi-e giapponese</small>
+          </button>
+          <button class="ac-style card glass-violet border-beam card-3d" data-style="mask" style="padding:14px;text-align:left;cursor:pointer;">
+            <b style="color:var(--silver-100);display:block;margin-bottom:4px;">Maschera Oni</b>
+            <small style="color:var(--silver-500)">Effetto maschera stilizzato</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Customization Panel -->
+    <div id="ac3dControls" style="display:none;flex-direction:column;gap:20px;">
+      <div class="ac3d-presets" style="margin-bottom: 16px;">
+        <h4 style="color:var(--silver-100);margin-bottom:12px;font-size:1rem;">Preset Rapidi</h4>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm ac3d-preset" data-preset="ronin">🗡 Ronin</button>
+          <button type="button" class="btn btn-sm ac3d-preset" data-preset="bushi">⚔ Bushi</button>
+          <button type="button" class="btn btn-sm ac3d-preset" data-preset="shogun">👑 Shogun</button>
+          <button type="button" class="btn btn-sm ac3d-preset" data-preset="onna">🌸 Onna-Bugeisha</button>
+        </div>
+      </div>
+
+      <div class="grid g-2" style="gap:16px">
+        <div class="ac3d-section glass-violet card-3d border-beam" style="padding:20px">
+          <h4 style="color:var(--silver-100);margin-bottom:16px;font-size:.95rem;display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">👤</span> Aspetto</h4>
+          <div class="stack" style="gap:12px">
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Forma viso</span>
+                <span id="ac3d-head-val" style="color:var(--murasaki-light)">round</span>
+              </label>
+              <select name="head" class="input violet" style="margin-top:6px">
+                <option value="round">Rotondo</option>
+                <option value="square">Quadrato</option>
+                <option value="heart">Cuore</option>
+                <option value="oval">Ovale</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Capelli</span>
+                <span id="ac3d-hair-val" style="color:var(--murasaki-light)">short</span>
+              </label>
+              <select name="hair" class="input violet" style="margin-top:6px">
+                <option value="short">Corti</option>
+                <option value="medium">Medi</option>
+                <option value="long">Lunghi</option>
+                <option value="tied">Legati</option>
+                <option value="spiky">A spazzola</option>
+                <option value="messy">Scomposti</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore capelli</span>
+              </label>
+              <input type="color" name="hairColor" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#3a2a1a">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore pelle</span>
+              </label>
+              <input type="color" name="skin" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#e8c5a0">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Espressione</span>
+                <span id="ac3d-expression-val" style="color:var(--murasaki-light)">neutral</span>
+              </label>
+              <select name="expression" class="input violet" style="margin-top:6px">
+                <option value="neutral">Neutrale</option>
+                <option value="smile">Sorriso</option>
+                <option value="serious">Serio</option>
+                <option value="calm">Calmo</option>
+                <option value="fierce">Feroce</option>
+                <option value="gentle">Gentile</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Scala testa <span id="ac3d-headScale-val">1.00</span></span>
+              </label>
+              <input type="range" name="headScale" min="0.8" max="1.3" step="0.05" value="1.0" class="ac3d-slider">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Scala corpo <span id="ac3d-bodyScale-val">1.00</span></span>
+              </label>
+              <input type="range" name="bodyScale" min="0.8" max="1.3" step="0.05" value="1.0" class="ac3d-slider">
+            </div>
+          </div>
+        </div>
+
+        <div class="ac3d-section glass-violet card-3d border-beam" style="padding:20px">
+          <h4 style="color:var(--silver-100);margin-bottom:16px;font-size:.95rem;display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🛡</span> Armamento</h4>
+          <div class="stack" style="gap:12px">
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Elmo</span>
+                <span id="ac3d-helmet-val" style="color:var(--murasaki-light)">none</span>
+              </label>
+              <select name="helmet" class="input violet" style="margin-top:6px">
+                <option value="none">Nessuno</option>
+                <option value="kabuto">Kabuto Classico</option>
+                <option value="shogun">Elmo Shogun</option>
+                <option value="oni">Maschera Oni</option>
+                <option value="tengu">Tengu</option>
+                <option value="mempo">Mempo</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Accessorio viso</span>
+                <span id="ac3d-face-val" style="color:var(--murasaki-light)">none</span>
+              </label>
+              <select name="face" class="input violet" style="margin-top:6px">
+                <option value="none">Nessuno</option>
+                <option value="mask">Maschera</option>
+                <option value="fan">Ventaglio</option>
+                <option value="scar">Cicatrice</option>
+                <option value="tattoo">Tatuaggio</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Arma</span>
+                <span id="ac3d-weapon-val" style="color:var(--murasaki-light)">none</span>
+              </label>
+              <select name="weapon" class="input violet" style="margin-top:6px">
+                <option value="none">Nessuna</option>
+                <option value="katana">Katana</option>
+                <option value="daisho">Daisho</option>
+                <option value="naginata">Naginata</option>
+                <option value="nagamaki">Nagamaki</option>
+                <option value="yari">Yari</option>
+                <option value="kanabo">Kanabo</option>
+              </select>
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore armatura</span>
+              </label>
+              <input type="color" name="armorColor" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#2a1a1a">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore lacca</span>
+              </label>
+              <input type="color" name="lacquerColor" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#1a0a0a">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore metallo</span>
+              </label>
+              <input type="color" name="metalColor" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#8a7a4e">
+            </div>
+            <div class="ac3d-control">
+              <label style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--silver-300)">
+                <span>Colore tessuto</span>
+              </label>
+              <input type="color" name="fabricColor" class="input violet" style="width:60px;height:36px;border:none;border-radius:8px;cursor:pointer" value="#1a1a2e">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot" style="margin-top:24px;">
+      <div class="row">
+        <button type="button" class="btn btn-ghost" id="acClear">Nuova foto</button>
+        <button type="button" class="btn btn-ghost" id="acReset">Ripristina</button>
+      </div>
+      <div class="row">
+        <button type="button" class="btn btn-ghost" id="acDownload">Scarica PNG</button>
+        <button type="button" class="btn btn-violet" id="acSave">Salva come Avatar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal violet" id="applyModal" role="dialog" aria-modal="true" aria-labelledby="apTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head">
+      <span class="eyebrow violet">Reclutamento</span>
+      <h3 id="apTitle">Candidati al clan</h3>
+      <p>Compila il modulo: il capitano ti scriverà su Avakin entro 48 ore.</p>
+    </div>
+    <form id="applyForm" novalidate>
+      <div class="stack" style="gap:16px">
+        <div class="form-grid">
+          <div class="field"><label for="ap-name">Nickname Avakin</label><input class="input violet" id="ap-name" required placeholder="Il tuo nick"><span class="err-msg" data-for="ap-name"></span></div>
+          <div class="field"><label for="ap-id">ID</label><input class="input violet" id="ap-id" required placeholder="Numerico"><span class="err-msg" data-for="ap-id"></span></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label for="ap-region">Server</label><select class="input violet" id="ap-region"><option>Europa</option><option>America</option><option>Asia</option><option>Oceania</option><option>MENA</option></select></div>
+          <div class="field"><label for="ap-device">Dispositivo</label><select class="input violet" id="ap-device"><option>iOS</option><option>Android</option><option>PC</option><option>Console</option></select></div>
+        </div>
+        <div class="field">
+          <label for="ap-main">Personaggio principale</label>
+          <select class="input violet" id="ap-main">
+            <option>Troppa ⋆ ⋆ ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆ ⋆ ⋆</option>
+            <option>Troppa ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆</option><option>Troppa ⋆</option>
+            <option>Senza scudiero</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ap-why">Perché vuoi entrare?</label>
+          <textarea class="input violet" id="ap-why" maxlength="400" required placeholder="Due righe sincere bastano."></textarea>
+          <span class="err-msg" data-for="ap-why"></span>
+        </div>
+        <button class="btn btn-violet btn-block btn-lg" type="submit">Invia la candidatura</button>
+        <p class="mono" style="font-size:10px;color:var(--silver-600);text-align:center">
+          Risposta entro 48 ore · i dati restano riservati al comando
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal violet" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph w-sm" style="text-align:center">
+    <div class="modal-head" style="padding-right:0">
+      <h3 id="cfTitle">Confermi?</h3>
+      <p id="cfText">Questa azione non può essere annullata.</p>
+    </div>
+    <div class="modal-foot" style="justify-content:center">
+      <button class="btn btn-ghost" data-close>Annulla</button>
+      <button class="btn btn-danger" id="cfOk">Conferma</button>
+    </div>
+  </div>
+</div>
+
+<div class="palette-wrap violet" id="paletteWrap">
+  <div class="palette-backdrop" id="paletteBackdrop" style="position:absolute;inset:0"></div>
+  <div class="palette-box glass violet">
+    <input class="palette-input" id="paletteInput" placeholder="Cerca una sezione o un'azione…" autocomplete="off" spellcheck="false">
+    <div class="palette-list" id="paletteList"></div>
+    <div class="palette-foot">
+      <span>↑↓ naviga</span><span>↵ apri</span><span>esc chiudi</span>
+    </div>
+  </div>
+</div>
+
+<div class="toasts violet" id="toasts" aria-live="polite"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/fx.js"></script>
+<script src="assets/js/advanced-fx.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+  }
+}
+</script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/views.js"></script>
+<script src="assets/js/blog.js"></script>
+<script src="assets/js/account.js"></script>
+<script src="assets/js/avatar-creator.js"></script>
+<script src="assets/js/filigrana.js"></script>
+<script type="module" src="assets/js/avatar3d-advanced.js"></script>
+<script type="module" src="assets/js/avatar3d.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

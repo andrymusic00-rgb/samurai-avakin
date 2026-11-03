@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build/Output
+dist/
+build/
+*.local
+
+# Environment
+.env
+.env.local
+.env.production.local
+.env.development.local
+server/.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Server data
+server/.data/
+server/uploads/
+*.sqlite
+*.db
+
+# Test
+.nyc_output/
