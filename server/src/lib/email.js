@@ -111,33 +111,6 @@ async function sendViaSMTP({ to, subject, html, text }) {
 }
 
 /**
- * Crea un account Ethereal Email per sviluppo/testing.
- */
-async function createEtherealTransporter() {
-  const nodemailer = await import("nodemailer");
-  if (etherealTransporter) return etherealTransporter;
-
-  if (!etherealAccount) {
-    etherealAccount = await nodemailer.createTestAccount();
-    console.log(`[email] 📧 Account Ethereal creato: ${etherealAccount.user}`);
-    console.log(`[email] 🔗 Visualizza email su: https://ethereal.email`);
-    console.log(`[email] 🔑 Login: ${etherealAccount.user} / ${etherealAccount.pass}`);
-  }
-
-  etherealTransporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
-    auth: {
-      user: etherealAccount.user,
-      pass: etherealAccount.pass
-    }
-  });
-
-  return etherealTransporter;
-}
-
-/**
  * Sceglie il trasporto migliore in base all'ambiente.
  * Priorità: Resend API (produzione) > SMTP (se configurato) > Ethereal (sviluppo)
  */
