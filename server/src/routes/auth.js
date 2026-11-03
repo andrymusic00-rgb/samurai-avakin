@@ -154,16 +154,9 @@ authRouter.post(
       return { ...created, verifyToken };
     });
 
-    // Invia email di verifica (in produzione vera email, in dev token nella risposta)
-    try {
-      if (!config.isProd) {
-        // Dev: restituisci il token nella risposta per test
-      } else {
-        await sendVerificationEmail(user.email, user.verifyToken, user.display_name);
-      }
-    } catch (err) {
-      console.error("[email] errore invio verifica:", err.message);
-    }
+    // Invia email di verifica in background (NON bloccante)
+    sendVerificationEmail(user.email, user.verifyToken, user.display_name)
+      .catch(err => console.error("[email] errore invio verifica:", err.message));
 
     await issueSession(res, user, req);
     await audit(user.id, "auth.register", { handle: user.handle, attitudine: att, emailVerified: false, età }, clientIp(req));
