@@ -304,6 +304,23 @@
       `<button class="chip btn-ghost" id="btnVideoCatCreativi">Creatività</button>` +
       `<button class="btn btn-violet btn-sm" id="btnCaricaVideo" style="margin-left:auto">+ Carica il tuo video</button>`;
 
+    // Local test mode: add drag-and-drop upload zone in video section
+    let localUploadZone = "";
+    if (localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true") {
+      localUploadZone = `
+        <section class="vid-section local-upload-zone" style="margin-top:32px;padding:24px;border:2px dashed var(--glass-violet-brd);border-radius:16px;background:var(--glass-violet-bg);text-align:center;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:var(--grad-radial-glow);opacity:0.3;pointer-events:none"></div>
+          <div style="position:relative;z-index:1">
+            <div style="font-size:3rem;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(192,132,252,0.5))">🎬</div>
+            <h4 style="color:var(--silver-100);margin-bottom:8px;font-family:var(--ff-display)">Test Locale Video</h4>
+            <p style="color:var(--silver-400);margin-bottom:16px;font-size:.9rem">Trascina qui il tuo file <b>.mp4 .mov .mkv .webm</b> per test immediato</p>
+            <input type="file" id="localVideoDropInput" accept="video/mp4,video/quicktime,video/x-matroska,video/webm" class="sr-only" multiple>
+            <button class="btn btn-violet btn-lg" id="localVideoDropBtn" style="margin-top:8px">Scegli file video</button>
+            <p class="mono" style="margin-top:12px;font-size:11px;color:var(--silver-600)">Funziona solo in LOCAL TEST MODE · File salvati in localStorage</p>
+          </div>
+        </section>`;
+    }
+
     const creativiHtml = creativeVideos.length
       ? `<section class="vid-section" style="margin-top:44px">
            <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Video del clan</span>
@@ -500,7 +517,7 @@
 
       const carica = e.target.closest("#btnCaricaVideo");
       if (carica) {
-        if (!Account.authed) { toast("Accedi prima", "Servono credenziali per caricare un video.", "warn"); openModal("enterModal"); return; }
+        if (!Account.authed && localStorage.getItem(LOCAL_TEST_MODE_KEY) !== "true") { toast("Accedi prima", "Servono credenziali per caricare un video.", "warn"); openModal("enterModal"); return; }
         // Apri il creatore post con tipo video preselezionato
         const modal = $("#createPostModal");
         const tipo = $("#cp-tipo");
@@ -509,6 +526,24 @@
           modal.classList.add("is-open");
           $("#cp-titolo").focus();
         }
+        return;
+      }
+
+      // Local test mode: handle drag-and-drop video upload
+      const localDropZone = e.target.closest(".local-upload-zone");
+      if (localDropZone) {
+        e.preventDefault();
+        e.stopPropagation();
+        localDropZone.classList.add("drag-over");
+        return;
+      }
+      
+      const localDropInput = e.target.closest("#localVideoDropInput");
+      if (localDropInput) return; // Let input handle click
+      
+      const localDropBtn = e.target.closest("#localVideoDropBtn");
+      if (localDropBtn) {
+        $("#localVideoDropInput")?.click();
         return;
       }
 
@@ -594,6 +629,82 @@
     });
 
     $("#btnEnter").addEventListener("click", () => openModal("enterModal"));
+
+    // Local test mode: drag-and-drop handlers for video upload zone
+    document.addEventListener("dragover", (e) => {
+      const zone = e.target.closest(".local-upload-zone");
+      if (zone) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add("drag-over");
+      }
+    });
+
+    document.addEventListener("dragleave", (e) => {
+      const zone = e.target.closest(".local-upload-zone");
+      if (zone && !zone.contains(e.relatedTarget)) {
+        zone.classList.remove("drag-over");
+      }
+    });
+
+    document.addEventListener("drop", (e) => {
+      const zone = e.target.closest(".local-upload-zone");
+      if (zone) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove("drag-over");
+        
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+          handleLocalVideoFiles(files);
+        }
+      }
+    });
+
+    $("#localVideoDropInput")?.addEventListener("change", (e) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleLocalVideoFiles(files);
+      }
+    });
+
+    function handleLocalVideoFiles(files) {
+      const validTypes = ["video/mp4", "video/quicktime", "video/x-matroska", "video/webm"];
+      for (const file of files) {
+        if (!validTypes.includes(file.type)) {
+          toast("Formato non supportato", `${file.name}: usa MP4, MOV, MKV o WebM`, "warn");
+          continue;
+        }
+        uploadLocalVideo(file);
+      }
+    }
+
+    async function uploadLocalVideo(file) {
+      const titulo = file.name.replace(/\.[^/.]+$/, "");
+      const videoUrl = URL.createObjectURL(file);
+      const duration = await getVideoDuration(file);
+      
+      const videoData = {
+        id: "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+        titolo,
+        desc: `Caricato localmente da ${file.name}`,
+        dur: formatDuration(duration),
+        cat: "creativo",
+        autore: {
+          nome: Account.data?.name || "Test User",
+          handle: Account.data?.handle || "test_user",
+          level: Account.data?.level || 1
+        },
+        fonte: { url: videoUrl, type: file.type },
+        likes: 0, commenti: 0, tags: ["locale"], pubblico: true,
+        local: true, createdAt: new Date().toISOString()
+      };
+      
+      creativeVideos.unshift(videoData);
+      saveLocalVideos([videoData]);
+      renderVideos();
+      toast("Video caricato!", `${file.name} pronto nella sezione Creatività`, "ok");
+    }
 
     $("#btnRefreshLb").addEventListener("click", async () => {
       await Views.loadLeaderboard();
