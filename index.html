@@ -1571,6 +1571,20 @@
           <div style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px;border-radius:6px;font-size:.75rem;letter-spacing:.05em;font-family:var(--ff-mono);z-index:20" id="vupTvMode">LIVE • SD</div>
         </div>
 
+        <!-- Thumbnail Custom Picker -->
+        <div style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <label style="color:var(--silver-300);font-size:.82rem;letter-spacing:.05em;margin:0;text-transform:uppercase">Copertina (scegli fotogramma)</label>
+            <span id="vupThumbTime" style="color:var(--violet-300);font-family:var(--ff-mono);font-size:.78rem">0:00</span>
+          </div>
+          <input type="range" id="vupThumbScrub" min="0" max="100" value="0" style="width:100%;height:6px;-webkit-appearance:none;background:rgba(255,255,255,0.1);border-radius:3px;outline:none;accent-color:var(--violet-400)">
+          <div style="width:100%;height:90px;border-radius:12px;background:#000;margin-top:10px;overflow:hidden;position:relative;border:1px solid var(--glass-violet-brd);display:flex;align-items:center;justify-content:center">
+            <canvas id="vupThumbCanvas" width="320" height="180" style="width:100%;height:100%;object-fit:cover;display:block"></canvas>
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.07) 51%), linear-gradient(to right, rgba(255,0,0,0.035), rgba(0,255,0,0.015), rgba(0,0,255,0.035));background-size:100% 4px,100% 100%;opacity:.4;mix-blend-mode:overlay;pointer-events:none;z-index:10"></div>
+          </div>
+          <p style="color:var(--silver-500);font-size:.75rem;margin-top:6px">Trascina per scegliere il fotogramma di copertina della card</p>
+        </div>
+
         <div class="field" style="margin-bottom:14px">
           <label style="display:block;color:var(--silver-300);font-size:.82rem;letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase">Titolo del video</label>
           <input class="input violet" id="vupTitleInput" maxlength="120" placeholder="Dai un titolo al tuo video..." style="width:100%">

@@ -341,13 +341,13 @@
         </div>
       </article>`).join("") + creativiHtml;
 
-    if (creativeVideos.length) {
+      if (creativeVideos.length) {
       const cg = $("#videoGridCreativi");
       cg.innerHTML = creativeVideos.map((v, i) => `
         <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-          <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
+          <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9;${v.poster ? `background-image:url('${esc(v.poster)}');background-size:cover;background-position:center` : ''}">
             <span class="vid-play-badge">▶</span>
-            <span class="vid-placeholder">${v.autore?.nome || v.autore?.handle}</span>
+            ${v.poster ? '' : `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle)}</span>`}
           </div>
           <div class="vid-meta">
             <b>${esc(v.titolo)}</b>
@@ -1263,6 +1263,36 @@ function initAdvancedVideoUpload() {
   dropZone?.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const files = e.dataTransfer.files; if (files && files.length > 0) handleFile(files[0]); });
   fileInput?.addEventListener('change', (e) => { const files = e.target.files; if (files && files.length > 0) handleFile(files[0]); });
 
+  // Thumbnail scrubbing
+  let thumbPoster = null;
+  const thumbCanvas = document.getElementById('vupThumbCanvas');
+  const thumbCtx = thumbCanvas?.getContext('2d');
+  const thumbScrub = document.getElementById('vupThumbScrub');
+  const thumbTime = document.getElementById('vupThumbTime');
+  const vp = document.getElementById('vupVideoPreview2');
+
+  function drawThumbFrame() {
+    if (!thumbCtx || !vp) return;
+    thumbCtx.drawImage(vp, 0, 0, thumbCanvas.width, thumbCanvas.height);
+    thumbPoster = thumbCanvas.toDataURL('image/jpeg', 0.85);
+  }
+
+  thumbScrub?.addEventListener('input', (e) => {
+    if (!vp || !selectedFile) return;
+    const pct = +thumbScrub.value / 100;
+    vp.currentTime = vp.duration * pct;
+    const t = vp.duration * pct;
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
+    thumbTime.textContent = `${m}:${s}`;
+    // draw after seek
+    vp.onseeked = () => { drawThumbFrame(); vp.onseeked = null; };
+  });
+
+  thumbScrub?.addEventListener('change', () => {
+    drawThumbFrame();
+  });
+
   function handleFile(file) {
     const validTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
     if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|mov|webm)$/i)) {
@@ -1279,6 +1309,12 @@ function initAdvancedVideoUpload() {
     document.getElementById('vupTitleInput').value = file.name.replace(/\.[^/\.]+$/, '');
     const vp = document.getElementById('vupVideoPreview2');
     vp.src = URL.createObjectURL(file);
+    vp.onloadedmetadata = () => {
+      thumbScrub.max = '100';
+      thumbScrub.value = '0';
+      thumbTime.textContent = '0:00';
+      drawThumbFrame();
+    };
     goToStep('confirm');
     setHeader('Dettagli video', 'Inserisci titolo, descrizione e tag');
   }
@@ -1355,6 +1391,7 @@ function initAdvancedVideoUpload() {
         desc: desc || `Caricato da ${selectedFile.name}`,
         dur: formatDuration(duration),
         cat: "creativo",
+        poster: thumbPoster || null,
         autore: {
           nome: Account.data?.name || Account.data?.displayName || "Test User",
           handle: Account.data?.handle || "test_user",
