@@ -1,6 +1,46 @@
 (() => {
   const { $, $$, store, toast, openModal, observe, countAll, setPanel, go } = UI;
   const artCache = new Map();
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || isCoarsePointer;
+
+  function lockBodyScroll(lock) {
+    try {
+      if (lock) {
+        if (document.body.dataset.scrollLocked === '1') return;
+        document.body.dataset.scrollLocked = '1';
+        document.body.dataset.scrollY = String(window.scrollY || 0);
+        document.body.style.position = 'fixed';
+        document.body.style.top = '-' + (document.body.dataset.scrollY || 0) + 'px';
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+      } else {
+        if (document.body.dataset.scrollLocked !== '1') return;
+        const y = parseInt(document.body.dataset.scrollY || '0', 10) || 0;
+        delete document.body.dataset.scrollLocked;
+        delete document.body.dataset.scrollY;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, y);
+      }
+    } catch {}
+  }
+
+  function updateViewportUnits() {
+    try {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', vh + 'px');
+      const vv = window.visualViewport;
+      if (vv) {
+        document.documentElement.style.setProperty('--vvh', vv.height * 0.01 + 'px');
+      }
+    } catch {}
+  }
 
   const pic = (item) => {
     const key = `${item.seed}-${item.w}-${item.h}-${item.comp}`;
@@ -302,22 +342,30 @@
       if (!overlay) return;
       overlay.style.display = "flex";
       overlay.classList.add("is-open");
+      lockBodyScroll(true);
       const btn = $("#btnVideoIntroPlay");
+      let lastFocus = document.activeElement;
       if (btn) {
         btn.onclick = () => {
           try { localStorage.setItem("samurai_video_official_intro_v1", "1"); } catch {}
           overlay.classList.remove("is-open");
           setTimeout(() => { overlay.style.display = "none"; }, 420);
+          lockBodyScroll(false);
+          try { if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus(); } catch {}
           setTimeout(() => {
-            playVideo("v0");
+            playVideo("v0", { autoplay: true });
             const vm = $("#videoModal");
-            if (vm) vm.classList.add("is-open");
+            if (vm) { vm.classList.add("is-open"); lockBodyScroll(true); }
           }, 520);
         };
       }
       overlay.onkeydown = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          return;
+        }
         if (e.key === "Tab") {
-          const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          const focusable = Array.from(overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled && el.offsetParent !== null);
           if (focusable.length === 0) return;
           const first = focusable[0];
           const last = focusable[focusable.length - 1];
@@ -328,7 +376,7 @@
           }
         }
       };
-      setTimeout(() => { $("#btnVideoIntroPlay")?.focus(); }, 50);
+      setTimeout(() => { $("#btnVideoIntroPlay")?.focus(); }, 60);
     } catch {}
   }
 
@@ -433,6 +481,7 @@
 
   function playVideo(id, opts = {}) {
     const auto = !!opts.autoplay;
+    const wasLocked = document.body.dataset.scrollLocked === '1';
     // Video creativi caricati dagli utenti
     const cv = creativeVideos.find((x) => x.id === id);
     if (cv) {
@@ -444,16 +493,17 @@
       wrap.innerHTML = `
         <div class="vid-player-creativo player-cine-frame" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
           <span class="player-cine-vignette" aria-hidden="true"></span>
-          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1">
+          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1;touch-action:pan-y pinch-zoom">
             <source src="${esc(cv.fonte?.url || "")}" type="${esc(cv.fonte?.type || "video/mp4")}">
             Il tuo browser non supporta la riproduzione video. Scarica il file per vederlo.
           </video>
         </div>`;
       openModal("videoModal");
+      lockBodyScroll(true);
       setTimeout(() => {
         const v = wrap.querySelector("video");
         if (v && auto) { try { v.play().catch(()=>{}); } catch {} }
-      }, 80);
+      }, 90);
       return;
     }
 
@@ -471,15 +521,16 @@
       wrap.innerHTML = `
         <div class="vid-player-creativo player-cine-frame" style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
           <span class="player-cine-vignette" aria-hidden="true"></span>
-          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" src="${esc(url)}" type="${type}" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1">
+          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" src="${esc(url)}" type="${type}" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1;touch-action:pan-y pinch-zoom">
             Il tuo browser non supporta la riproduzione di questo file. <a href="${esc(url)}" download style="color:var(--ruri);text-decoration:underline">Scarica il video</a>.
           </video>
         </div>`;
       openModal("videoModal");
+      lockBodyScroll(true);
       setTimeout(() => {
         const vv = wrap.querySelector("video");
         if (vv && auto) { try { vv.play().catch(()=>{}); } catch {} }
-      }, 80);
+      }, 90);
       return;
     }
     if (v.fonte && v.fonte.youtube) {
@@ -501,6 +552,7 @@
         </div>`;
     }
     openModal("videoModal");
+    lockBodyScroll(true);
   }
 
   const ROUTES = ["home", "chi-siamo", "eventi", "gallery", "video", "blog", "classifica", "comando", "account"];
@@ -559,7 +611,14 @@
       }, 60);
     } else {
       const overlay = $("#videoIntroOverlay");
-      if (overlay) { overlay.classList.remove("is-open"); overlay.style.display = "none"; }
+      if (overlay && overlay.classList.contains("is-open")) {
+        overlay.classList.remove("is-open");
+        setTimeout(() => { overlay.style.display = "none"; }, 320);
+        lockBodyScroll(false);
+      } else if (overlay) {
+        overlay.classList.remove("is-open");
+        overlay.style.display = "none";
+      }
     }
     observe($(`#view-${view}`));
     UI.animateInside($(`#view-${view}`));
@@ -699,22 +758,24 @@
     // Swipe orizzontale sul touch: il lightbox si usa anche da telefono.
     let touchX = null;
     const stage = $(".lightbox-stage");
-    stage.addEventListener(
-      "touchstart",
-      (e) => { touchX = e.touches[0].clientX; },
-      { passive: true }
-    );
-    stage.addEventListener(
-      "touchend",
-      (e) => {
-        if (touchX == null) return;
-        const dx = e.changedTouches[0].clientX - touchX;
-        touchX = null;
-        if (Math.abs(dx) < 45) return;
-        step(dx < 0 ? 1 : -1);
-      },
-      { passive: true }
-    );
+    if (stage) {
+      stage.addEventListener(
+        "touchstart",
+        (e) => { touchX = e.touches[0].clientX; },
+        { passive: true }
+      );
+      stage.addEventListener(
+        "touchend",
+        (e) => {
+          if (touchX == null) return;
+          const dx = e.changedTouches[0].clientX - touchX;
+          touchX = null;
+          if (Math.abs(dx) < 45) return;
+          step(dx < 0 ? 1 : -1);
+        },
+        { passive: true }
+      );
+    }
     $("#lbDownload").addEventListener("click", () => {
       const g = lbList[lbIdx];
       if (!g) return;
@@ -840,6 +901,13 @@
   }
 
   function init() {
+    updateViewportUnits();
+    window.addEventListener('resize', updateViewportUnits, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateViewportUnits, { passive: true });
+      window.visualViewport.addEventListener('scroll', updateViewportUnits, { passive: true });
+    }
+
     renderHome();
     renderAbout();
     renderGallery();
@@ -857,7 +925,12 @@
     UI.observe();
     UI.initWelcome();
     UI.setAccent(store.get("accent", "#5aa8ff"));
-    initMicroInteractions();
+    if (!reduceMotion && !isCoarsePointer) {
+      initMicroInteractions();
+    } else {
+      document.querySelectorAll('.magnetic').forEach(el => el.classList.remove('magnetic'));
+      document.querySelectorAll('.tilt-card').forEach(el => el.classList.remove('tilt-card'));
+    }
     initLocalVideoTesting();
     
     // Check for post-login onboarding
@@ -907,7 +980,9 @@
 })();
 
 function initMicroInteractions() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cp = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  if (rm || cp) return;
 
   document.querySelectorAll(".btn:not([data-magnetic])").forEach(btn => {
     btn.dataset.magnetic = "0.25";
