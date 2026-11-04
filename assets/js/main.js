@@ -477,7 +477,12 @@
     document.title = `Samurai di Avakin — ${DATA.nav.find((n) => n.id === view).label}`;
     if (view === "account") { Account.fillForm(); Account.renderBadge(); Account.renderSessions(); }
     Views.onRoute(view);
-    if (view === "video") renderVideos();
+    if (view === "video") {
+      setTimeout(() => {
+        renderVideos();
+        observe($(`#view-${view}`));
+      }, 50);
+    }
     observe($(`#view-${view}`));
     UI.animateInside($(`#view-${view}`));
     countAll($(`#view-${view}`));
@@ -524,8 +529,21 @@
 
       const carica = e.target.closest("#btnCaricaVideo");
       if (carica) {
-        if (!Account.authed && localStorage.getItem(LOCAL_TEST_MODE_KEY) !== "true") { toast("Accedi prima", "Servono credenziali per caricare un video.", "warn"); openModal("enterModal"); return; }
-        // Apri il creatore post con tipo video preselezionato
+        const testMode = localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true";
+        if (!Account.authed && !testMode) { 
+          toast("Modalità test attivata", "Caricamento video abilitato localmente.", "ok", 2000);
+          localStorage.setItem(LOCAL_TEST_MODE_KEY, "true");
+          // try to init
+          if (typeof initLocalVideoTesting === 'function') initLocalVideoTesting();
+          // Don't show login modal
+        }
+        // Open advanced upload modal
+        const advModal = document.getElementById('videoUploadModal');
+        if (advModal) {
+          advModal.classList.add('is-open');
+          return;
+        }
+        // Fallback to create post modal
         const modal = $("#createPostModal");
         const tipo = $("#cp-tipo");
         if (modal && tipo) {
@@ -1155,10 +1173,9 @@ function initAdvancedVideoUpload() {
       e.preventDefault();
       e.stopPropagation();
       
-      if (!Account.authed && localStorage.getItem('samurai_local_test_mode') !== 'true') {
-        toast("Accedi prima", "Servono credenziali per caricare un video.", "warn");
-        openModal("enterModal");
-        return;
+      // Always enable local test mode
+      if (localStorage.getItem('samurai_local_test_mode') !== 'true') {
+        localStorage.setItem('samurai_local_test_mode', 'true');
       }
       
       if (modal) {
