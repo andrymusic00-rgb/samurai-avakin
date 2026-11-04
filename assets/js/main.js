@@ -852,5 +852,268 @@ function initMicroInteractions() {
     });
   }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
+  }
+      }
+    });
+  }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
   document.querySelectorAll("[data-reveal], .reveal-stagger").forEach(el => observer.observe(el));
 }
+
+// ===== LOCAL VIDEO TESTING MODE =====
+// Allows testing video uploads without authentication (for local development)
+
+const LOCAL_VIDEO_KEY = "samurai_local_videos";
+const LOCAL_TEST_MODE_KEY = "samurai_local_test_mode";
+
+function initLocalVideoTesting() {
+  // Enable local test mode automatically on localhost, 127.0.0.1, file://, OR samurai-avakin.onrender.com
+  const isLocal = location.hostname === "localhost" || 
+                  location.hostname === "127.0.0.1" || 
+                  location.protocol === "file:" ||
+                  location.hostname === "samurai-avakin.onrender.com";
+  if (isLocal) {
+    localStorage.setItem(LOCAL_TEST_MODE_KEY, "true");
+  }
+  
+  const testMode = localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true";
+  
+  if (testMode) {
+    // Add test mode indicator
+    addTestModeIndicator();
+    
+    // Override auth check for video upload button
+    overrideVideoUploadAuth();
+    
+    // Load local videos into creativeVideos
+    loadLocalVideos();
+    
+    // Handle createPostForm for local video uploads
+    handleLocalVideoUpload();
+    
+    console.log("[LocalTestMode] Enabled - Video uploads enabled without auth");
+  }
+}
+
+function addTestModeIndicator() {
+  if (document.getElementById("testModeBadge")) return;
+  
+  const badge = document.createElement("div");
+  badge.id = "testModeBadge";
+  badge.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: linear-gradient(135deg, var(--violet-600), var(--violet-800));
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--violet-glow-intense);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--ff-mono);
+    animation: pulseGlow 2s ease-in-out infinite;
+  `;
+  badge.innerHTML = `
+    <span>🧪 LOCAL TEST MODE</span>
+    <button id="toggleTestMode" style="
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+    ">Disable</button>
+  `;
+  document.body.appendChild(badge);
+  
+  $("#toggleTestMode").addEventListener("click", () => {
+    const enabled = localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true";
+    localStorage.setItem(LOCAL_TEST_MODE_KEY, enabled ? "false" : "true");
+    location.reload();
+  });
+}
+
+function overrideVideoUploadAuth() {
+  // Override the btnCaricaVideo click handler to allow local uploads
+  const originalHandler = document.querySelector("#btnCaricaVideo");
+  if (originalHandler) {
+    originalHandler.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openCreatePostModalForVideo();
+    }, true);
+  }
+}
+
+function loadLocalVideos() {
+  const stored = localStorage.getItem(LOCAL_VIDEO_KEY);
+  if (stored) {
+    try {
+      const videos = JSON.parse(stored);
+      creativeVideos = creativeVideos.concat(videos);
+    } catch (e) {
+      console.error("[LocalTestMode] Failed to load local videos:", e);
+    }
+  }
+}
+
+function saveLocalVideos(videos) {
+  localStorage.setItem(LOCAL_VIDEO_KEY, JSON.stringify(videos));
+}
+
+function openCreatePostModalForVideo() {
+  const modal = $("#createPostModal");
+  if (!modal) return;
+  
+  // Pre-select video type
+  const tipo = $("#cp-tipo");
+  if (tipo) tipo.value = "video";
+  
+  modal.classList.add("is-open");
+  $("#cp-titolo")?.focus();
+}
+
+function handleLocalVideoUpload() {
+  const form = $("#createPostForm");
+  if (!form) return;
+  
+  // Remove existing listeners
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+  
+  newForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const tipo = $("#cp-tipo")?.value;
+    if (tipo !== "video") return; // Only handle video uploads locally
+    
+    const fileInput = $("#cp-files");
+    const files = fileInput?.files;
+    if (!files || files.length === 0) {
+      toast("Seleziona un video", "Scegli un file MP4 o MOV da caricare", "warn");
+      return;
+    }
+    
+    const file = files[0];
+    const validTypes = ["video/mp4", "video/quicktime", "video/x-matroska", "video/webm"];
+    if (!validTypes.includes(file.type)) {
+      toast("Formato non supportato", "Usa MP4, MOV, MKV o WebM", "err");
+      return;
+    }
+    
+    const titolo = $("#cp-titolo")?.value?.trim();
+    const corpo = $("#cp-corpo")?.value?.trim();
+    const tags = $("#cp-tags")?.value?.split(",").map(t => t.trim()).filter(Boolean) || [];
+    const pubblico = $("#cp-pubblico")?.checked !== false;
+    
+    if (!titolo) {
+      toast("Titolo richiesto", "Inserisci un titolo per il video", "warn");
+      return;
+    }
+    
+    // Show loading
+    const submitBtn = $("#cpSubmit");
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Caricamento...";
+    submitBtn.disabled = true;
+    
+    try {
+      // Create object URL for local playback
+      const videoUrl = URL.createObjectURL(file);
+      
+      const videoData = {
+        id: "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+        titolo,
+        desc: corpo || "",
+        dur: formatDuration(await getVideoDuration(file)),
+        cat: "creativo",
+        autore: {
+          nome: Account.data?.name || "Test User",
+          handle: Account.data?.handle || "test_user",
+          level: Account.data?.level || 1
+        },
+        fonte: {
+          url: videoUrl,
+          type: file.type
+        },
+        likes: 0,
+        commenti: 0,
+        tags,
+        pubblico,
+        local: true,
+        createdAt: new Date().toISOString()
+      };
+      
+      creativeVideos.unshift(videoData);
+      saveLocalVideos([videoData]);
+      
+      // Close modal
+      $("#createPostModal").classList.remove("is-open");
+      newForm.reset();
+      
+      // Re-render videos
+      renderVideos();
+      
+      toast("Video caricato!", "Il video è pronto nella sezione Creatività", "ok");
+      
+    } catch (err) {
+      console.error("[LocalTestMode] Upload error:", err);
+      toast("Errore caricamento", err.message, "err");
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+function getVideoDuration(file) {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      resolve(video.duration);
+      URL.revokeObjectURL(video.src);
+    };
+    video.onerror = () => {
+      resolve(0);
+      URL.revokeObjectURL(file);
+    };
+    video.src = URL.createObjectURL(file);
+  });
+}
+
+function formatDuration(seconds) {
+  if (!seconds || isNaN(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+// Override playVideo to handle local videos
+const originalPlayVideo = window.playVideo;
+window.playVideo = function(id) {
+  const video = creativeVideos.find(v => v.id === id);
+  if (video && video.local && video.fonte?.url) {
+    $("#vmTitle").textContent = video.titolo;
+    $("#vmDesc").textContent = video.desc || "Condiviso da " + (video.autore?.nome || video.autore?.handle);
+    $("#vmCat").textContent = "CREATIVO";
+    $("#vmDur").textContent = video.dur;
+    const wrap = $("#playerWrap");
+    wrap.innerHTML = `
+      <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
+        <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
+          <source src="${esc(video.fonte.url)}" type="${video.fonte.type || 'video/mp4'}">
+          Il tuo browser non supporta la riproduzione video.
+        </video>
+      </div>`;
+    openModal("videoModal");
+    return;
+  }
+  if (originalPlayVideo) originalPlayVideo(id);
+};
