@@ -1183,12 +1183,18 @@ function initAdvancedVideoUpload() {
   // Rigorous step engine — un solo step visibile per volta, flat DOM
   function goToStep(stepName) {
     const steps = ['drop', 'confirm', 'progress', 'success'];
+    const displayMap = {
+      drop: 'flex',
+      confirm: 'flex',
+      progress: 'flex',
+      success: 'flex'
+    };
     steps.forEach(s => {
       const el = document.getElementById('vupStep' + s.charAt(0).toUpperCase() + s.slice(1));
       if (!el) return;
       if (s === stepName) {
         el.classList.remove('upload-step');
-        el.style.setProperty('display', 'flex', 'important');
+        el.style.setProperty('display', displayMap[s], 'important');
         el.style.setProperty('visibility', 'visible', 'important');
         el.style.setProperty('opacity', '1', 'important');
       } else {
