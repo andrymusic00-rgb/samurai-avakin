@@ -1175,20 +1175,22 @@ function initAdvancedVideoUpload() {
   let selectedFile = null;
   let uploadInterval = null;
 
-  // Mutually exclusive step rendering — un solo step visibile per volta, forced !important
-  function show(step) {
-    const steps = [
-      { el: stepDrop, name: 'drop' },
-      { el: stepConfirm, name: 'confirm' },
-      { el: stepProgress, name: 'progress' },
-      { el: stepSuccess, name: 'success' }
-    ];
-    steps.forEach(({ el, name }) => {
+  // Rigorous step engine — un solo step visibile per volta, flat DOM
+  function goToStep(stepName) {
+    const steps = ['drop', 'confirm', 'progress', 'success'];
+    steps.forEach(s => {
+      const el = document.getElementById('vupStep' + s.charAt(0).toUpperCase() + s.slice(1));
       if (!el) return;
-      if (name === step) {
+      if (s === stepName) {
+        el.classList.remove('upload-step');
         el.style.setProperty('display', 'flex', 'important');
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('opacity', '1', 'important');
       } else {
+        el.classList.add('upload-step');
         el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.style.setProperty('opacity', '0', 'important');
       }
     });
   }
@@ -1203,7 +1205,7 @@ function initAdvancedVideoUpload() {
   function resetUpload() {
     selectedFile = null;
     if (uploadInterval) { clearInterval(uploadInterval); uploadInterval = null; }
-    show('drop');
+    goToStep('drop');
     setHeader('Trascina il tuo video', 'Trascina il file .mp4 o .mov oppure selezionalo dal finder');
     document.getElementById('vupFileInput').value = '';
     document.getElementById('vupTitleInput').value = '';
@@ -1278,7 +1280,7 @@ function initAdvancedVideoUpload() {
     document.getElementById('vupTitleInput').value = file.name.replace(/\.[^/\.]+$/, '');
     const vp = document.getElementById('vupVideoPreview2');
     vp.src = URL.createObjectURL(file);
-    show('confirm');
+    goToStep('confirm');
     setHeader('Dettagli video', 'Inserisci titolo, descrizione e tag');
   }
 
@@ -1286,7 +1288,7 @@ function initAdvancedVideoUpload() {
     const vp = document.getElementById('vupVideoPreview2');
     if (vp.src) { URL.revokeObjectURL(vp.src); vp.src = ''; }
     selectedFile = null;
-    show('drop');
+    goToStep('drop');
     setHeader('Trascina il tuo video', 'Trascina il file .mp4 o .mov oppure selezionalo dal finder');
     document.getElementById('vupFileInput').value = '';
     document.getElementById('vupTitleInput').value = '';
@@ -1310,7 +1312,7 @@ function initAdvancedVideoUpload() {
     const tagsRaw = document.getElementById('vupTagsInput').value.trim();
     const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
-    show('progress');
+    goToStep('progress');
     setHeader('Caricamento in corso', 'Elaborazione del file');
 
     let progressVal = 0;
@@ -1366,7 +1368,7 @@ function initAdvancedVideoUpload() {
       if (typeof creativeVideos !== 'undefined') creativeVideos.unshift(videoData);
       saveLocalVideos([videoData]);
 
-      show('success');
+      goToStep('success');
       setHeader('Video caricato!', 'Il video è ora nella sezione Creatività');
       if (typeof renderVideos === 'function') renderVideos();
       toast("Video caricato con successo!", "Il video è ora nella sezione Creatività", "ok");
@@ -1375,7 +1377,7 @@ function initAdvancedVideoUpload() {
       uploadInterval = null;
       console.error("[VideoUpload] Error:", err);
       toast("Errore durante il caricamento", err.message, "err");
-      show('confirm');
+      goToStep('confirm');
       setHeader('Dettagli video', 'Inserisci titolo, descrizione e tag');
       uploadNowBtn.disabled = false;
       uploadNowBtn.textContent = 'Carica adesso';
