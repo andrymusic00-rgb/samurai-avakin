@@ -1155,6 +1155,9 @@ window.playVideo = playVideoEnhanced;
 
 // Enhanced Video Upload System
 function initAdvancedVideoUpload() {
+  if (window.__videoUploadInit) return;
+  window.__videoUploadInit = true;
+
   const modal = document.getElementById('videoUploadModal');
   const stepDrop = document.getElementById('vupStepDrop');
   const stepConfirm = document.getElementById('vupStepConfirm');
@@ -1170,8 +1173,9 @@ function initAdvancedVideoUpload() {
   const closeBtns = document.querySelectorAll('[data-close-video-upload]');
 
   let selectedFile = null;
+  let uploadInterval = null;
 
-  // Mutually exclusive step rendering
+  // Mutually exclusive step rendering — un solo step visibile per volta
   function show(step) {
     stepDrop.style.display = step === 'drop' ? '' : 'none';
     stepConfirm.style.display = step === 'confirm' ? '' : 'none';
@@ -1188,6 +1192,7 @@ function initAdvancedVideoUpload() {
 
   function resetUpload() {
     selectedFile = null;
+    if (uploadInterval) { clearInterval(uploadInterval); uploadInterval = null; }
     show('drop');
     setHeader('Trascina il tuo video', 'Trascina il file .mp4 o .mov oppure selezionalo dal finder');
     document.getElementById('vupFileInput').value = '';
@@ -1310,7 +1315,7 @@ function initAdvancedVideoUpload() {
       { p: 95, d: "Finalizzazione upload…" }
     ];
     let si = 0;
-    const interval = setInterval(() => {
+    uploadInterval = setInterval(() => {
       progressVal += Math.random() * 10 + 5;
       if (progressVal > 98) progressVal = 98;
       progressBar.style.width = progressVal + '%';
@@ -1326,7 +1331,8 @@ function initAdvancedVideoUpload() {
       const duration = await getVideoDuration(selectedFile);
       await new Promise(r => setTimeout(r, 1200));
 
-      clearInterval(interval);
+      clearInterval(uploadInterval);
+      uploadInterval = null;
       progressBar.style.width = '100%';
       progressPercent.textContent = '100%';
       progressDetail.textContent = 'Completato';
@@ -1355,7 +1361,8 @@ function initAdvancedVideoUpload() {
       if (typeof renderVideos === 'function') renderVideos();
       toast("Video caricato con successo!", "Il video è ora nella sezione Creatività", "ok");
     } catch (err) {
-      clearInterval(interval);
+      clearInterval(uploadInterval);
+      uploadInterval = null;
       console.error("[VideoUpload] Error:", err);
       toast("Errore durante il caricamento", err.message, "err");
       show('confirm');
