@@ -1246,13 +1246,7 @@ function initAdvancedVideoUpload() {
     if (modal) { modal.classList.remove('is-open'); resetUpload(); }
   });
 
-  // Click drop zone to browse
-  browseBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fileInput?.click(); });
-  dropZone?.addEventListener('click', (e) => {
-    e.preventDefault();
-    fileInput?.click();
-  });
-
+  // Click drop zone to browse — handled by <label for="vupFileInput"> natively, no JS needed
   // Drag and drop
   dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
   dropZone?.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('dragover'); });

@@ -1540,16 +1540,16 @@
 
     <!-- STEP 1: DROP ZONE (fratello diretto) -->
     <div id="vupStepDrop" class="upload-step" style="flex:1;overflow:auto;padding:0 24px 16px;display:flex;flex-direction:column;justify-content:center">
-      <div id="vupDropZone" class="vup-dropzone" style="padding:56px 28px;border:2px dashed var(--glass-violet-brd);border-radius:20px;background:linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all 0.35s var(--ease-out);max-width:620px;margin:0 auto">
+      <label id="vupDropZone" class="vup-dropzone" for="vupFileInput" style="padding:56px 28px;border:2px dashed var(--glass-violet-brd);border-radius:20px;background:linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all 0.35s var(--ease-out);max-width:620px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="position:absolute;inset:-10px;background:conic-gradient(from 90deg at 50% 50%, transparent, rgba(192,132,252,0.14), rgba(99,102,241,0.10), transparent);pointer-events:none;animation:vupRotate 8s linear infinite"></div>
         <div style="position:relative;z-index:1">
           <div style="font-size:60px;margin-bottom:16px;filter:drop-shadow(0 0 28px rgba(192,132,252,0.7));animation:vupFloat 4s ease-in-out infinite">📁</div>
           <h4 style="color:var(--silver-100);margin-bottom:8px;font-family:var(--ff-display)">Trascina il video qui</h4>
-          <p style="color:var(--silver-400);margin-bottom:14px;font-size:.95rem">oppure <button type="button" id="vupBrowseBtn" style="color:var(--violet-300);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font:inherit">seleziona un file dal finder</button></p>
+          <p style="color:var(--silver-400);margin-bottom:14px;font-size:.95rem">oppure <span style="color:var(--violet-300);text-decoration:underline;cursor:pointer" id="vupBrowseBtn">seleziona un file dal finder</span></p>
           <p style="color:var(--silver-500);font-size:.82rem">MP4, MOV, WebM • Max 500MB</p>
         </div>
         <input type="file" id="vupFileInput" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style="display:none">
-      </div>
+      </label>
     </div>
 
     <!-- STEP 2: CONFIRM / PREVIEW METADATA (fratello diretto) -->
