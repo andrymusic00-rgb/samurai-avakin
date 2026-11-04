@@ -1,6 +1,8 @@
 const Account = (() => {
   const { $, $$, store, toast, openModal, closeModal, confirmBox, animateInside, setAccent } = UI;
   const KEY = "profile";
+  const LOCAL_TEST_MODE_KEY = "samurai_local_test_mode";
+  const LOCAL_VIDEO_KEY = "samurai_local_videos";
 
   const DEFAULTS = {
     name: "Samuraj",
@@ -932,8 +934,44 @@ const Account = (() => {
     bindUpload();
     bindNewsletter();
 
+    // Track session expiry toast to avoid spam
+    let sessionExpiryToastShown = false;
+    const SESSION_EXPIRY_COOLDOWN = 30000; // 30 seconds
+
     API.on("auth", (info) => {
       if (info.authenticated === false) {
+        // Don't spam toast in local test mode
+        if (localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true") {
+          setAuthed(false);
+          setMode("Sessione scaduta — modalità test locale attiva.");
+          announce({ authenticated: false });
+          return;
+        }
+
+        // Don't spam toast - only show once per cooldown period
+        const now = Date.now();
+        if (sessionExpiryToastShown && (now - sessionExpiryToastShown) < SESSION_EXPIRY_COOLDOWN) {
+          setAuthed(false);
+          announce({ authenticated: false });
+          return;
+        }
+
+        // Don't show if already on login/enter page
+        const enterModal = $("#enterModal");
+        if (enterModal && enterModal.classList.contains("is-open")) {
+          setAuthed(false);
+          announce({ authenticated: false });
+          return;
+        }
+
+        // Don't show if already on login route
+        if (location.hash.includes("home") || location.hash === "") {
+          setAuthed(false);
+          announce({ authenticated: false });
+          return;
+        }
+
+        sessionExpiryToastShown = now;
         setAuthed(false);
         setMode("Sessione scaduta — accedi di nuovo.");
         announce({ authenticated: false });
