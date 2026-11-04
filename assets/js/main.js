@@ -371,6 +371,19 @@
     $("#vmCat").textContent = v.cat.toUpperCase();
     $("#vmDur").textContent = v.dur;
     const wrap = $("#playerWrap");
+    const url = v.fonte?.url;
+    if (url && !v.fonte.youtube) {
+      const ext = url.slice(url.lastIndexOf(".")).toLowerCase();
+      const type = ext === ".mov" ? "video/quicktime" : ext === ".webm" ? "video/webm" : "video/mp4";
+      wrap.innerHTML = `
+        <div class="vid-player-creativo" style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center">
+          <video controls autoplay playsinline src="${esc(url)}" type="${type}" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a">
+            Il tuo browser non supporta la riproduzione di questo file. <a href="${esc(url)}" download style="color:var(--ruri);text-decoration:underline">Scarica il video</a>.
+          </video>
+        </div>`;
+      openModal("videoModal");
+      return;
+    }
     if (v.fonte && v.fonte.youtube) {
       wrap.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${v.fonte.youtube}?autoplay=1&rel=0" title="${esc(v.titolo)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
     } else {
@@ -626,6 +639,7 @@
     UI.initWelcome();
     UI.setAccent(store.get("accent", "#5aa8ff"));
     initMicroInteractions();
+    initLocalVideoTesting();
     
     // Check for post-login onboarding
     checkPostLoginOnboarding();
