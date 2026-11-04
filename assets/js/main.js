@@ -1168,18 +1168,34 @@ function initAdvancedVideoUpload() {
   const closeBtns = document.querySelectorAll('[data-close-video-upload]');
   
   let selectedFile = null;
-  let step = 'drop'; // drop | confirm | progress
   
-  function showStep(s) {
-    step = s;
-    stepDrop.style.display = s === 'drop' ? '' : 'none';
-    stepConfirm.style.display = s === 'confirm' ? '' : 'none';
-    stepProgress.style.display = s === 'progress' ? '' : 'none';
+  function showDrop() {
+    stepDrop.style.display = '';
+    stepConfirm.style.display = 'none';
+    stepProgress.style.display = 'none';
+    document.getElementById('vupTitle').textContent = 'Trascina il tuo video';
+    document.getElementById('vupSubtitle').textContent = 'Trascina il file .mp4 o .mov oppure selezionalo dal finder';
+  }
+  
+  function showConfirm() {
+    stepDrop.style.display = 'none';
+    stepConfirm.style.display = '';
+    stepProgress.style.display = 'none';
+    document.getElementById('vupTitle').textContent = 'Dettagli video';
+    document.getElementById('vupSubtitle').textContent = 'Inserisci titolo, descrizione e tag';
+  }
+  
+  function showProgress() {
+    stepDrop.style.display = 'none';
+    stepConfirm.style.display = 'none';
+    stepProgress.style.display = '';
+    document.getElementById('vupTitle').textContent = 'Caricamento in corso';
+    document.getElementById('vupSubtitle').textContent = 'Elaborazione del file';
   }
   
   function resetUpload() {
     selectedFile = null;
-    showStep('drop');
+    showDrop();
     document.getElementById('vupFileInput').value = '';
     document.getElementById('vupTitleInput').value = '';
     document.getElementById('vupDescInput').value = '';
@@ -1222,7 +1238,7 @@ function initAdvancedVideoUpload() {
     });
   });
   
-  // Click drop zone
+  // Click drop zone to browse
   browseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     fileInput?.click();
@@ -1273,19 +1289,19 @@ function initAdvancedVideoUpload() {
     selectedFile = file;
     document.getElementById('vupFileName2').textContent = file.name;
     document.getElementById('vupFileSize2').textContent = formatFileSize(file.size);
-    document.getElementById('vupTitleInput').value = file.name.replace(/\.[^/.]+$/, '');
+    document.getElementById('vupTitleInput').value = file.name.replace(/\.[^/\.]+$/, '');
     
     const vp = document.getElementById('vupVideoPreview2');
     vp.src = URL.createObjectURL(file);
     
-    showStep('confirm');
+    showConfirm();
   }
   
   removeBtn2?.addEventListener('click', () => {
     const vp = document.getElementById('vupVideoPreview2');
     if (vp.src) { URL.revokeObjectURL(vp.src); vp.src = ''; }
     selectedFile = null;
-    showStep('drop');
+    showDrop();
     document.getElementById('vupFileInput').value = '';
     document.getElementById('vupTitleInput').value = '';
     document.getElementById('vupDescInput').value = '';
@@ -1310,7 +1326,7 @@ function initAdvancedVideoUpload() {
     const tagsRaw = document.getElementById('vupTagsInput').value.trim();
     const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
     
-    showStep('progress');
+    showProgress();
     
     let progressVal = 0;
     const progressBar = document.getElementById('vupBar2');
@@ -1381,12 +1397,13 @@ function initAdvancedVideoUpload() {
       clearInterval(interval);
       console.error("[VideoUpload] Error:", err);
       toast("Errore durante il caricamento", err.message, "err");
-      showStep('confirm');
+      showConfirm();
       uploadNowBtn.disabled = false;
       uploadNowBtn.textContent = 'Carica adesso';
     }
   });
 }
+
 
 function formatFileSize(bytes) {
   if (bytes === 0) return '0 Bytes';
