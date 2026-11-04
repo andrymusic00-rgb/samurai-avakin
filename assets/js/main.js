@@ -1202,7 +1202,7 @@ function initMicroInteractions() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add("is-in");
-        if (entry.target.classList.contains("reveal-stagger")) {
+        if (entry.target.classList.contains("reveal-stagger") || entry.target.classList.contains("reveal-glass-stagger")) {
           entry.target.querySelectorAll(":scope > *").forEach((child, i) => {
             child.style.animationDelay = `${i * 80}ms`;
           });
@@ -1211,7 +1211,7 @@ function initMicroInteractions() {
     });
   }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
-  document.querySelectorAll("[data-reveal], .reveal-stagger").forEach(el => observer.observe(el));
+  document.querySelectorAll("[data-reveal], .reveal-stagger, .reveal-glass, .reveal-glass-stagger").forEach(el => observer.observe(el));
 }
 
 // ===== LOCAL VIDEO TESTING MODE =====

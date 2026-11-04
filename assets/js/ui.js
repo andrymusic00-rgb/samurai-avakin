@@ -271,13 +271,13 @@ const UI = (() => {
   document.documentElement.classList.add("reveal-ready");
 
   function observe(root = document) {
-    $$("[data-reveal]:not(.is-in)", root).forEach((el) => io.observe(el));
+    $$("[data-reveal]:not(.is-in), .reveal-glass:not(.is-in), .reveal-glass-stagger:not(.is-in)", root).forEach((el) => io.observe(el));
     flushReveal(root);
   }
 
   function flushReveal(root = document) {
     const vh = window.innerHeight || 800;
-    $$("[data-reveal]:not(.is-in)", root).forEach((el) => {
+    $$("[data-reveal]:not(.is-in), .reveal-glass:not(.is-in), .reveal-glass-stagger:not(.is-in)", root).forEach((el) => {
       const r = el.getBoundingClientRect();
       if (r.top < vh * 1.05 && r.bottom > -vh * 0.25) {
         el.classList.add("is-in");
