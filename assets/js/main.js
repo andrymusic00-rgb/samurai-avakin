@@ -1247,9 +1247,8 @@ function initAdvancedVideoUpload() {
   });
 
   // Click drop zone to browse
-  browseBtn?.addEventListener('click', (e) => { e.preventDefault(); fileInput?.click(); });
+  browseBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fileInput?.click(); });
   dropZone?.addEventListener('click', (e) => {
-    if (e.target === browseBtn) return;
     e.preventDefault();
     fileInput?.click();
   });
