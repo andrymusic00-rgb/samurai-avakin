@@ -1570,7 +1570,7 @@
         <!-- MAIN VIDEO PREVIEW - Large, immersive, with proper aspect ratio -->
         <div style="position:relative;border-radius:20px;overflow:hidden;background:#000;border:1px solid var(--glass-violet-brd);box-shadow:var(--violet-glow-soft), 0 0 60px -12px rgba(139,92,246,0.25);aspect-ratio:16/9;min-height:320px">
           <!-- Video element -->
-          <video id="vupVideoPreview2" controls playsinline style="width:100%;height:100%;object-fit:cover;display:block;background:#000"></video>
+          <video id="vupVideoPreview2" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;display:block;background:#000"></video>
           
           <!-- Subtle vignette overlay -->
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);pointer-events:none;z-index:2"></div>

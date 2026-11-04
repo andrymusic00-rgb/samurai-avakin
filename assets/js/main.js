@@ -1272,6 +1272,28 @@ function initAdvancedVideoUpload() {
   dropZone?.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const files = e.dataTransfer.files; if (files && files.length > 0) handleFile(files[0]); });
   fileInput?.addEventListener('change', (e) => { const files = e.target.files; if (files && files.length > 0) handleFile(files[0]); });
 
+  // Video events for play overlay — use named functions to allow re-binding
+  function setupVideoEvents() {
+    const vp = document.getElementById('vupVideoPreview2');
+    const playOverlay = document.getElementById('vupPlayOverlay');
+    if (!vp || !playOverlay) return;
+    vp.removeEventListener('play', onVideoPlay);
+    vp.removeEventListener('pause', onVideoPause);
+    vp.removeEventListener('ended', onVideoEnded);
+    vp.removeEventListener('waiting', onVideoWaiting);
+    vp.removeEventListener('canplay', onVideoCanPlay);
+    vp.addEventListener('play', onVideoPlay);
+    vp.addEventListener('pause', onVideoPause);
+    vp.addEventListener('ended', onVideoEnded);
+    vp.addEventListener('waiting', onVideoWaiting);
+    vp.addEventListener('canplay', onVideoCanPlay);
+  }
+  function onVideoPlay() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '0'; }
+  function onVideoPause() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
+  function onVideoEnded() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
+  function onVideoWaiting() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '0.5'; }
+  function onVideoCanPlay() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
+
   // Thumbnail scrubbing
   let thumbPoster = null;
   const thumbCanvas = document.getElementById('vupThumbCanvas');
@@ -1290,7 +1312,6 @@ function initAdvancedVideoUpload() {
     if (!thumbCtx || !vp) return;
     thumbCtx.drawImage(vp, 0, 0, thumbCanvas.width, thumbCanvas.height);
     thumbPoster = thumbCanvas.toDataURL('image/jpeg', 0.85);
-    // Update preview card
     if (previewTitle) previewTitle.textContent = document.getElementById('vupTitleInput').value || 'Titolo del video';
     if (previewDuration && durationBadge) previewDuration.textContent = durationBadge.textContent;
   }
@@ -1310,7 +1331,6 @@ function initAdvancedVideoUpload() {
     const m = Math.floor(t / 60);
     const s = Math.floor(t % 60).toString().padStart(2, '0');
     thumbTime.textContent = `${m}:${s}`;
-    // draw after seek
     vp.onseeked = () => { drawThumbFrame(); vp.onseeked = null; };
   });
 
@@ -1327,11 +1347,6 @@ function initAdvancedVideoUpload() {
   document.getElementById('vupTitleInput')?.addEventListener('input', (e) => {
     if (previewTitle) previewTitle.textContent = e.target.value || 'Titolo del video';
   });
-
-  // Video events for play overlay
-  vp?.addEventListener('play', () => { if (playOverlay) playOverlay.style.opacity = '0'; });
-  vp?.addEventListener('pause', () => { if (playOverlay) playOverlay.style.opacity = '1'; });
-  vp?.addEventListener('ended', () => { if (playOverlay) playOverlay.style.opacity = '1'; });
 
   function handleFile(file) {
     const validTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
@@ -1351,6 +1366,7 @@ function initAdvancedVideoUpload() {
     if (previewTitle) previewTitle.textContent = baseTitle;
     if (descCount) descCount.textContent = '0/500';
     const vp = document.getElementById('vupVideoPreview2');
+    if (vp.src && vp.src.startsWith('blob:')) URL.revokeObjectURL(vp.src);
     vp.src = URL.createObjectURL(file);
     vp.onloadedmetadata = () => {
       thumbScrub.max = '100';
@@ -1361,6 +1377,10 @@ function initAdvancedVideoUpload() {
       if (previewDuration) previewDuration.textContent = formatTime(vp.duration);
       drawThumbFrame();
       if (playOverlay) playOverlay.style.opacity = '1';
+      setupVideoEvents();
+    };
+    vp.onerror = () => {
+      toast("Errore video", "Impossibile caricare il file video", "err");
     };
     goToStep('confirm');
     setHeader('Dettagli video', 'Inserisci titolo, descrizione e tag');
