@@ -215,6 +215,19 @@
     return [...gItems, ...remote, ...local].filter((g) => g.src);
   }
 
+  // Persistent listener for uploads - works even before gallery is rendered
+  document.addEventListener("sam:uploads", (e) => {
+    const detail = e.detail;
+    if (Array.isArray(detail)) {
+      const known = new Set(gRemote.map((u) => u.url || u.src));
+      detail.filter((u) => u.url || u.src).forEach((u) => { if (!known.has(u.url || u.src)) gRemote.push(u); });
+    }
+    if (typeof paintGallery === "function") {
+      paintGallery();
+      applyFilter(gFilter);
+    }
+  });
+
   function renderGallery() {
     $("#galleryFilters").innerHTML = DATA.galleryCats.map((c) =>
       `<button class="chip${c.id === "all" ? " is-active" : ""}" data-cat="${c.id}">${c.label}</button>`).join("") +
@@ -225,16 +238,6 @@
       src: g.src ? g.src : pic(g) 
     }));
     paintGallery();
-    document.addEventListener("sam:uploads", (e) => {
-      const detail = e.detail;
-      if (Array.isArray(detail)) {
-        // Il server manda upload gia' salvati: accodali.
-        const known = new Set(gRemote.map((u) => u.url || u.src));
-        detail.filter((u) => u.url || u.src).forEach((u) => { if (!known.has(u.url || u.src)) gRemote.push(u); });
-      }
-      paintGallery();
-      applyFilter(gFilter);
-    });
   }
 
   function paintGallery() {
@@ -349,6 +352,91 @@
     }
   }
 
+  // --- VIDEO CAROUSEL ---
+  function setupVideoCarousel(slideCount) {
+    const track = $("#vidCarouselTrack");
+    const prevBtn = $("#vidCarouselPrev");
+    const nextBtn = $("#vidCarouselNext");
+    const dots = $("#vidCarouselDots")?.querySelectorAll(".vid-carousel-dot");
+    if (!track || slideCount <= 1) { if (prevBtn) prevBtn.style.display = 'none'; if (nextBtn) nextBtn.style.display = 'none'; return; }
+    
+    let currentIndex = 0;
+    let autoSlideTimer = null;
+    const autoSlideDelay = 6000;
+    
+    function goToSlide(index, animate = true) {
+      if (index < 0) index = slideCount - 1;
+      if (index >= slideCount) index = 0;
+      currentIndex = index;
+      
+      // Update track transform
+      track.style.transform = `translateX(-${index * 100}%)`;
+      
+      // Update slides active state
+      track.querySelectorAll(".vid-carousel-slide").forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === index);
+      });
+      
+      // Update dots
+      dots?.forEach((dot, i) => {
+        dot.classList.toggle("is-active", i === index);
+        dot.setAttribute("aria-selected", i === index);
+      });
+    }
+    
+    function nextSlide() { goToSlide(currentIndex + 1); }
+    function prevSlide() { goToSlide(currentIndex - 1); }
+    
+    function resetAutoSlide() {
+      if (autoSlideTimer) clearInterval(autoSlideTimer);
+      autoSlideTimer = setInterval(nextSlide, autoSlideDelay);
+    }
+    
+    function pauseAutoSlide() {
+      if (autoSlideTimer) clearInterval(autoSlideTimer);
+    }
+    
+    // Button events
+    prevBtn?.addEventListener("click", () => { prevSlide(); resetAutoSlide(); });
+    nextBtn?.addEventListener("click", () => { nextSlide(); resetAutoSlide(); });
+    
+    // Dot events
+    dots?.forEach((dot, i) => {
+      dot.addEventListener("click", () => { goToSlide(i); resetAutoSlide(); });
+    });
+    
+    // Keyboard navigation
+    track?.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); prevSlide(); resetAutoSlide(); }
+      if (e.key === "ArrowRight") { e.preventDefault(); nextSlide(); resetAutoSlide(); }
+    });
+    
+    // Pause on hover
+    const carousel = $("#vidCarousel");
+    carousel?.addEventListener("mouseenter", pauseAutoSlide);
+    carousel?.addEventListener("mouseleave", resetAutoSlide);
+    
+    // Pause when tab hidden
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseAutoSlide();
+      else resetAutoSlide();
+    });
+    
+    // Touch/swipe support
+    let touchStartX = 0;
+    carousel?.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    carousel?.addEventListener("touchend", (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) {
+        if (dx > 0) prevSlide(); else nextSlide();
+        resetAutoSlide();
+      }
+    }, { passive: true });
+    
+    // Start auto-slide
+    resetAutoSlide();
+  }
+
   function maybeShowVideoIntro() {
     try {
       if (localStorage.getItem("samurai_video_official_intro_v1")) return;
@@ -402,33 +490,57 @@
     
     const allVideos = vAll();
     const [feat, ...rest] = allVideos;
-
+    
+    // Build carousel slides: featured + next 4 videos
+    const carouselSlides = [feat, ...rest.slice(0, 4)];
+    
     $("#vidFeatured").innerHTML = `
-      <div class="vid-featured-bg" aria-hidden="true">
-        <img src="${feat.thumb}" alt="" loading="lazy">
-        <span class="vid-featured-glow"></span>
-        <span class="vid-featured-sheen"></span>
-      </div>
-      <div class="vid-featured-motion-wrap" aria-hidden="true">
-        <video class="vid-featured-motion" muted autoplay loop playsinline preload="auto" src="${esc(feat.fonte?.url || "")}" type="video/quicktime"></video>
-      </div>
-      <div class="vid-thumb" data-vid="${feat.id}">
-        <img src="${feat.thumb}" alt="${esc(feat.titolo)}" loading="lazy">
-        <div class="vid-play">
-          <div class="vid-play-btn">▶</div>
-          <span class="vid-dur">${feat.dur}</span>
+      <div class="vid-carousel" id="vidCarousel" role="region" aria-label="Video in evidenza">
+        <!-- Slides container -->
+        <div class="vid-carousel-track" id="vidCarouselTrack">
+          ${carouselSlides.map((v, i) => `
+            <div class="vid-carousel-slide${i === 0 ? ' is-active' : ''}" data-index="${i}" data-vid="${v.id}" style="--d:${i * 80}ms">
+              <div class="vid-carousel-bg" aria-hidden="true">
+                <img src="${v.thumb}" alt="" loading="lazy">
+                <span class="vid-carousel-glow"></span>
+                <span class="vid-carousel-sheen"></span>
+              </div>
+              <div class="vid-carousel-motion-wrap" aria-hidden="true">
+                <video class="vid-carousel-motion" muted autoplay loop playsinline preload="auto" src="${esc(v.fonte?.url || '')}" type="video/quicktime"></video>
+              </div>
+              <div class="vid-carousel-content">
+                ${i === 0 ? '<span class="vid-badge-prima">PRIMA VISIONE</span>' : ''}
+                <span class="eyebrow">In evidenza</span>
+                <h3 style="font-family:var(--ff-display);font-size:clamp(1.5rem,3vw,2.2rem);color:var(--silver-100);line-height:1.12;margin:10px 0 8px">${esc(v.titolo)}</h3>
+                <p style="color:var(--silver-400);font-size:.94rem;max-width:60ch;margin-bottom:16px">${esc(v.desc)}</p>
+                <div class="row" style="gap:12px;flex-wrap:wrap">
+                  <button class="btn btn-primary btn-lg" data-vid="${v.id}" style="box-shadow:var(--violet-glow-intense)">Riproduci ora</button>
+                  <span class="tag tag-glass">${v.cat.toUpperCase()}</span>
+                  ${v.dur && v.dur !== '—' ? `<span class="tag tag-glass">${v.dur}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('')}
         </div>
-      </div>
-      <div class="vid-featured-info">
-        <span class="vid-badge-prima">PRIMA VISIONE</span>
-        <span class="eyebrow">In evidenza</span>
-        <h3 style="font-family:var(--ff-display);font-size:clamp(1.4rem,2.6vw,2.1rem);color:var(--silver-100);line-height:1.12">${esc(feat.titolo)}</h3>
-        <p style="color:var(--silver-400);font-size:.94rem">${esc(feat.desc)}</p>
-        <div class="row">
-          <button class="btn btn-primary" data-vid="${feat.id}">Riproduci ora</button>
-          <span class="tag">${feat.cat.toUpperCase()}</span>
+        
+        <!-- Navigation arrows -->
+        <button class="vid-carousel-btn vid-carousel-prev" id="vidCarouselPrev" aria-label="Video precedente" title="Precedente">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="vid-carousel-btn vid-carousel-next" id="vidCarouselNext" aria-label="Video successivo" title="Successivo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        
+        <!-- Dots indicators -->
+        <div class="vid-carousel-dots" id="vidCarouselDots" role="tablist" aria-label="Seleziona video">
+          ${carouselSlides.map((_, i) => `
+            <button class="vid-carousel-dot${i === 0 ? ' is-active' : ''}" data-index="${i}" role="tab" aria-selected="${i === 0}" aria-label="Video ${i + 1}"></button>
+          `).join('')}
         </div>
       </div>`;
+    
+    // Initialize carousel
+    setupVideoCarousel(carouselSlides.length);
     setupVideoFeaturedCinematic();
 
     $("#videoFilters").innerHTML = DATA.videoCats.map((c, i) =>
@@ -628,6 +740,12 @@
         observe($(`#view-${view}`));
         maybeShowVideoIntro();
       }, 60);
+    } else if (view === "gallery") {
+      // Refresh gallery in case new uploads were added while on other views
+      if (typeof paintGallery === "function") {
+        paintGallery();
+        applyFilter(gFilter);
+      }
     } else {
       const overlay = $("#videoIntroOverlay");
       if (overlay && overlay.classList.contains("is-open")) {
