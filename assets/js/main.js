@@ -1175,12 +1175,22 @@ function initAdvancedVideoUpload() {
   let selectedFile = null;
   let uploadInterval = null;
 
-  // Mutually exclusive step rendering — un solo step visibile per volta
+  // Mutually exclusive step rendering — un solo step visibile per volta, forced !important
   function show(step) {
-    stepDrop.style.display = step === 'drop' ? '' : 'none';
-    stepConfirm.style.display = step === 'confirm' ? '' : 'none';
-    stepProgress.style.display = step === 'progress' ? '' : 'none';
-    stepSuccess.style.display = step === 'success' ? '' : 'none';
+    const steps = [
+      { el: stepDrop, name: 'drop' },
+      { el: stepConfirm, name: 'confirm' },
+      { el: stepProgress, name: 'progress' },
+      { el: stepSuccess, name: 'success' }
+    ];
+    steps.forEach(({ el, name }) => {
+      if (!el) return;
+      if (name === step) {
+        el.style.setProperty('display', 'flex', 'important');
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
   }
 
   function setHeader(title, sub) {
@@ -1201,7 +1211,7 @@ function initAdvancedVideoUpload() {
     document.getElementById('vupTagsInput').value = '';
     const vp = document.getElementById('vupVideoPreview2');
     if (vp.src) { URL.revokeObjectURL(vp.src); vp.src = ''; }
-    document.getElementById('vupBar2').style.width = '0%';
+    document.getElementById('vupBar2').style.setProperty('width', '0%', 'important');
     document.getElementById('vupPercent2').textContent = '0%';
     document.getElementById('vupProgressDetail').textContent = 'Preparazione file…';
     document.getElementById('vupFileName2').textContent = '';
@@ -1318,7 +1328,7 @@ function initAdvancedVideoUpload() {
     uploadInterval = setInterval(() => {
       progressVal += Math.random() * 10 + 5;
       if (progressVal > 98) progressVal = 98;
-      progressBar.style.width = progressVal + '%';
+      progressBar.style.setProperty('width', progressVal + '%', 'important');
       progressPercent.textContent = Math.floor(progressVal) + '%';
       if (si < steps.length && progressVal >= steps[si].p) {
         progressDetail.textContent = steps[si].d;
@@ -1333,7 +1343,7 @@ function initAdvancedVideoUpload() {
 
       clearInterval(uploadInterval);
       uploadInterval = null;
-      progressBar.style.width = '100%';
+      progressBar.style.setProperty('width', '100%', 'important');
       progressPercent.textContent = '100%';
       progressDetail.textContent = 'Completato';
       await new Promise(r => setTimeout(r, 400));
