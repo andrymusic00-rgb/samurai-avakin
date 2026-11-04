@@ -1235,6 +1235,7 @@ function initAdvancedVideoUpload() {
     const previewDuration = document.getElementById('vupPreviewDuration');
     const descCount = document.getElementById('vupDescCount');
     const playOverlay = document.getElementById('vupPlayOverlay');
+    const errorOverlay = document.getElementById('vupVideoError');
     const thumbScrub = document.getElementById('vupThumbScrub');
     const thumbTime = document.getElementById('vupThumbTime');
     if (durationBadge) durationBadge.textContent = '0:00';
@@ -1242,6 +1243,7 @@ function initAdvancedVideoUpload() {
     if (previewDuration) previewDuration.textContent = '0:00';
     if (descCount) descCount.textContent = '0/500';
     if (playOverlay) playOverlay.style.opacity = '1';
+    if (errorOverlay) errorOverlay.style.display = 'none';
     if (thumbScrub) { thumbScrub.value = '0'; thumbScrub.style.background = 'rgba(255,255,255,0.08)'; }
     if (thumbTime) thumbTime.textContent = '0:00';
     const thumbCanvas = document.getElementById('vupThumbCanvas');
@@ -1276,23 +1278,63 @@ function initAdvancedVideoUpload() {
   function setupVideoEvents() {
     const vp = document.getElementById('vupVideoPreview2');
     const playOverlay = document.getElementById('vupPlayOverlay');
+    const errorOverlay = document.getElementById('vupVideoError');
+    const errorDetail = document.getElementById('vupVideoErrorDetail');
     if (!vp || !playOverlay) return;
     vp.removeEventListener('play', onVideoPlay);
     vp.removeEventListener('pause', onVideoPause);
     vp.removeEventListener('ended', onVideoEnded);
     vp.removeEventListener('waiting', onVideoWaiting);
     vp.removeEventListener('canplay', onVideoCanPlay);
+    vp.removeEventListener('error', onVideoError);
     vp.addEventListener('play', onVideoPlay);
     vp.addEventListener('pause', onVideoPause);
     vp.addEventListener('ended', onVideoEnded);
     vp.addEventListener('waiting', onVideoWaiting);
     vp.addEventListener('canplay', onVideoCanPlay);
+    vp.addEventListener('error', onVideoError);
+    
+    // Error overlay button handlers
+    const retryBtn = document.getElementById('vupRetryVideo');
+    const openBtn = document.getElementById('vupOpenExternal');
+    if (retryBtn) {
+      retryBtn.onclick = () => { vp.load(); if (errorOverlay) errorOverlay.style.display = 'none'; };
+    }
+    if (openBtn) {
+      openBtn.onclick = () => { window.open(vp.src, '_blank'); };
+    }
   }
+  
   function onVideoPlay() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '0'; }
   function onVideoPause() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
   function onVideoEnded() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
   function onVideoWaiting() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '0.5'; }
-  function onVideoCanPlay() { const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; }
+  function onVideoCanPlay() { 
+    const o = document.getElementById('vupPlayOverlay'); if (o) o.style.opacity = '1'; 
+    // Video can play - hide error if showing
+    const err = document.getElementById('vupVideoError'); if (err) err.style.display = 'none';
+    // Check if video actually has visual content
+    const vp = document.getElementById('vupVideoPreview2');
+    if (vp && vp.videoWidth === 0) {
+      // Video track exists but no frames - likely codec issue
+      setTimeout(() => {
+        if (vp.videoWidth === 0) onVideoError.call(vp, new Error('No video frames'));
+      }, 1000);
+    }
+  }
+  function onVideoError(e) { 
+    const err = document.getElementById('vupVideoError');
+    const detail = document.getElementById('vupVideoErrorDetail');
+    const vp = document.getElementById('vupVideoPreview2');
+    const playOverlay = document.getElementById('vupPlayOverlay');
+    if (err) err.style.display = 'flex';
+    if (playOverlay) playOverlay.style.opacity = '0';
+    if (detail && vp) {
+      const codec = vp.error ? vp.error.code : 'UNKNOWN';
+      const mediaError = vp.error ? ['MEDIA_ERR_ABORTED','MEDIA_ERR_NETWORK','MEDIA_ERR_DECODE','MEDIA_ERR_SRC_NOT_SUPPORTED'][vp.error.code-1] : 'Unknown';
+      detail.innerHTML = `Il browser non riesce a decodificare la traccia video.<br><small style="color:var(--violet-400);font-family:var(--ff-mono)">${mediaError} (code ${codec})</small><br>L'audio funziona ma il video no (es. HEVC/H.265 da iPhone).<br>Prova a convertire in H.264/MP4 o usa un file WebM.`;
+    }
+  }
 
   // Thumbnail scrubbing
   let thumbPoster = null;
@@ -1310,6 +1352,18 @@ function initAdvancedVideoUpload() {
 
   function drawThumbFrame() {
     if (!thumbCtx || !vp) return;
+    if (vp.videoWidth === 0) {
+      // No video track - draw placeholder on canvas
+      thumbCtx.fillStyle = '#0a0c16';
+      thumbCtx.fillRect(0, 0, thumbCanvas.width, thumbCanvas.height);
+      // Draw "audio only" indicator
+      thumbCtx.fillStyle = 'rgba(192,132,252,0.3)';
+      thumbCtx.font = '14px var(--ff-mono)';
+      thumbCtx.textAlign = 'center';
+      thumbCtx.fillText('🎵 Solo audio', thumbCanvas.width/2, thumbCanvas.height/2);
+      thumbPoster = thumbCanvas.toDataURL('image/jpeg', 0.85);
+      return;
+    }
     thumbCtx.drawImage(vp, 0, 0, thumbCanvas.width, thumbCanvas.height);
     thumbPoster = thumbCanvas.toDataURL('image/jpeg', 0.85);
     if (previewTitle) previewTitle.textContent = document.getElementById('vupTitleInput').value || 'Titolo del video';

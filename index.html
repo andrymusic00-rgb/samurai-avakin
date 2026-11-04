@@ -1572,6 +1572,17 @@
           <!-- Video element -->
           <video id="vupVideoPreview2" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;display:block;background:#000"></video>
           
+          <!-- Error fallback overlay - shown when video can't be decoded -->
+          <div id="vupVideoError" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.95);z-index:20;padding:24px;text-align:center;gap:16px">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;font-size:32px">⚠</div>
+            <div style="color:var(--silver-100);font-family:var(--ff-display);font-size:clamp(1.1rem,2.5vw,1.4rem)">Codec video non supportato</div>
+            <div id="vupVideoErrorDetail" style="color:var(--silver-400);font-size:.85rem;max-width:80%">Il browser non riesce a decodificare la traccia video.<br>L'audio funziona ma il video no (es. HEVC/H.265).</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+              <button type="button" class="btn btn-violet btn-sm" id="vupRetryVideo">Riprova</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="vupOpenExternal">Apri nel player di sistema</button>
+            </div>
+          </div>
+          
           <!-- Subtle vignette overlay -->
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);pointer-events:none;z-index:2"></div>
           
