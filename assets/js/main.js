@@ -1195,8 +1195,14 @@ function initAdvancedVideoUpload() {
   
   // Click drop zone
   dropZone?.addEventListener('click', (e) => {
+    // Don't trigger if clicking directly on input
     if (e.target === fileInput) return;
+    e.preventDefault();
     fileInput?.click();
+  });
+  
+  fileInput?.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
   
   // Drag and drop
