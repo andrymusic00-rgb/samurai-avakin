@@ -1525,5 +1525,92 @@
     });
   }
 </script>
+
+<!-- Advanced Video Upload Modal -->
+<div class="modal violet" id="videoUploadModal" role="dialog" aria-modal="true" aria-labelledby="vupTitle">
+  <div class="modal-backdrop" data-close-video-upload></div>
+  <div class="modal-box glass violet glass-morph" style="width:min(94vw, 620px);max-height:92vh;overflow:auto">
+    <button class="modal-x" data-close-video-upload aria-label="Chiudi">✕</button>
+    <div class="modal-head" style="text-align:center;padding:24px 24px 16px">
+      <div style="width:64px;height:64px;margin:0 auto 16px;background:var(--grad-violet);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:var(--violet-glow-intense);animation:pulseGlow 2s ease-in-out infinite">🎬</div>
+      <span class="eyebrow violet">Carica Video</span>
+      <h3 id="vupTitle">Condividi il tuo video</h3>
+      <p style="color:var(--silver-400);margin-top:8px">Trascina qui o seleziona un file MP4, MOV per caricarlo</p>
+    </div>
+    
+    <div id="vupDropZone" class="vup-dropzone" style="margin:0 24px 20px;padding:40px 24px;border:2px dashed var(--glass-violet-brd);border-radius:16px;background:linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.04) 100%);text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all 0.3s var(--ease-out)">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(192,132,252,0.15) 0%, transparent 70%);pointer-events:none"></div>
+      <div style="position:relative;z-index:1">
+        <div style="font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(192,132,252,0.6));animation:float 3s ease-in-out infinite">📁</div>
+        <h4 style="color:var(--silver-100);margin-bottom:8px">Trascina il tuo video qui</h4>
+        <p style="color:var(--silver-400);margin-bottom:16px;font-size:.9rem">oppure <span style="color:var(--violet-300);text-decoration:underline">sfoglia i file</span></p>
+        <p style="color:var(--silver-500);font-size:.8rem">MP4, MOV, WebM • Max 500MB</p>
+      </div>
+      <input type="file" id="vupFileInput" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style="position:absolute;inset:0;opacity:0;cursor:pointer" multiple>
+    </div>
+    
+    <div id="vupPreview" style="display:none;margin:0 24px 20px">
+      <div style="padding:16px;background:var(--glass);border-radius:12px;border:1px solid var(--glass-violet-brd)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:48px;height:48px;background:var(--grad-violet);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🎬</div>
+          <div style="flex:1;min-width:0">
+            <div id="vupFileName" style="color:var(--silver-100);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="vupFileSize" style="color:var(--silver-400);font-size:.85rem"></div>
+          </div>
+          <button type="button" id="vupRemove" class="btn btn-ghost btn-sm">✕ Rimuovi</button>
+        </div>
+        <div style="margin-bottom:16px">
+          <video id="vupVideoPreview" controls style="width:100%;max-height:200px;border-radius:10px;background:#000"></video>
+        </div>
+        <div class="field">
+          <label for="vupTitleInput">Titolo del video</label>
+          <input class="input violet" id="vupTitleInput" maxlength="120" placeholder="Dai un titolo al tuo video...">
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="vupDescInput">Descrizione (opzionale)</label>
+          <textarea class="input violet" id="vupDescInput" rows="3" maxlength="500" placeholder="Descrivi il tuo video..."></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <div id="vupProgress" style="display:none;margin:0 24px 20px">
+      <div style="padding:16px;background:var(--glass);border-radius:12px;border:1px solid var(--glass-violet-brd)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span style="color:var(--silver-100);font-weight:600">Caricamento in corso...</span>
+          <span id="vupPercent" style="color:var(--violet-300);font-family:var(--ff-mono);font-weight:600">0%</span>
+        </div>
+        <div style="height:8px;background:var(--silver-800);border-radius:4px;overflow:hidden;margin-bottom:12px">
+          <div id="vupBar" style="height:100%;width:0%;background:var(--grad-violet);transition:width 0.3s ease;box-shadow:0 0 10px rgba(192,132,252,0.6)"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:16px;height:16px;border:2px solid var(--violet-400);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+          <span style="color:var(--silver-400);font-size:.85rem">Elaborazione e ottimizzazione...</span>
+        </div>
+      </div>
+    </div>
+    
+    <div style="padding:16px 24px 24px;display:flex;gap:10px">
+      <button type="button" class="btn btn-ghost" style="flex:1" data-close-video-upload>Annulla</button>
+      <button type="button" class="btn btn-violet btn-lg" style="flex:2" id="vupUploadBtn" disabled>Carica Video</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.vup-dropzone.dragover {
+  border-color: var(--violet-400) !important;
+  background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(99,102,241,0.08) 100%) !important;
+  box-shadow: 0 0 30px rgba(139,92,246,0.4), inset 0 0 30px rgba(192,132,252,0.1) !important;
+  transform: scale(1.02);
+}
+</style>
+
 </body>
 </html>

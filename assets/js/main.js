@@ -852,11 +852,6 @@ function initMicroInteractions() {
     });
   }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
-  }
-      }
-    });
-  }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
-
   document.querySelectorAll("[data-reveal], .reveal-stagger").forEach(el => observer.observe(el));
 }
 
@@ -956,7 +951,12 @@ function loadLocalVideos() {
   if (stored) {
     try {
       const videos = JSON.parse(stored);
-      creativeVideos = creativeVideos.concat(videos);
+      if (Array.isArray(videos)) {
+        creativeVideos = [...videos, ...creativeVideos];
+        // Remove duplicates
+        const unique = Array.from(new Map(creativeVideos.map(v => [v.id, v])).values());
+        creativeVideos = unique;
+      }
     } catch (e) {
       console.error("[LocalTestMode] Failed to load local videos:", e);
     }
@@ -964,7 +964,15 @@ function loadLocalVideos() {
 }
 
 function saveLocalVideos(videos) {
-  localStorage.setItem(LOCAL_VIDEO_KEY, JSON.stringify(videos));
+  try {
+    const existing = JSON.parse(localStorage.getItem(LOCAL_VIDEO_KEY) || '[]');
+    const combined = [...videos, ...existing];
+    // Remove duplicates by id
+    const unique = Array.from(new Map(combined.map(v => [v.id, v])).values());
+    localStorage.setItem(LOCAL_VIDEO_KEY, JSON.stringify(unique));
+  } catch (e) {
+    localStorage.setItem(LOCAL_VIDEO_KEY, JSON.stringify(videos));
+  }
 }
 
 function openCreatePostModalForVideo() {
@@ -1096,8 +1104,9 @@ function formatDuration(seconds) {
 }
 
 // Override playVideo to handle local videos
-const originalPlayVideo = window.playVideo;
-window.playVideo = function(id) {
+// Enhanced local video play support
+const _playVideoOrig = playVideo;
+function playVideoEnhanced(id) {
   const video = creativeVideos.find(v => v.id === id);
   if (video && video.local && video.fonte?.url) {
     $("#vmTitle").textContent = video.titolo;
@@ -1107,7 +1116,7 @@ window.playVideo = function(id) {
     const wrap = $("#playerWrap");
     wrap.innerHTML = `
       <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
-        <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
+        <video controls autoplay playsinline style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
           <source src="${esc(video.fonte.url)}" type="${video.fonte.type || 'video/mp4'}">
           Il tuo browser non supporta la riproduzione video.
         </video>
@@ -1115,5 +1124,240 @@ window.playVideo = function(id) {
     openModal("videoModal");
     return;
   }
-  if (originalPlayVideo) originalPlayVideo(id);
-};
+  _playVideoOrig(id);
+}
+window.playVideo = playVideoEnhanced;
+
+// Enhanced Video Upload System
+function initAdvancedVideoUpload() {
+  const modal = document.getElementById('videoUploadModal');
+  const dropZone = document.getElementById('vupDropZone');
+  const fileInput = document.getElementById('vupFileInput');
+  const preview = document.getElementById('vupPreview');
+  const progress = document.getElementById('vupProgress');
+  const uploadBtn = document.getElementById('vupUploadBtn');
+  const removeBtn = document.getElementById('vupRemove');
+  const closeBtns = document.querySelectorAll('[data-close-video-upload]');
+  
+  let selectedFile = null;
+  
+  // Open modal from + button
+  document.addEventListener('click', (e) => {
+    const carica = e.target.closest('#btnCaricaVideo');
+    if (carica) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!Account.authed && localStorage.getItem('samurai_local_test_mode') !== 'true') {
+        toast("Accedi prima", "Servono credenziali per caricare un video.", "warn");
+        openModal("enterModal");
+        return;
+      }
+      
+      if (modal) {
+        modal.classList.add('is-open');
+        resetUpload();
+      }
+      return;
+    }
+  });
+  
+  // Close modal
+  closeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (modal) modal.classList.remove('is-open');
+    });
+  });
+  
+  // Click drop zone
+  dropZone?.addEventListener('click', (e) => {
+    if (e.target === fileInput) return;
+    fileInput?.click();
+  });
+  
+  // Drag and drop
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.add('dragover');
+  });
+  
+  dropZone?.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dropZone.contains(e.relatedTarget)) {
+      dropZone.classList.remove('dragover');
+    }
+  });
+  
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+  
+  fileInput?.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+  
+  function handleFile(file) {
+    const validTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|mov|webm)$/i)) {
+      toast("Formato non supportato", "Usa MP4, MOV o WebM", "warn");
+      return;
+    }
+    
+    if (file.size > 500 * 1024 * 1024) {
+      toast("File troppo grande", "Dimensione massima: 500MB", "warn");
+      return;
+    }
+    
+    selectedFile = file;
+    
+    // Show preview
+    document.getElementById('vupFileName').textContent = file.name;
+    document.getElementById('vupFileSize').textContent = formatFileSize(file.size);
+    
+    const videoPreview = document.getElementById('vupVideoPreview');
+    videoPreview.src = URL.createObjectURL(file);
+    
+    // Auto-fill title
+    const titleInput = document.getElementById('vupTitleInput');
+    if (titleInput && !titleInput.value) {
+      titleInput.value = file.name.replace(/\.[^/.]+$/, '');
+    }
+    
+    preview.style.display = 'block';
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = 'Carica Video';
+  }
+  
+  removeBtn?.addEventListener('click', () => {
+    resetUpload();
+  });
+  
+  function resetUpload() {
+    selectedFile = null;
+    preview.style.display = 'none';
+    progress.style.display = 'none';
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Carica Video';
+    document.getElementById('vupFileInput').value = '';
+    document.getElementById('vupTitleInput').value = '';
+    document.getElementById('vupDescInput').value = '';
+    const videoPreview = document.getElementById('vupVideoPreview');
+    if (videoPreview.src) {
+      URL.revokeObjectURL(videoPreview.src);
+      videoPreview.src = '';
+    }
+  }
+  
+  uploadBtn?.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    
+    const title = document.getElementById('vupTitleInput').value.trim();
+    if (!title) {
+      toast("Titolo richiesto", "Inserisci un titolo per il video", "warn");
+      document.getElementById('vupTitleInput').focus();
+      return;
+    }
+    
+    const desc = document.getElementById('vupDescInput').value.trim();
+    
+    preview.style.display = 'none';
+    progress.style.display = 'block';
+    uploadBtn.disabled = true;
+    
+    // Simulate sophisticated upload with progress
+    let progressVal = 0;
+    const progressBar = document.getElementById('vupBar');
+    const progressPercent = document.getElementById('vupPercent');
+    
+    const progressInterval = setInterval(() => {
+      progressVal += Math.random() * 15 + 5;
+      if (progressVal > 95) progressVal = 95;
+      progressBar.style.width = progressVal + '%';
+      progressPercent.textContent = Math.floor(progressVal) + '%';
+    }, 200);
+    
+    try {
+      // Create object URL for local playback
+      const videoUrl = URL.createObjectURL(selectedFile);
+      
+      const duration = await getVideoDuration(selectedFile);
+      
+      const videoData = {
+        id: "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+        titolo: title,
+        desc: desc || `Caricato da ${selectedFile.name}`,
+        dur: formatDuration(duration),
+        cat: "creativo",
+        autore: {
+          nome: Account.data?.name || Account.data?.displayName || "Test User",
+          handle: Account.data?.handle || "test_user",
+          level: Account.data?.level || 1
+        },
+        fonte: { url: videoUrl, type: selectedFile.type },
+        likes: 0, commenti: 0, tags: ["locale", "video"], pubblico: true,
+        local: true, createdAt: new Date().toISOString()
+      };
+      
+      // Simulate processing time
+      await new Promise(r => setTimeout(r, 1500));
+      
+      clearInterval(progressInterval);
+      progressBar.style.width = '100%';
+      progressPercent.textContent = '100%';
+      
+      await new Promise(r => setTimeout(r, 500));
+      
+      // Add to creativeVideos
+      if (typeof creativeVideos !== 'undefined') {
+        creativeVideos.unshift(videoData);
+      }
+      saveLocalVideos([videoData]);
+      
+      if (typeof renderVideos === 'function') {
+        renderVideos();
+      }
+      
+      // Close modal
+      modal.classList.remove('is-open');
+      resetUpload();
+      
+      toast("Video caricato con successo!", "Il video è ora nella sezione Creatività", "ok");
+      
+    } catch (err) {
+      clearInterval(progressInterval);
+      console.error("[VideoUpload] Error:", err);
+      toast("Errore durante il caricamento", err.message, "err");
+      progress.style.display = 'none';
+      preview.style.display = 'block';
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Riprova';
+    }
+  });
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Initialize advanced video upload
+setTimeout(() => {
+  if (typeof initAdvancedVideoUpload === 'function') {
+    initAdvancedVideoUpload();
+  }
+}, 1000);
