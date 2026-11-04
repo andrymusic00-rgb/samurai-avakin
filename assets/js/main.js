@@ -273,6 +273,19 @@
   let lbList = [], lbIdx = 0;
   let creativeVideos = []; // video caricati dagli utenti (tipo video da /api/creative)
 
+  // Normalizza video come fa la gallery: unisce DATA.videos + creativeVideos + locali
+  function vAll() {
+    const base = DATA.videos.map((v) => ({ ...v, thumb: pic(v), srcType: 'data' }));
+    const creativi = creativeVideos.map((v) => ({ 
+      ...v, 
+      thumb: v.poster ? v.poster : pic({ seed: v.id, w: 320, h: 180, comp: 'crest' }),
+      srcType: 'creativo',
+      cat: v.cat || 'creativo',
+      vcat: v.cat || 'creativo'
+    }));
+    return [...base, ...creativi].filter((v) => v.src || v.fonte?.url || v.thumb);
+  }
+
   async function loadCreativeVideos() {
     try {
       const r = await API.get("/api/creative?tipo=video&limit=24");
@@ -391,7 +404,9 @@
   async function renderVideos() {
     await loadCreativeVideos();
     try { loadLocalVideos(); } catch {}
-    const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
+    
+    const allVideos = vAll();
+    const [feat, ...rest] = allVideos;
 
     $("#vidFeatured").innerHTML = `
       <div class="vid-featured-bg" aria-hidden="true">
@@ -443,45 +458,38 @@
         </section>`;
     }
 
-    const creativiHtml = creativeVideos.length
-      ? `<section class="vid-section" style="margin-top:44px">
-           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Video del clan</span>
-           <div class="video-grid" id="videoGridCreativi"></div>
-         </section>`
-      : "";
-
-    $("#videoGrid").innerHTML = rest.map((v, i) => `
-      <article class="vid-card image-parallax card-3d" data-vcat="${v.cat}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-        <div class="vid-thumb">
-          <img src="${v.thumb}" alt="${esc(v.titolo)}" loading="lazy">
-          <div class="vid-play"><div class="vid-play-btn">▶</div><span class="vid-dur">${v.dur}</span></div>
-        </div>
-        <div class="vid-meta">
-          <b>${esc(v.titolo)}</b>
-          <small>${esc(v.desc.slice(0, 72))}…</small>
-          <span class="tag" style="align-self:flex-start;margin-top:4px">${v.cat.toUpperCase()}</span>
-        </div>
-      </article>`).join("") + creativiHtml;
-
-      if (creativeVideos.length) {
-      const cg = $("#videoGridCreativi");
-      cg.innerHTML = creativeVideos.map((v, i) => `
-        <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-          <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9;${v.poster ? `background-image:url('${esc(v.poster)}');background-size:cover;background-position:center` : ''}">
-            <span class="vid-creativo-badge">CREATIVITÀ</span>
+    $("#videoGrid").innerHTML = rest.map((v, i) => {
+      const isCreativo = v.srcType === 'creativo';
+      const thumbStyle = v.poster 
+        ? `aspect-ratio:16/9;background-image:url('${esc(v.poster)}');background-size:cover;background-position:center`
+        : `aspect-ratio:16/9`;
+      const badgeHtml = isCreativo ? `<span class="vid-creativo-badge">CREATIVITÀ</span>` : '';
+      const placeholderHtml = (!v.poster && isCreativo) 
+        ? `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle || "Clan")}</span>` 
+        : '';
+      const metaSmall = isCreativo
+        ? `<small style="color:var(--silver-500)">${esc(v.autore?.handle || v.autore?.nome || "Clan")} · ${v.local ? "Caricato da te" : "Clan"}</small>`
+        : `<small>${esc(v.desc?.slice(0, 72) || '')}…</small>`;
+      const tagHtml = isCreativo
+        ? `<div class="row" style="gap:6px;margin-top:6px"><span class="tag silver">${num(v.likes || 0)} ⚔</span><span class="tag silver">${num(v.commenti || 0)} 💬</span></div>`
+        : `<span class="tag" style="align-self:flex-start;margin-top:4px">${(v.vcat || v.cat || '').toUpperCase()}</span>`;
+      
+      return `
+        <article class="vid-card${isCreativo ? ' vid-card-creativo' : ''} image-parallax card-3d" data-vcat="${v.vcat || v.cat}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+          <div class="vid-thumb${isCreativo ? ' vid-thumb-creativo' : ''}" style="${thumbStyle}">
+            ${badgeHtml}
             <span class="vid-play-badge">▶</span>
-            ${v.poster ? '' : `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle)}</span>`}
+            ${placeholderHtml}
+            ${!isCreativo ? `<img src="${v.thumb}" alt="${esc(v.titolo)}" loading="lazy">` : ''}
+            ${!isCreativo ? `<div class="vid-play"><div class="vid-play-btn">▶</div><span class="vid-dur">${v.dur}</span></div>` : ''}
           </div>
           <div class="vid-meta">
             <b>${esc(v.titolo)}</b>
-            <small style="color:var(--silver-500)">${esc(v.autore?.handle || "Clan")} · ${v.local ? "Locale" : "Clan"}</small>
-            <div class="row" style="gap:6px;margin-top:6px">
-              <span class="tag silver">${num(v.likes || 0)} ⚔</span>
-              <span class="tag silver">${num(v.commenti || 0)} 💬</span>
-            </div>
+            ${metaSmall}
+            ${tagHtml}
           </div>
-        </article>`).join("");
-    }
+        </article>`;
+    }).join("") + localUploadZone;
     
     // Re-observe new elements for animations
     setTimeout(() => {
@@ -615,6 +623,10 @@
     document.title = `Samurai di Avakin — ${DATA.nav.find((n) => n.id === view).label}`;
     if (view === "account") { Account.fillForm(); Account.renderBadge(); Account.renderSessions(); }
     Views.onRoute(view);
+    const fc = document.getElementById('filigranaCanvas');
+    if (fc) {
+      fc.style.opacity = view === 'home' ? '0.06' : '0.04';
+    }
     if (view === "video") {
       setTimeout(() => {
         renderVideos();
@@ -755,37 +767,11 @@
         } catch {}
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         cvcat.classList.add("is-active");
-        const grid = $("#videoGrid");
-        // Ordina per data di creazione più recente
-        const list = [...creativeVideos].sort((a,b) => {
-          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          if (tb !== ta) return tb - ta;
-          return 0;
+        // Filtra la griglia unificata per mostrare solo video creativi (srcType === 'creativo')
+        $$("#videoGrid .vid-card").forEach((c) => {
+          const isCreativo = c.classList.contains('vid-card-creativo');
+          c.classList.toggle("is-hidden", !isCreativo);
         });
-        grid.innerHTML = list.length
-          ? list.map((v, i) => `
-            <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-              <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9;${v.poster ? `background-image:url('${esc(v.poster)}');background-size:cover;background-position:center` : ''}">
-                <span class="vid-creativo-badge">CREATIVITÀ</span>
-                <span class="vid-play-badge">▶</span>
-                ${v.poster ? '' : `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle || "Clan")}</span>`}
-              </div>
-              <div class="vid-meta">
-                <b>${esc(v.titolo)}</b>
-                <small style="color:var(--silver-500)">${esc(v.autore?.handle || v.autore?.nome || "Clan")} · ${v.local ? "Caricato da te" : "Clan"}</small>
-                <div class="row" style="gap:6px;margin-top:6px">
-                  <span class="tag silver">${num(v.likes || 0)} ⚔</span>
-                  <span class="tag silver">${num(v.commenti || 0)} 💬</span>
-                </div>
-              </div>
-            </article>`).join("")
-          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>Nessun video caricato ancora</h3><p>Carica il tuo video con "+ Carica il tuo video".</p></div>`;
-        setTimeout(() => {
-          document.querySelectorAll('#videoGrid [data-reveal]:not(.is-in)').forEach(el => {
-            observer.observe(el);
-          });
-        }, 30);
         return;
       }
 
@@ -950,6 +936,32 @@
     }, { passive: true });
   }
 
+  function initHomeCinematics() {
+    if (reduceMotion || isCoarsePointer) return;
+    const fc = document.getElementById('filigranaCanvas');
+    if (fc) {
+      fc.style.transition = 'opacity 600ms ease';
+      fc.style.opacity = '0.06';
+    }
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        const heroMon = document.querySelector('.hero-mon');
+        const heroVis = document.querySelector('.hero-visual');
+        const heroOrbs = document.querySelectorAll('.hero-orb');
+        if (heroMon) heroMon.style.transform = `translate3d(0, ${y * 0.06}px, 0)`;
+        if (heroVis) heroVis.style.transform = `translate3d(0, ${y * 0.04}px, 0)`;
+        heroOrbs.forEach((orb, i) => {
+          orb.style.transform = `translate3d(0, ${y * (0.03 + i * 0.01)}px, 0)`;
+        });
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+
   function init() {
     updateViewportUnits();
     window.addEventListener('resize', updateViewportUnits, { passive: true });
@@ -977,6 +989,7 @@
     UI.setAccent(store.get("accent", "#5aa8ff"));
     if (!reduceMotion && !isCoarsePointer) {
       initMicroInteractions();
+      initHomeCinematics();
     } else {
       document.querySelectorAll('.magnetic').forEach(el => el.classList.remove('magnetic'));
       document.querySelectorAll('.tilt-card').forEach(el => el.classList.remove('tilt-card'));
@@ -1302,53 +1315,8 @@ function handleLocalVideoUpload() {
       lockBodyScroll(false);
       try { newForm.reset(); } catch {}
       
-      // Re-render videos
+      // Re-render videos (unified grid handles everything)
       try { await renderVideos(); } catch { try { renderVideos(); } catch {} }
-      setTimeout(() => {
-        try {
-          const stored = localStorage.getItem("samurai_local_videos");
-          if (stored) {
-            const vids = JSON.parse(stored);
-            if (Array.isArray(vids) && vids.length) {
-              creativeVideos = [...vids, ...creativeVideos];
-              creativeVideos = Array.from(new Map(creativeVideos.map(v => [v.id, v])).values());
-            }
-          }
-        } catch {}
-        try { loadLocalVideos(); } catch {}
-        const cv = $("#btnVideoCatCreativi");
-        if (cv && document.querySelector('#view-video.is-active')) {
-          $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
-          cv.classList.add("is-active");
-          const grid = $("#videoGrid");
-          const list = [...creativeVideos].sort((a,b) => {
-            const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return tb - ta;
-          });
-          grid.innerHTML = list.length
-            ? list.map((v, i) => `
-              <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-                <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
-                  <span class="vid-creativo-badge">CREATIVITÀ</span>
-                  <span class="vid-play-badge">▶</span>
-                  <span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle || "Clan")}</span>
-                </div>
-                <div class="vid-meta">
-                  <b>${esc(v.titolo)}</b>
-                  <small style="color:var(--silver-500)">${esc(v.autore?.handle || v.autore?.nome || "Clan")} · Caricato da te</small>
-                  <div class="row" style="gap:6px;margin-top:6px">
-                    <span class="tag silver">${num(v.likes || 0)} ⚔</span>
-                    <span class="tag silver">${num(v.commenti || 0)} 💬</span>
-                  </div>
-                </div>
-              </article>`).join("")
-            : grid.innerHTML;
-          setTimeout(() => {
-            document.querySelectorAll('#videoGrid [data-reveal]:not(.is-in)').forEach(el => observer.observe(el));
-          }, 30);
-        }
-      }, 60);
       
       toast("Video caricato!", "Il video è pronto nella sezione Creatività", "ok");
       
