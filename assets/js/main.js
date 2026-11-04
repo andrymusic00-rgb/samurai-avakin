@@ -277,11 +277,71 @@
     paintLightbox();
   }
 
+  function setupVideoFeaturedCinematic() {
+    const featEl = $("#vidFeatured");
+    if (!featEl) return;
+    featEl.onmousemove = (e) => {
+      const rect = featEl.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      featEl.style.setProperty("--mx", x + "%");
+      featEl.style.setProperty("--my", y + "%");
+    };
+    featEl.onmouseleave = () => {
+      featEl.style.setProperty("--mx", "50%");
+      featEl.style.setProperty("--my", "30%");
+    };
+  }
+
+  function maybeShowVideoIntro() {
+    try {
+      if (localStorage.getItem("samurai_video_official_intro_v1")) return;
+      const raw = (location.hash.replace("#/", "") || "").split("?")[0];
+      if (raw !== "video") return;
+      const overlay = $("#videoIntroOverlay");
+      if (!overlay) return;
+      overlay.style.display = "flex";
+      overlay.classList.add("is-open");
+      const btn = $("#btnVideoIntroPlay");
+      if (btn) {
+        btn.onclick = () => {
+          try { localStorage.setItem("samurai_video_official_intro_v1", "1"); } catch {}
+          overlay.classList.remove("is-open");
+          setTimeout(() => { overlay.style.display = "none"; }, 420);
+          setTimeout(() => {
+            playVideo("v0");
+            const vm = $("#videoModal");
+            if (vm) vm.classList.add("is-open");
+          }, 520);
+        };
+      }
+      overlay.onkeydown = (e) => {
+        if (e.key === "Tab") {
+          const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) { last.focus(); e.preventDefault(); }
+          } else {
+            if (document.activeElement === last) { first.focus(); e.preventDefault(); }
+          }
+        }
+      };
+      setTimeout(() => { $("#btnVideoIntroPlay")?.focus(); }, 50);
+    } catch {}
+  }
+
   async function renderVideos() {
     await loadCreativeVideos();
     const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
 
     $("#vidFeatured").innerHTML = `
+      <div class="vid-featured-bg" aria-hidden="true">
+        <img src="${feat.thumb}" alt="" loading="lazy">
+        <span class="vid-featured-glow"></span>
+        <span class="vid-featured-sheen"></span>
+      </div>
       <div class="vid-thumb" data-vid="${feat.id}">
         <img src="${feat.thumb}" alt="${esc(feat.titolo)}" loading="lazy">
         <div class="vid-play">
@@ -290,14 +350,16 @@
         </div>
       </div>
       <div class="vid-featured-info">
+        <span class="vid-badge-prima">PRIMA VISIONE</span>
         <span class="eyebrow">In evidenza</span>
-        <h3 style="font-family:var(--ff-display);font-size:clamp(1.3rem,2.4vw,1.9rem);color:var(--silver-100);line-height:1.15">${esc(feat.titolo)}</h3>
-        <p style="color:var(--silver-400);font-size:.92rem">${esc(feat.desc)}</p>
+        <h3 style="font-family:var(--ff-display);font-size:clamp(1.4rem,2.6vw,2.1rem);color:var(--silver-100);line-height:1.12">${esc(feat.titolo)}</h3>
+        <p style="color:var(--silver-400);font-size:.94rem">${esc(feat.desc)}</p>
         <div class="row">
           <button class="btn btn-primary" data-vid="${feat.id}">Riproduci ora</button>
           <span class="tag">${feat.cat.toUpperCase()}</span>
         </div>
       </div>`;
+    setupVideoFeaturedCinematic();
 
     $("#videoFilters").innerHTML = DATA.videoCats.map((c, i) =>
       `<button class="chip${i === 0 ? " is-active" : ""}" data-vcat="${c.id}">${c.label}</button>`).join("") +
@@ -346,6 +408,7 @@
       cg.innerHTML = creativeVideos.map((v, i) => `
         <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
           <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9;${v.poster ? `background-image:url('${esc(v.poster)}');background-size:cover;background-position:center` : ''}">
+            <span class="vid-creativo-badge">CREATIVITÀ</span>
             <span class="vid-play-badge">▶</span>
             ${v.poster ? '' : `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle)}</span>`}
           </div>
@@ -368,23 +431,29 @@
     }, 50);
   }
 
-  function playVideo(id) {
+  function playVideo(id, opts = {}) {
+    const auto = !!opts.autoplay;
     // Video creativi caricati dagli utenti
     const cv = creativeVideos.find((x) => x.id === id);
     if (cv) {
       $("#vmTitle").textContent = cv.titolo;
       $("#vmDesc").textContent = cv.desc || "Condiviso da " + (cv.autore?.nome || cv.autore?.handle);
       $("#vmCat").textContent = "CREATIVO";
-      $("#vmDur").textContent = cv.dur;
+      $("#vmDur").textContent = cv.dur || "—";
       const wrap = $("#playerWrap");
       wrap.innerHTML = `
-        <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
-          <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
-            <source src="${esc(cv.fonte?.url || "")}" type="video/mp4">
+        <div class="vid-player-creativo player-cine-frame" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+          <span class="player-cine-vignette" aria-hidden="true"></span>
+          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1">
+            <source src="${esc(cv.fonte?.url || "")}" type="${esc(cv.fonte?.type || "video/mp4")}">
             Il tuo browser non supporta la riproduzione video. Scarica il file per vederlo.
           </video>
         </div>`;
       openModal("videoModal");
+      setTimeout(() => {
+        const v = wrap.querySelector("video");
+        if (v && auto) { try { v.play().catch(()=>{}); } catch {} }
+      }, 80);
       return;
     }
 
@@ -400,12 +469,17 @@
       const ext = url.slice(url.lastIndexOf(".")).toLowerCase();
       const type = ext === ".mov" ? "video/quicktime" : ext === ".webm" ? "video/webm" : "video/mp4";
       wrap.innerHTML = `
-        <div class="vid-player-creativo" style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center">
-          <video controls autoplay playsinline src="${esc(url)}" type="${type}" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a">
+        <div class="vid-player-creativo player-cine-frame" style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+          <span class="player-cine-vignette" aria-hidden="true"></span>
+          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" src="${esc(url)}" type="${type}" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1">
             Il tuo browser non supporta la riproduzione di questo file. <a href="${esc(url)}" download style="color:var(--ruri);text-decoration:underline">Scarica il video</a>.
           </video>
         </div>`;
       openModal("videoModal");
+      setTimeout(() => {
+        const vv = wrap.querySelector("video");
+        if (vv && auto) { try { vv.play().catch(()=>{}); } catch {} }
+      }, 80);
       return;
     }
     if (v.fonte && v.fonte.youtube) {
@@ -481,7 +555,11 @@
       setTimeout(() => {
         renderVideos();
         observe($(`#view-${view}`));
-      }, 50);
+        maybeShowVideoIntro();
+      }, 60);
+    } else {
+      const overlay = $("#videoIntroOverlay");
+      if (overlay) { overlay.classList.remove("is-open"); overlay.style.display = "none"; }
     }
     observe($(`#view-${view}`));
     UI.animateInside($(`#view-${view}`));

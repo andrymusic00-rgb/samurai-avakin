@@ -360,7 +360,7 @@
         </div>
       </div>
 
-      <div class="vid-featured" id="vidFeatured" data-reveal style="margin-bottom:44px"></div>
+      <div class="vid-featured vid-featured-cine" id="vidFeatured" data-reveal style="margin-bottom:44px"></div>
 
       <div class="filter-bar" id="videoFilters" style="margin-bottom:28px"></div>
       <div class="video-grid" id="videoGrid"></div>
@@ -1183,7 +1183,7 @@
   <div class="modal-backdrop" data-close></div>
   <div class="modal-box glass violet glass-morph w-lg">
     <button class="modal-x" data-close aria-label="Chiudi">✕</button>
-    <div class="player-wrap" id="playerWrap"></div>
+    <div class="player-wrap player-wrap-cine" id="playerWrap"></div>
     <div style="margin-top:18px">
       <div class="row" style="gap:8px;margin-bottom:10px">
         <span class="tag violet" id="vmCat">—</span>
@@ -1191,6 +1191,19 @@
       </div>
       <h3 id="vmTitle" style="font-family:var(--ff-display);font-size:1.4rem;color:var(--silver-100)"></h3>
       <p id="vmDesc" style="color:var(--silver-400);font-size:.9rem;margin-top:8px"></p>
+    </div>
+  </div>
+</div>
+
+<div id="videoIntroOverlay" class="video-intro-overlay" role="dialog" aria-modal="true" aria-labelledby="videoIntroTitle" aria-describedby="videoIntroSub" style="display:none">
+  <div class="video-intro-backdrop"></div>
+  <div class="video-intro-stage">
+    <div class="video-intro-glow"></div>
+    <div class="video-intro-content">
+      <span class="video-intro-eyebrow">APERTURA UFFICIALE</span>
+      <h2 class="video-intro-title" id="videoIntroTitle">SAMURAI DI AVAKIN | PRIMA VISIONE</h2>
+      <p class="video-intro-sub" id="videoIntroSub">Il sentiero del Samurai comincia da qui.</p>
+      <button class="btn btn-violet btn-lg video-intro-cta" id="btnVideoIntroPlay">ASSISTI ALLA PRIMA VISIONE</button>
     </div>
   </div>
 </div>
