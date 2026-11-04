@@ -331,6 +331,14 @@
       featEl.style.setProperty("--mx", "50%");
       featEl.style.setProperty("--my", "30%");
     };
+
+    const mv = featEl.querySelector(".vid-featured-motion");
+    if (mv) {
+      const play = () => { try { mv.play().catch(() => {}); } catch {} };
+      play();
+      document.addEventListener("visibilitychange", play, { once: false });
+      window.addEventListener("focus", play, { passive: true });
+    }
   }
 
   function maybeShowVideoIntro() {
@@ -382,6 +390,7 @@
 
   async function renderVideos() {
     await loadCreativeVideos();
+    try { loadLocalVideos(); } catch {}
     const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
 
     $("#vidFeatured").innerHTML = `
@@ -389,6 +398,9 @@
         <img src="${feat.thumb}" alt="" loading="lazy">
         <span class="vid-featured-glow"></span>
         <span class="vid-featured-sheen"></span>
+      </div>
+      <div class="vid-featured-motion-wrap" aria-hidden="true">
+        <video class="vid-featured-motion" muted autoplay loop playsinline preload="auto" src="${esc(feat.fonte?.url || "")}" type="video/quicktime"></video>
       </div>
       <div class="vid-thumb" data-vid="${feat.id}">
         <img src="${feat.thumb}" alt="${esc(feat.titolo)}" loading="lazy">
@@ -462,10 +474,10 @@
           </div>
           <div class="vid-meta">
             <b>${esc(v.titolo)}</b>
-            <small style="color:var(--silver-500)">${esc(v.autore?.handle)} · Lv ${v.autore?.level ?? 1}</small>
+            <small style="color:var(--silver-500)">${esc(v.autore?.handle || "Clan")} · ${v.local ? "Locale" : "Clan"}</small>
             <div class="row" style="gap:6px;margin-top:6px">
-              <span class="tag silver">${num(v.likes)} ⚔</span>
-              <span class="tag silver">${num(v.commenti)} 💬</span>
+              <span class="tag silver">${num(v.likes || 0)} ⚔</span>
+              <span class="tag silver">${num(v.commenti || 0)} 💬</span>
             </div>
           </div>
         </article>`).join("");
@@ -666,22 +678,33 @@
 
       const carica = e.target.closest("#btnCaricaVideo");
       if (carica) {
-        const testMode = localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true";
-        if (!Account.authed && !testMode) { 
-          toast("Modalità test attivata", "Caricamento video abilitato localmente.", "ok", 2000);
-          localStorage.setItem(LOCAL_TEST_MODE_KEY, "true");
-          if (typeof initLocalVideoTesting === 'function') initLocalVideoTesting();
-        }
+        try {
+          const testMode = localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true";
+          if (!testMode) {
+            localStorage.setItem(LOCAL_TEST_MODE_KEY, "true");
+            if (typeof initLocalVideoTesting === 'function') initLocalVideoTesting();
+          }
+        } catch {}
         // Open advanced upload modal
         const advModal = document.getElementById('videoUploadModal');
         if (advModal) {
           advModal.classList.add('is-open');
-          // Ensure video upload is initialized and reset
+          lockBodyScroll(true);
           if (typeof window.initAdvancedVideoUpload === 'function') {
             window.initAdvancedVideoUpload();
           }
           if (typeof window.resetVideoUpload === 'function') {
             window.resetVideoUpload();
+          } else {
+            setTimeout(() => {
+              const rs = document.getElementById('vupStepDrop');
+              if (rs) {
+                document.querySelectorAll('[id^="vupStep"]').forEach(s => {
+                  if (s.id === 'vupStepDrop') { s.style.display = 'flex'; s.style.opacity = '1'; s.style.visibility = 'visible'; }
+                  else { s.style.display = 'none'; s.style.opacity = '0'; s.style.visibility = 'hidden'; }
+                });
+              }
+            }, 40);
           }
           return;
         }
@@ -691,7 +714,8 @@
         if (modal && tipo) {
           tipo.value = "video";
           modal.classList.add("is-open");
-          $("#cp-titolo").focus();
+          lockBodyScroll(true);
+          $("#cp-titolo")?.focus();
         }
         return;
       }
@@ -716,26 +740,52 @@
 
       const cvcat = e.target.closest("#btnVideoCatCreativi");
       if (cvcat) {
+        try { loadLocalVideos(); } catch {}
+        // Ricarica da localStorage per sicurezza
+        try {
+          const stored = localStorage.getItem("samurai_local_videos");
+          if (stored) {
+            const vids = JSON.parse(stored);
+            if (Array.isArray(vids) && vids.length) {
+              creativeVideos = [...vids, ...creativeVideos];
+              const unique = Array.from(new Map(creativeVideos.map(v => [v.id, v])).values());
+              creativeVideos = unique;
+            }
+          }
+        } catch {}
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         cvcat.classList.add("is-active");
         const grid = $("#videoGrid");
-        grid.innerHTML = creativeVideos.length
-          ? creativeVideos.map((v, i) => `
-            <article class="vid-card vid-card-creativo" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-              <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
+        // Ordina per data di creazione più recente
+        const list = [...creativeVideos].sort((a,b) => {
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          if (tb !== ta) return tb - ta;
+          return 0;
+        });
+        grid.innerHTML = list.length
+          ? list.map((v, i) => `
+            <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+              <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9;${v.poster ? `background-image:url('${esc(v.poster)}');background-size:cover;background-position:center` : ''}">
+                <span class="vid-creativo-badge">CREATIVITÀ</span>
                 <span class="vid-play-badge">▶</span>
-                <span class="vid-placeholder">${v.autore?.nome || v.autore?.handle}</span>
+                ${v.poster ? '' : `<span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle || "Clan")}</span>`}
               </div>
               <div class="vid-meta">
                 <b>${esc(v.titolo)}</b>
-                <small style="color:var(--silver-500)">${esc(v.autore?.handle)} · Lv ${v.autore?.level ?? 1}</small>
+                <small style="color:var(--silver-500)">${esc(v.autore?.handle || v.autore?.nome || "Clan")} · ${v.local ? "Caricato da te" : "Clan"}</small>
                 <div class="row" style="gap:6px;margin-top:6px">
-                  <span class="tag silver">${num(v.likes)} ⚔</span>
-                  <span class="tag silver">${num(v.commenti)} 💬</span>
+                  <span class="tag silver">${num(v.likes || 0)} ⚔</span>
+                  <span class="tag silver">${num(v.commenti || 0)} 💬</span>
                 </div>
               </div>
             </article>`).join("")
-          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>Nessun video caricato ancora</h3><p>Sii il primo a condividere un video del tuo percorso samurai.</p></div>`;
+          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>Nessun video caricato ancora</h3><p>Carica il tuo video con "+ Carica il tuo video".</p></div>`;
+        setTimeout(() => {
+          document.querySelectorAll('#videoGrid [data-reveal]:not(.is-in)').forEach(el => {
+            observer.observe(el);
+          });
+        }, 30);
         return;
       }
 
@@ -1246,10 +1296,15 @@ function handleLocalVideoUpload() {
       
       // Close modal
       $("#createPostModal").classList.remove("is-open");
+      lockBodyScroll(false);
       newForm.reset();
       
       // Re-render videos
-      renderVideos();
+      try { await renderVideos(); } catch { try { renderVideos(); } catch {} }
+      setTimeout(() => {
+        const cv = $("#btnVideoCatCreativi");
+        if (cv && document.querySelector('#view-video.is-active')) cv.click();
+      }, 40);
       
       toast("Video caricato!", "Il video è pronto nella sezione Creatività", "ok");
       
@@ -1286,30 +1341,36 @@ function formatDuration(seconds) {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Override playVideo to handle local videos
-// Enhanced local video play support
-const _playVideoOrig = playVideo;
-function playVideoEnhanced(id) {
-  const video = creativeVideos.find(v => v.id === id);
-  if (video && video.local && video.fonte?.url) {
-    $("#vmTitle").textContent = video.titolo;
-    $("#vmDesc").textContent = video.desc || "Condiviso da " + (video.autore?.nome || video.autore?.handle);
-    $("#vmCat").textContent = "CREATIVO";
-    $("#vmDur").textContent = video.dur;
-    const wrap = $("#playerWrap");
-    wrap.innerHTML = `
-      <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
-        <video controls autoplay playsinline style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
-          <source src="${esc(video.fonte.url)}" type="${video.fonte.type || 'video/mp4'}">
-          Il tuo browser non supporta la riproduzione video.
-        </video>
-      </div>`;
-    openModal("videoModal");
-    return;
+  // Override playVideo to handle local videos
+  // Enhanced local video play support
+  const _playVideoOrig = playVideo;
+  function playVideoEnhanced(id, opts = {}) {
+    const video = creativeVideos.find(v => v.id === id);
+    if (video && video.fonte?.url && (video.local || video.id?.startsWith('cv-') || video.id?.startsWith('local_'))) {
+      $("#vmTitle").textContent = video.titolo;
+      $("#vmDesc").textContent = video.desc || "Condiviso da " + (video.autore?.nome || video.autore?.handle || "Clan");
+      $("#vmCat").textContent = "CREATIVO";
+      $("#vmDur").textContent = video.dur || "—";
+      const wrap = $("#playerWrap");
+      const auto = !!opts.autoplay;
+      wrap.innerHTML = `
+        <div class="vid-player-creativo player-cine-frame" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+          <span class="player-cine-vignette" aria-hidden="true"></span>
+          <video ${auto ? "autoplay" : ""} controls playsinline preload="metadata" style="max-width:100%;max-height:82vh;border-radius:12px;background:#01030a;position:relative;z-index:1;touch-action:pan-y pinch-zoom">
+            <source src="${esc(video.fonte.url)}" type="${esc(video.fonte.type || 'video/mp4')}">
+            Il tuo browser non supporta la riproduzione video.
+          </video>
+        </div>`;
+      openModal("videoModal");
+      lockBodyScroll(true);
+      if (auto) {
+        setTimeout(() => { try { wrap.querySelector("video")?.play().catch(()=>{}); } catch {} }, 90);
+      }
+      return;
+    }
+    _playVideoOrig(id, opts);
   }
-  _playVideoOrig(id);
-}
-window.playVideo = playVideoEnhanced;
+  window.playVideo = playVideoEnhanced;
 
 // Enhanced Video Upload System
 function initAdvancedVideoUpload() {
