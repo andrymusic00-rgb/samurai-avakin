@@ -147,7 +147,18 @@ const DATA = {
     { id: "g11", cat: "war", titolo: "Ultimo colpo del capitano", autore: "Raiden", data: "28 Ago 2026", seed: 145, w: 900, h: 1200, comp: "blade" },
     { id: "g12", cat: "outfits", titolo: "Mantello del Ronin", autore: "Kaede", data: "24 Ago 2026", seed: 162, w: 900, h: 1000, comp: "waves" },
     { id: "g13", cat: "events", titolo: "Cerimonia del nuovo Bushi", autore: "Kazemaru", data: "20 Ago 2026", seed: 174, w: 1000, h: 700, comp: "torii" },
-    { id: "g14", cat: "trophies", titolo: "Cento samurai", autore: "Studio interno", data: "14 Ago 2026", seed: 188, w: 900, h: 1100, comp: "crest" }
+    { id: "g14", cat: "trophies", titolo: "Cento samurai", autore: "Studio interno", data: "14 Ago 2026", seed: 188, w: 900, h: 1100, comp: "crest" },
+    // Foto reali del clan (IMG_ files)
+    { id: "g-img-1", cat: "clan-life", titolo: "Momento clan #7427", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7427 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-2", cat: "clan-life", titolo: "Momento clan #7428", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7428 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-3", cat: "clan-life", titolo: "Momento clan #7429", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7429 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-4", cat: "clan-life", titolo: "Momento clan #7430", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7430 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-5", cat: "clan-life", titolo: "Momento clan #7431", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7431 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-6", cat: "clan-life", titolo: "Momento clan #7432", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7432 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-7", cat: "clan-life", titolo: "Momento clan #7611", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7611 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-8", cat: "clan-life", titolo: "Momento clan #7611b", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7611 3.JPG", w: 1920, h: 1080 },
+    { id: "g-img-9", cat: "clan-life", titolo: "Momento clan #7612", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7612 2.JPG", w: 1920, h: 1080 },
+    { id: "g-img-10", cat: "clan-life", titolo: "Momento clan #7612b", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7612 3.JPG", w: 1920, h: 1080 }
   ],
 
   galleryCats: [
@@ -156,7 +167,8 @@ const DATA = {
     { id: "trophies", label: "Trophies" },
     { id: "outfits", label: "Outfits" },
     { id: "events", label: "Eventi" },
-    { id: "screenshots", label: "Screenshots" }
+    { id: "screenshots", label: "Screenshots" },
+    { id: "clan-life", label: "Vita del Clan" }
   ],
 
   videos: [

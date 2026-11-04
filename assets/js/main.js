@@ -220,7 +220,10 @@
       `<button class="chip${c.id === "all" ? " is-active" : ""}" data-cat="${c.id}">${c.label}</button>`).join("") +
       `<button class="chip" data-cat="personali">Le mie foto</button>`;
 
-    gItems = DATA.gallery.map((g) => ({ ...g, src: pic(g) }));
+    gItems = DATA.gallery.map((g) => ({ 
+      ...g, 
+      src: g.src ? g.src : pic(g) 
+    }));
     paintGallery();
     document.addEventListener("sam:uploads", (e) => {
       const detail = e.detail;
