@@ -533,14 +533,19 @@
         if (!Account.authed && !testMode) { 
           toast("Modalità test attivata", "Caricamento video abilitato localmente.", "ok", 2000);
           localStorage.setItem(LOCAL_TEST_MODE_KEY, "true");
-          // try to init
           if (typeof initLocalVideoTesting === 'function') initLocalVideoTesting();
-          // Don't show login modal
         }
         // Open advanced upload modal
         const advModal = document.getElementById('videoUploadModal');
         if (advModal) {
           advModal.classList.add('is-open');
+          // Ensure video upload is initialized and reset
+          if (typeof window.initAdvancedVideoUpload === 'function') {
+            window.initAdvancedVideoUpload();
+          }
+          if (typeof window.resetVideoUpload === 'function') {
+            window.resetVideoUpload();
+          }
           return;
         }
         // Fallback to create post modal
@@ -1222,22 +1227,8 @@ function initAdvancedVideoUpload() {
     uploadNowBtn.textContent = 'Carica adesso';
   }
 
-  // Open modal from + button
-  document.addEventListener('click', (e) => {
-    const carica = e.target.closest('#btnCaricaVideo');
-    if (carica) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (localStorage.getItem('samurai_local_test_mode') !== 'true') {
-        localStorage.setItem('samurai_local_test_mode', 'true');
-      }
-      if (modal) {
-        modal.classList.add('is-open');
-        resetUpload();
-      }
-      return;
-    }
-  });
+  // Expose reset function globally
+  window.resetVideoUpload = resetUpload;
 
   // Close modal
   closeBtns.forEach(btn => {
@@ -1429,10 +1420,3 @@ function formatFileSize(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
-
-// Initialize advanced video upload
-setTimeout(() => {
-  if (typeof initAdvancedVideoUpload === 'function') {
-    initAdvancedVideoUpload();
-  }
-}, 1000);
