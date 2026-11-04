@@ -935,38 +935,46 @@ const Account = (() => {
     bindNewsletter();
 
     // Track session expiry toast to avoid spam
-    let sessionExpiryToastShown = false;
-    const SESSION_EXPIRY_COOLDOWN = 30000; // 30 seconds
+    let sessionExpiryToastShown = 0;
+    const SESSION_EXPIRY_COOLDOWN = 60000; // 60 seconds
 
     API.on("auth", (info) => {
       if (info.authenticated === false) {
+        const now = Date.now();
+        
         // Don't spam toast in local test mode
         if (localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true") {
-          setAuthed(false);
-          setMode("Sessione scaduta — modalità test locale attiva.");
-          announce({ authenticated: false });
+          if (authed) {
+            setAuthed(false);
+            setMode("Modalità test locale attiva.");
+            announce({ authenticated: false });
+          }
           return;
         }
 
-        // Don't spam toast - only show once per cooldown period
-        const now = Date.now();
+        // Don't spam toast - strict cooldown
         if (sessionExpiryToastShown && (now - sessionExpiryToastShown) < SESSION_EXPIRY_COOLDOWN) {
-          setAuthed(false);
-          announce({ authenticated: false });
+          if (authed) {
+            setAuthed(false);
+            announce({ authenticated: false });
+          }
           return;
         }
 
-        // Don't show if already on login/enter page
+        // Don't show if modal already open
         const enterModal = $("#enterModal");
         if (enterModal && enterModal.classList.contains("is-open")) {
-          setAuthed(false);
-          announce({ authenticated: false });
+          if (authed) {
+            setAuthed(false);
+            announce({ authenticated: false });
+          }
           return;
         }
 
-        // Don't show if already on login route
-        if (location.hash.includes("home") || location.hash === "") {
-          setAuthed(false);
+        // Only show if actually was authenticated
+        if (!authed && !sessionExpiryToastShown) {
+          // First time seeing unauth, don't spam
+          sessionExpiryToastShown = now;
           announce({ authenticated: false });
           return;
         }
@@ -975,7 +983,7 @@ const Account = (() => {
         setAuthed(false);
         setMode("Sessione scaduta — accedi di nuovo.");
         announce({ authenticated: false });
-        toast("Sessione terminata", "Accedi di nuovo per continuare.", "warn", 6000);
+        toast("Sessione terminata", "Accedi di nuovo per continuare.", "warn", 4000);
       }
     });
   }
