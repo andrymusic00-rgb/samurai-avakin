@@ -1252,11 +1252,10 @@ function initAdvancedVideoUpload() {
   // Click drop zone to browse
   browseBtn?.addEventListener('click', (e) => { e.preventDefault(); fileInput?.click(); });
   dropZone?.addEventListener('click', (e) => {
-    if (e.target === fileInput || e.target === browseBtn) return;
+    if (e.target === browseBtn) return;
     e.preventDefault();
     fileInput?.click();
   });
-  fileInput?.addEventListener('click', (e) => { e.stopPropagation(); });
 
   // Drag and drop
   dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
