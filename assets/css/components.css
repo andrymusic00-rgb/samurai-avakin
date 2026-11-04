@@ -1080,14 +1080,15 @@ select.input option { background: var(--kuro-ao); color: var(--shiro-kabe); }
   position: fixed;
   inset: 0;
   z-index: 120;
-  display: grid;
+  display: none;
   place-items: center;
   padding: 20px;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: opacity 0.4s var(--ease), visibility 0.4s;
 }
-.modal.is-open { opacity: 1; visibility: visible; }
+.modal.is-open { display: grid; opacity: 1; visibility: visible; pointer-events: auto; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(23, 37, 84, 0.72); backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%); }
 .modal.violet .modal-backdrop { background: rgba(35, 5, 61, 0.78); }
 
@@ -2335,7 +2336,7 @@ button[data-action="social"] .dev-badge { animation: pulseGlow 2s ease-in-out in
   filter: blur(10px);
   transition: all 0.8s var(--ease-out-expo);
 }
-.reveal-glass.is-visible {
+.reveal-glass.is-in {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0);
@@ -2347,7 +2348,7 @@ button[data-action="social"] .dev-badge { animation: pulseGlow 2s ease-in-out in
   transition: all 0.8s var(--ease-out-expo);
   transition-delay: var(--d, 0ms);
 }
-.reveal-glass-stagger > *.is-visible {
+.reveal-glass-stagger > *.is-in {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0);

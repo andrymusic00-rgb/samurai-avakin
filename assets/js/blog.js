@@ -19,6 +19,11 @@ const Blog = (() => {
   function bindFilters() {
     $$("#blogGrid").length; // no-op
     document.addEventListener("click", (e) => {
+      const newPostBtn = e.target.closest("#btnNuovoPost");
+      if (newPostBtn) {
+        openCreatePost();
+        return;
+      }
       const chip = e.target.closest("#blogGrid ~ .filter-bar [data-btype], .filter-bar [data-btype]");
       if (chip) {
         $$(".filter-bar [data-btype]").forEach((c) => c.classList.toggle("is-active", c === chip));
