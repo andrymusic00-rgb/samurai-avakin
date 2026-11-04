@@ -359,6 +359,13 @@
           </div>
         </article>`).join("");
     }
+    
+    // Re-observe new elements for animations
+    setTimeout(() => {
+      document.querySelectorAll('#videoGrid [data-reveal]:not(.is-in)').forEach(el => {
+        observer.observe(el);
+      });
+    }, 50);
   }
 
   function playVideo(id) {
