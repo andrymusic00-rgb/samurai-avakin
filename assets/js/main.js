@@ -1295,16 +1295,60 @@ function handleLocalVideoUpload() {
       saveLocalVideos([videoData]);
       
       // Close modal
-      $("#createPostModal").classList.remove("is-open");
+      const cpModal = document.getElementById('createPostModal');
+      if (cpModal) cpModal.classList.remove("is-open");
+      const vupModal = document.getElementById('videoUploadModal');
+      if (vupModal) vupModal.classList.remove("is-open");
       lockBodyScroll(false);
-      newForm.reset();
+      try { newForm.reset(); } catch {}
       
       // Re-render videos
       try { await renderVideos(); } catch { try { renderVideos(); } catch {} }
       setTimeout(() => {
+        try {
+          const stored = localStorage.getItem("samurai_local_videos");
+          if (stored) {
+            const vids = JSON.parse(stored);
+            if (Array.isArray(vids) && vids.length) {
+              creativeVideos = [...vids, ...creativeVideos];
+              creativeVideos = Array.from(new Map(creativeVideos.map(v => [v.id, v])).values());
+            }
+          }
+        } catch {}
+        try { loadLocalVideos(); } catch {}
         const cv = $("#btnVideoCatCreativi");
-        if (cv && document.querySelector('#view-video.is-active')) cv.click();
-      }, 40);
+        if (cv && document.querySelector('#view-video.is-active')) {
+          $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
+          cv.classList.add("is-active");
+          const grid = $("#videoGrid");
+          const list = [...creativeVideos].sort((a,b) => {
+            const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return tb - ta;
+          });
+          grid.innerHTML = list.length
+            ? list.map((v, i) => `
+              <article class="vid-card vid-card-creativo image-parallax card-3d" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+                <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
+                  <span class="vid-creativo-badge">CREATIVITÀ</span>
+                  <span class="vid-play-badge">▶</span>
+                  <span class="vid-placeholder">${esc(v.autore?.nome || v.autore?.handle || "Clan")}</span>
+                </div>
+                <div class="vid-meta">
+                  <b>${esc(v.titolo)}</b>
+                  <small style="color:var(--silver-500)">${esc(v.autore?.handle || v.autore?.nome || "Clan")} · Caricato da te</small>
+                  <div class="row" style="gap:6px;margin-top:6px">
+                    <span class="tag silver">${num(v.likes || 0)} ⚔</span>
+                    <span class="tag silver">${num(v.commenti || 0)} 💬</span>
+                  </div>
+                </div>
+              </article>`).join("")
+            : grid.innerHTML;
+          setTimeout(() => {
+            document.querySelectorAll('#videoGrid [data-reveal]:not(.is-in)').forEach(el => observer.observe(el));
+          }, 30);
+        }
+      }, 60);
       
       toast("Video caricato!", "Il video è pronto nella sezione Creatività", "ok");
       
