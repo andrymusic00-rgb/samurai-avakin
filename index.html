@@ -1537,7 +1537,7 @@
       <h3 id="vupTitle" style="font-family:var(--ff-display);color:var(--silver-100);font-size:clamp(1.2rem,2vw,1.6rem);margin:6px 0 4px">Trascina il tuo video</h3>
       <p id="vupSubtitle" style="color:var(--silver-400);font-size:.88rem">Trascina il file .mp4 o .mov oppure selezionalo dal finder</p>
     </div>
-    
+
     <!-- STEP 1: Drop zone -->
     <div id="vupStepDrop" style="flex:1;overflow:auto;padding:0 24px 16px;display:flex;flex-direction:column;justify-content:center">
       <div id="vupDropZone" class="vup-dropzone" style="padding:56px 28px;border:2px dashed var(--glass-violet-brd);border-radius:20px;background:linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(99,102,241,0.05) 100%);text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all 0.35s var(--ease-out);max-width:620px;margin:0 auto">
@@ -1551,8 +1551,8 @@
         <input type="file" id="vupFileInput" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:30">
       </div>
     </div>
-    
-    <!-- STEP 2: Confirm preview / title / desc / tags -->
+
+    <!-- STEP 2: Preview / titolo / descrizione / tag -->
     <div id="vupStepConfirm" style="display:none;flex:1;overflow:auto;padding:0 24px 16px;display:flex;flex-direction:column">
       <div style="padding:24px;border-radius:20px;background:linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(99,102,241,0.07) 100%);border:1px solid var(--glass-violet-brd);box-shadow:var(--violet-glow-soft);max-width:620px;margin:0 auto">
         <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:20px">
@@ -1563,14 +1563,14 @@
           </div>
           <button type="button" id="vupRemove2" class="btn btn-ghost btn-sm" style="padding:6px 12px;font-size:1.3rem">✕</button>
         </div>
-        
+
         <div style="width:100%;height:200px;border-radius:16px;background:#000;margin-bottom:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--glass-violet-brd)">
           <video id="vupVideoPreview2" controls style="width:100%;height:100%;object-fit:cover;display:block"></video>
           <div id="vupTvScanlines" style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.07) 51%), linear-gradient(to right, rgba(255,0,0,0.035), rgba(0,255,0,0.015), rgba(0,0,255,0.035));background-size:100% 4px,100% 100%;opacity:.4;mix-blend-mode:overlay;pointer-events:none;z-index:10"></div>
           <div id="vupTvStatic" style="position:absolute;inset:0;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.7%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%% height=%22100%25%% filter=%22url(%23n)%22/%3E%3C/svg%3E');background-size:250% 250%;animation:vupStatic 0.12s steps(2) infinite;opacity:.14;pointer-events:none;z-index:9"></div>
           <div style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px;border-radius:6px;font-size:.75rem;letter-spacing:.05em;font-family:var(--ff-mono);z-index:20" id="vupTvMode">LIVE • SD</div>
         </div>
-        
+
         <div class="field" style="margin-bottom:14px">
           <label style="display:block;color:var(--silver-300);font-size:.82rem;letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase">Titolo del video</label>
           <input class="input violet" id="vupTitleInput" maxlength="120" placeholder="Dai un titolo al tuo video..." style="width:100%">
@@ -1583,15 +1583,15 @@
           <label style="display:block;color:var(--silver-300);font-size:.82rem;letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase">Tag (separati da virgola)</label>
           <input class="input violet" id="vupTagsInput" placeholder="es. kata, forgia, duello" style="width:100%">
         </div>
-        
+
         <div style="display:flex;gap:12px;justify-content:flex-end">
           <button type="button" class="btn btn-ghost btn-lg" id="vupCancelConfirm" style="flex:1;color:var(--silver-300);border-color:var(--silver-700)">Annulla caricamento</button>
           <button type="button" class="btn btn-lg" id="vupUploadNowBtn" style="flex:2;background:linear-gradient(135deg, var(--violet-600), var(--blue-500));color:#fff;border:none;border-radius:12px;font-weight:700;box-shadow:var(--violet-glow-intense);text-transform:uppercase;letter-spacing:.08em">Carica adesso</button>
         </div>
       </div>
     </div>
-    
-    <!-- STEP 3: Progress -->
+
+    <!-- STEP 3: Upload progress -->
     <div id="vupStepProgress" style="display:none;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 24px">
       <div style="width:300px;max-width:90vw;padding:36px;border-radius:26px;background:linear-gradient(135deg, rgba(139,92,246,0.20) 0%, rgba(99,102,241,0.10) 100%);border:1px solid var(--glass-violet-brd);box-shadow:0 0 48px rgba(139,92,246,0.4), inset 0 0 48px rgba(255,255,255,0.03)">
         <div style="width:84px;height:84px;border-radius:50%;border:4px solid rgba(139,92,246,0.22);border-top-color:var(--violet-400);animation:vupSpin 1s linear infinite;margin:0 auto 24px;position:relative">
@@ -1604,6 +1604,18 @@
         </div>
         <div id="vupPercent2" style="color:var(--violet-300);font-family:var(--ff-mono);font-weight:800;font-size:1.2rem">0%</div>
         <div id="vupProgressDetail" style="color:var(--silver-500);font-size:.82rem;margin-top:12px">Preparazione file…</div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Success -->
+    <div id="vupStepSuccess" style="display:none;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 24px">
+      <div style="width:280px;max-width:90vw;padding:36px;border-radius:26px;background:linear-gradient(135deg, rgba(34,197,94,0.18) 0%, rgba(16,185,129,0.08) 100%);border:1px solid rgba(34,197,94,0.25);box-shadow:0 0 48px rgba(34,197,94,0.3), inset 0 0 48px rgba(255,255,255,0.03)">
+        <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg, var(--green-400), var(--teal-500));box-shadow:0 0 30px rgba(34,197,94,0.6);animation:vupPulse 2s ease-in-out infinite;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:36px">✅</div>
+        <div style="color:var(--silver-100);font-weight:700;font-size:1.15rem;margin-bottom:10px">Video caricato!</div>
+        <div style="color:var(--silver-400);font-size:.9rem">Il video è ora nella sezione Creatività</div>
+        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center">
+          <button type="button" class="btn btn-ghost btn-lg" id="vupDoneBtn" style="flex:1">Chiudi</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1630,6 +1642,10 @@
 }
 @keyframes vupSpin {
   to { transform: rotate(360deg); }
+}
+@keyframes vupPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(34,197,94,0.6); }
+  50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(34,197,94,0.9); }
 }
 .vup-dropzone.dragover {
   border-color: var(--violet-400) !important;
