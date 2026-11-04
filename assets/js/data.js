@@ -161,6 +161,12 @@ const DATA = {
 
   videos: [
     {
+      id: "v0", cat: "raid", dur: "—", seed: 0, w: 1000, h: 562, comp: "helmet",
+      titolo: "Prima visione — isamu opening",
+      desc: "Il primo video da vedere nella stagione corrente. Filmato originale del clan, riprodotto direttamente dal file.",
+      fonte: { url: "/assets/videos/590424225b594398a70affa018d4e831.MOV" }
+    },
+    {
       id: "v1", cat: "raid", dur: "12:48", seed: 12, w: 1000, h: 562, comp: "helmet",
       titolo: "RAID NOTTURNO — Domina il settore 4",
       desc: "Sessione completa con analisi delle formazioni avversarie e il momento esatto in cui il comando si rompe. Registrato live con la chat del clan in sovrimpressione.",
