@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Section Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #0a0d14; color: #e8e8e8; }
+    .test { background: #141821; border: 1px solid #2a2f3a; border-radius: 12px; padding: 20px; margin: 16px 0; }
+    .pass { color: #22c55e; }
+    .fail { color: #ef4444; }
+    .warn { color: #f59e0b; }
+    button { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin: 4px; }
+    button:hover { background: #4f46e5; }
+    .video-card { border: 1px solid #2a2f3a; border-radius: 12px; padding: 16px; margin: 12px 0; background: #141821; }
+    .video-thumb { width: 100%; aspect-ratio: 16/9; background: #1a1f2e; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    pre { background: #0a0d14; padding: 12px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
+    input, select { background: #141821; border: 1px solid #2a2f3a; color: #e8e8e8; padding: 8px 12px; border-radius: 8px; margin: 4px; }
+    input[type="file"] { padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🎬 Video Section Test</h1>
+  
+  <div class="test">
+    <h2>System Status</h2>
+    <div id="status">Checking...</div>
+  </div>
+
+  <div class="test">
+    <h2>VideoSystem Tests</h2>
+    <button onclick="testVideoSystem()">Test VideoSystem.init()</button>
+    <button onclick="testGetAllVideos()">Test getAllVideos()</button>
+    <button onclick="testAddTestVideo()">Add Test Video to IndexedDB</button>
+    <button onclick="testRenderVideos()">Render Videos in Grid</button>
+    <button onclick="testCreateDropzone()">Create Upload Dropzone</button>
+    <button onclick="testVideoModal()">Check Video Modal</button>
+    <div id="vsResults"></div>
+  </div>
+
+  <div class="test">
+    <h2>Views Tests</h2>
+    <button onclick="testViews()">Test Views.loadVideos()</button>
+    <button onclick="testPaintVideos()">Test Views.paintVideos()</button>
+    <button onclick="testVideoFilters()">Test Video Filters</button>
+    <div id="viewsResults"></div>
+  </div>
+
+  <div class="test">
+    <h2>Video Grid</h2>
+    <div class="grid" id="videoGrid"></div>
+  </div>
+
+  <div class="test">
+    <h2>Manual Video Creation</h2>
+    <input type="text" id="videoTitle" placeholder="Titolo video" value="Test Video">
+    <input type="text" id="videoDesc" placeholder="Descrizione" value="Video di prova">
+    <select id="videoCategory">
+      <option value="video">Video</option>
+      <option value="raid">Raid</option>
+      <option value="guida">Guida</option>
+      <option value="evento">Evento</option>
+    </select>
+    <input type="number" id="videoDuration" placeholder="Durata (secondi)" value="120">
+    <button onclick="createManualVideo()">Create Manual Video</button>
+    <div id="manualResult"></div>
+  </div>
+
+  <script>
+    const log = (id, msg, type = 'info') => {
+      const el = document.getElementById(id);
+      if (el) {
+        const prefix = type === 'pass' ? '✅ ' : type === 'fail' ? '❌ ' : type === 'warn' ? '⚠️ ' : 'ℹ️ ';
+        el.innerHTML += `<div style="color: ${type === 'pass' ? '#22c55e' : type === 'fail' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#e8e8e8'}; margin: 4px 0;">${prefix}${msg}</div>`;
+      }
+      console.log(`[${type.toUpperCase()}] ${msg}`);
+    };
+
+    const clear = (id) => { const el = document.getElementById(id); if (el) el.innerHTML = ''; };
+
+    // Test VideoSystem
+    async function testVideoSystem() {
+      clear('vsResults');
+      log('vsResults', 'Testing VideoSystem.init()...');
+      try {
+        if (typeof VideoSystem === 'undefined') {
+          log('vsResults', 'VideoSystem not available', 'fail');
+          return;
+        }
+        await VideoSystem.init();
+        log('vsResults', 'VideoSystem.init() - OK', 'pass');
+      } catch (e) {
+        log('vsResults', 'VideoSystem.init() failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testGetAllVideos() {
+      clear('vsResults');
+      log('vsResults', 'Testing VideoSystem.getAllVideos()...');
+      try {
+        if (typeof VideoSystem === 'undefined') {
+          log('vsResults', 'VideoSystem not available', 'fail');
+          return;
+        }
+        const videos = await VideoSystem.getAllVideos();
+        log('vsResults', `Found ${videos.length} videos in IndexedDB`, videos.length ? 'pass' : 'warn');
+        videos.forEach(v => log('vsResults', `  - ${v.title} (${v.id})`, 'info'));
+      } catch (e) {
+        log('vsResults', 'getAllVideos failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testAddTestVideo() {
+      clear('vsResults');
+      log('vsResults', 'Adding test video to IndexedDB...');
+      try {
+        if (typeof VideoSystem === 'undefined') {
+          log('vsResults', 'VideoSystem not available', 'fail');
+          return;
+        }
+        
+        const testVideo = {
+          id: 'test_vid_' + Date.now(),
+          title: 'Test Video - Prova Caricamento',
+          description: 'Video di prova per verificare il funzionamento',
+          category: 'video',
+          tags: ['test', 'prova'],
+          author: { handle: 'TestSamurai', level: 5 },
+          visibility: 'public',
+          fileName: 'test.mp4',
+          fileSize: 1024000,
+          mimeType: 'video/mp4',
+          durata: 120,
+          thumbnail: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          synced: false,
+          localPath: null,
+          serverUrl: null,
+          serverId: null,
+          chunks: [],
+          uploadProgress: 0,
+          likes: 0,
+          miaReazione: false
+        };
+
+        // Use VideoSystem's internal DB
+        const db = await new Promise((resolve, reject) => {
+          const req = indexedDB.open('SamuraiVideoDB', 2);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(['videos'], 'readwrite');
+          const store = tx.objectStore('videos');
+          const req = store.put(testVideo);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+
+        log('vsResults', 'Test video added: ' + testVideo.id, 'pass');
+        log('vsResults', 'Title: ' + testVideo.title, 'info');
+      } catch (e) {
+        log('vsResults', 'Failed to add test video: ' + e.message, 'fail');
+      }
+    }
+
+    async function testRenderVideos() {
+      clear('vsResults');
+      log('vsResults', 'Rendering videos in grid...');
+      try {
+        if (typeof Views === 'undefined') {
+          log('vsResults', 'Views not available', 'fail');
+          return;
+        }
+        
+        // Get videos from VideoSystem
+        const videos = await VideoSystem.getAllVideos();
+        log('vsResults', `Got ${videos.length} videos from VideoSystem`, 'info');
+        
+        if (videos.length === 0) {
+          log('vsResults', 'No videos to render', 'warn');
+          return;
+        }
+
+        // Add to Views.CFG.videos and render
+        if (!Views.CFG.videos) Views.CFG.videos = [];
+        // Replace with fresh data
+        Views.CFG.videos = videos;
+        Views.paintVideos();
+        log('vsResults', 'paintVideos() called', 'pass');
+        
+        // Check DOM
+        setTimeout(() => {
+          const grid = document.getElementById('videoGrid');
+          if (grid) {
+            const cards = grid.querySelectorAll('[data-vid]');
+            log('vsResults', `Video cards in grid: ${cards.length}`, cards.length ? 'pass' : 'warn');
+            cards.forEach(card => {
+              const vid = card.dataset.vid;
+              const title = card.querySelector('h3');
+              log('vsResults', `  - ${vid}: ${title?.textContent?.trim()}`, 'info');
+            });
+          }
+        }, 300);
+      } catch (e) {
+        log('vsResults', 'Render failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testCreateDropzone() {
+      clear('vsResults');
+      log('vsResults', 'Creating upload dropzone...');
+      try {
+        if (typeof VideoSystem === 'undefined') {
+          log('vsResults', 'VideoSystem not available', 'fail');
+          return;
+        }
+        const dropzone = VideoSystem.createUploadDropzone({
+          onUploadStart: (count) => log('vsResults', `Upload started: ${count} files`, 'info'),
+          onUploadProgress: (id, progress) => log('vsResults', `Progress ${id}: ${progress}%`, 'info'),
+          onUploadComplete: (video) => log('vsResults', `Upload complete: ${video.title}`, 'pass'),
+          onUploadError: (id, error) => log('vsResults', `Error: ${error.message}`, 'fail')
+        });
+        document.body.appendChild(dropzone.element);
+        log('vsResults', 'Dropzone created and appended to body', 'pass');
+      } catch (e) {
+        log('vsResults', 'Dropzone creation failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testVideoModal() {
+      clear('vsResults');
+      log('vsResults', 'Checking video upload modal...');
+      const modal = document.getElementById('videoUploadModal');
+      if (!modal) {
+        log('vsResults', 'Modal not found in DOM', 'fail');
+        return;
+      }
+      log('vsResults', 'Modal found in DOM', 'pass');
+      
+      const dropzone = modal.querySelector('.vup-dropzone, #vupDropZone, [id*="drop"]');
+      log('vsResults', 'Dropzone:', dropzone ? '✅ found' : '❌ not found');
+      
+      const fileInput = modal.querySelector('input[type="file"]');
+      log('vsResults', 'File input:', fileInput ? '✅ found' : '❌ not found');
+      
+      const browseBtn = modal.querySelector('#vupBrowseBtn');
+      log('vsResults', 'Browse button:', browseBtn ? '✅ found' : '❌ not found');
+      
+      const videoPreview = modal.querySelector('#vupVideoPreview2, video[id*="preview"]');
+      log('vsResults', 'Video preview:', videoPreview ? '✅ found' : '❌ not found');
+    }
+
+    // Views Tests
+    async function testViews() {
+      clear('viewsResults');
+      log('viewsResults', 'Testing Views.loadVideos()...');
+      try {
+        if (typeof Views === 'undefined') {
+          log('viewsResults', 'Views not available', 'fail');
+          return;
+        }
+        await Views.loadVideos();
+        log('viewsResults', 'loadVideos() completed', 'pass');
+        log('viewsResults', `CFG.videos: ${Views.CFG.videos?.length || 0} videos`, 'info');
+      } catch (e) {
+        log('viewsResults', 'loadVideos failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testPaintVideos() {
+      clear('viewsResults');
+      log('viewsResults', 'Testing Views.paintVideos()...');
+      try {
+        if (typeof Views === 'undefined') {
+          log('viewsResults', 'Views not available', 'fail');
+          return;
+        }
+        Views.paintVideos();
+        log('viewsResults', 'paintVideos() called', 'pass');
+        
+        setTimeout(() => {
+          const grid = document.getElementById('videoGrid');
+          if (grid) {
+            const cards = grid.querySelectorAll('[data-vid]');
+            log('viewsResults', `Video cards in grid: ${cards.length}`, cards.length ? 'pass' : 'warn');
+          }
+        }, 300);
+      } catch (e) {
+        log('viewsResults', 'paintVideos failed: ' + e.message, 'fail');
+      }
+    }
+
+    async function testVideoFilters() {
+      clear('viewsResults');
+      log('viewsResults', 'Testing video filters...');
+      try {
+        if (typeof Views === 'undefined') {
+          log('viewsResults', 'Views not available', 'fail');
+          return;
+        }
+        const filterBar = document.getElementById('videoFilters');
+        if (!filterBar) {
+          log('viewsResults', 'Filter bar not found', 'fail');
+          return;
+        }
+        const chips = filterBar.querySelectorAll('[data-vfilter]');
+        log('viewsResults', `Filter chips found: ${chips.length}`, chips.length ? 'pass' : 'fail');
+        chips.forEach(chip => log('viewsResults', `  - ${chip.dataset.vfilter}`, 'info'));
+      } catch (e) {
+        log('viewsResults', 'Filter test failed: ' + e.message, 'fail');
+      }
+    }
+
+    // Manual Video Creation
+    async function createManualVideo() {
+      clear('manualResult');
+      log('manualResult', 'Creating manual video...');
+      try {
+        const title = document.getElementById('videoTitle').value;
+        const description = document.getElementById('videoDesc').value;
+        const category = document.getElementById('videoCategory').value;
+        const duration = parseInt(document.getElementById('videoDuration').value) || 0;
+        
+        const testVideo = {
+          id: 'manual_vid_' + Date.now(),
+          title,
+          description,
+          category,
+          tags: ['manual', 'test'],
+          author: { handle: 'ManualTest', level: 10 },
+          visibility: 'public',
+          fileName: 'manual.mp4',
+          fileSize: 2048000,
+          mimeType: 'video/mp4',
+          durata: duration,
+          thumbnail: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          synced: false,
+          localPath: null,
+          serverUrl: null,
+          serverId: null,
+          chunks: [],
+          uploadProgress: 0,
+          likes: 0,
+          miaReazione: false
+        };
+
+        const db = await new Promise((resolve, reject) => {
+          const req = indexedDB.open('SamuraiVideoDB', 2);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(['videos'], 'readwrite');
+          const store = tx.objectStore('videos');
+          const req = store.put(testVideo);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+
+        log('manualResult', 'Manual video created: ' + testVideo.id, 'pass');
+        log('manualResult', 'Title: ' + testVideo.title, 'info');
+        log('manualResult', 'Category: ' + testVideo.category, 'info');
+        log('manualResult', 'Duration: ' + testVideo.durata + 's', 'info');
+        
+        // Refresh grid
+        if (typeof Views !== 'undefined') {
+          if (!Views.CFG.videos) Views.CFG.videos = [];
+          Views.CFG.videos.unshift(testVideo);
+          Views.paintVideos();
+          log('manualResult', 'Grid refreshed', 'pass');
+        }
+      } catch (e) {
+        log('manualResult', 'Failed: ' + e.message, 'fail');
+      }
+    }
+
+    // Initial check
+    window.addEventListener('DOMContentLoaded', async () => {
+      log('status', 'Page loaded, checking systems...');
+      
+      // Check VideoSystem
+      if (typeof VideoSystem !== 'undefined') {
+        log('status', 'VideoSystem: ✅ Available', 'pass');
+      } else {
+        log('status', 'VideoSystem: ❌ Not available', 'fail');
+      }
+      
+      // Check Views
+      if (typeof Views !== 'undefined') {
+        log('status', 'Views: ✅ Available', 'pass');
+      } else {
+        log('status', 'Views: ❌ Not available', 'fail');
+      }
+      
+      // Check Account
+      if (typeof Account !== 'undefined') {
+        log('status', 'Account: ✅ Available', 'pass');
+      } else {
+        log('status', 'Account: ❌ Not available', 'fail');
+      }
+      
+      // Check IndexedDB
+      try {
+        const req = indexedDB.open('SamuraiVideoDB', 2);
+        await new Promise((resolve, reject) => {
+          req.onsuccess = () => { 
+            const db = req.result;
+            const tx = db.transaction(['videos'], 'readonly');
+            const store = tx.objectStore('videos');
+            const getAll = store.getAll();
+            getAll.onsuccess = () => {
+              log('status', `IndexedDB: ✅ Available (${getAll.result?.length || 0} videos)`, getAll.result?.length ? 'pass' : 'warn');
+              resolve();
+            };
+            getAll.onerror = () => reject(getAll.error);
+          };
+          req.onerror = () => reject(req.error);
+        });
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (e) {
+        log('status', 'IndexedDB: ❌ Error - ' + e.message, 'fail');
+      }
+    });
+  </script>
+</body>
+</html>

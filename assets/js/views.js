@@ -1350,6 +1350,16 @@ const Views = (() => {
         }
         return;
       }
+
+      if (e.target.closest("#btnNuovoVideo")) {
+        if (!Account.authed) {
+          toast("Accedi per creare", "Devi essere loggato per creare video.", "warn");
+          openModal("enterModal");
+          return;
+        }
+        openModal("createVideoModal");
+        return;
+      }
     });
 
     document.addEventListener("change", (e) => {
@@ -1366,6 +1376,7 @@ const Views = (() => {
     });
 
     bindVideoActions();
+    bindCreateVideo();
 
     // Il countdown gira una volta al secondo finche' la vista Eventi e' aperta.
     setInterval(() => {
@@ -1641,6 +1652,116 @@ const Views = (() => {
     }
   }
 
+  }
+  }
+
+  function bindCreateVideo() {
+    const form = $("#createVideoForm");
+    const fileInput = $("#cv-files");
+    const fileList = $("#cv-fileList");
+    const preview = $("#cv-preview");
+    let _selectedFiles = [];
+
+    if (!form) return;
+
+    function setError(id, msg) {
+      const el = $(`[data-for="${id}"]`);
+      const input = $("#" + id);
+      if (el) el.textContent = msg || "";
+      if (input) input.classList.toggle("err", !!msg);
+      return !msg;
+    }
+
+    function clearError(id) {
+      setError(id, "");
+    }
+
+    fileInput?.addEventListener("change", (e) => {
+      const files = Array.from(e.target.files ?? []);
+      _selectedFiles = files.map((f) => ({
+        file: f,
+        preview: URL.createObjectURL(f),
+        tipo: "video"
+      }));
+      renderFileList();
+      preview.style.display = _selectedFiles.length ? "" : "none";
+    });
+
+    function renderFileList() {
+      if (!fileList) return;
+      fileList.innerHTML = _selectedFiles.map((f, i) => `
+        <div class="bp-file" style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--glass);border-radius:6px">
+          <span style="font-size:1.2rem">🎬</span>
+          <span style="flex:1;font-size:.86rem;color:var(--silver-300)">${esc(f.file.name)}</span>
+          <button type="button" data-rm="${i}" class="bp-btn bp-danger" style="padding:4px 8px;font-size:1.2rem">✕</button>
+        </div>`).join("");
+      $$("[data-rm]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const i = +btn.dataset.rm;
+          URL.revokeObjectURL(_selectedFiles[i].preview);
+          _selectedFiles.splice(i, 1);
+          renderFileList();
+          preview.style.display = _selectedFiles.length ? "" : "none";
+        });
+      });
+    }
+
+    function closeCreateVideo() {
+      const wrap = $("#createVideoModal");
+      if (wrap) wrap.classList.remove("is-open");
+    }
+
+    const submitBtn = $("#cvSubmit");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const titolo = $("#cv-titolo").value.trim();
+      const corpo = $("#cv-corpo").value.trim();
+      const categoria = $("#cv-categoria").value;
+      const pubblico = $("#cv-pubblico").checked;
+      const tags = $("#cv-tags").value.split(",").map(t => t.trim()).filter(Boolean);
+
+      let ok = true;
+      ok = setError("cv-titolo", titolo ? "" : "Titolo obbligatorio") && ok;
+      ok = setError("cv-corpo", corpo ? "" : "Descrizione obbligatoria") && ok;
+      ok = setError("cv-files", _selectedFiles.length > 0 ? "" : "Seleziona almeno un video") && ok;
+      if (!ok) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Pubblicazione…";
+
+      const fd = new FormData();
+      fd.append("titolo", titolo);
+      fd.append("corpo", corpo);
+      fd.append("categoria", categoria);
+      fd.append("visibilita", pubblico ? "public" : "unlisted");
+      fd.append("tags", JSON.stringify(tags));
+      _selectedFiles.forEach((f) => fd.append("files", f.file));
+
+      try {
+        const r = await API.upload("/api/video/upload", fd);
+        if (r?.ok) {
+          toast("Video pubblicato", "Il tuo video è ora visibile al clan.", "ok");
+          const formEl = document.getElementById("createVideoForm");
+          if (formEl) formEl.reset();
+          _selectedFiles = [];
+          const fileListEl = document.getElementById("cv-fileList");
+          if (fileListEl) fileListEl.innerHTML = "";
+          const previewEl = document.getElementById("cv-preview");
+          if (previewEl) previewEl.style.display = "none";
+          closeModal("createVideoModal");
+          loadVideos();
+        } else {
+          toast("Pubblicazione fallita", r?.message || "Riprova.", "err");
+        }
+      } catch (err) {
+        toast("Errore pubblicazione", err?.message, "err");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Pubblica Video";
+      }
+    });
+  }
+
   function observePosts(container = document) {
     container.querySelectorAll("[data-post]").forEach((card) => {
       if (card.dataset.bpBound) return;
@@ -1668,6 +1789,7 @@ const Views = (() => {
     countdown,
     formatDuration,
     openVideoDetail,
-    bindVideoActions
+    bindVideoActions,
+    bindCreateVideo
   };
 })();
