@@ -92,7 +92,6 @@
     <a class="nav-link glass-nav" href="#/home" data-nav="home">Home</a>
     <a class="nav-link glass-nav" href="#/chi-siamo" data-nav="chi-siamo">Chi Siamo</a>
     <a class="nav-link glass-nav" href="#/eventi" data-nav="eventi">Eventi</a>
-    <a class="nav-link glass-nav" href="#/chronicles" data-nav="chronicles">Cronache</a>
     <a class="nav-link glass-nav" href="#/gallery" data-nav="gallery">Gallery</a>
     <a class="nav-link glass-nav" href="#/video" data-nav="video">Video</a>
     <a class="nav-link glass-nav" href="#/blog" data-nav="creativita">Creatività</a>
@@ -853,68 +852,30 @@
 </section>
 
 <!-- ============================================
-     CRONACHE DEL CLAN — Sezione unificata Foto/Video/Eventi
-     Liquid Glass 3D, Bolle animate, Carousel Hero
+     CRONACHE DEL CLAN — In Sviluppo (Coming Soon)
      ============================================ -->
 <section class="view reveal-glass" id="view-chronicles" data-view="chronicles">
-  <div class="chronicles-bg" aria-hidden="true"></div>
-  <div class="chronicles-bubbles" aria-hidden="true">
-    <div class="chronicles-bubble"></div>
-    <div class="chronicles-bubble"></div>
-    <div class="chronicles-bubble"></div>
-    <div class="chronicles-bubble"></div>
-    <div class="chronicles-bubble"></div>
-    <div class="chronicles-bubble"></div>
-  </div>
-
-  <div class="view-pad" style="position:relative;z-index:2">
-    <!-- Header -->
-    <header class="chronicles-header" data-reveal style="--d:100ms">
-      <h1 class="chronicles-title">Cronache del Clan</h1>
-      <p class="chronicles-subtitle">Le imprese, i ricordi e le creazioni dei Samurai. Ogni membro lascia la propria traccia nel tempo.</p>
-    </header>
-
-    <!-- Carousel Hero Unificato -->
-    <div class="chronicles-carousel" id="chroniclesCarousel" data-reveal style="--d:200ms" role="region" aria-label="Contenuti in evidenza">
-      <div class="chronicles-carousel-track" id="chroniclesCarouselTrack"></div>
-      
-      <!-- Nav arrows -->
-      <div class="chronicles-carousel-nav">
-        <button class="chronicles-carousel-btn" id="chroniclesCarouselPrev" aria-label="Precedente" disabled>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <button class="chronicles-carousel-btn" id="chroniclesCarouselNext" aria-label="Successivo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
+  <div class="view-pad" style="display:flex;align-items:center;justify-content:center;min-height:70vh;text-align:center">
+    <div data-reveal style="--d:100ms">
+      <img src="/assets/icons/logo.svg" alt="Samurai di Avakin" width="140" height="140" style="filter:drop-shadow(0 0 40px rgba(192,132,252,0.8));animation:logoFloat 3s ease-in-out infinite;margin-bottom:var(--sp-6)">
+      <h1 class="section-title" style="font-family:var(--ff-display);font-size:clamp(2rem,5vw,3rem);margin-bottom:var(--sp-4);background:linear-gradient(135deg,var(--shiro-kabe),var(--violet-300));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+        Cronache del Clan
+      </h1>
+      <p class="section-lead" style="max-width:50ch;margin:0 auto var(--sp-8);font-size:1.1rem;line-height:1.7">
+        Questa sezione è in fase di sviluppo avanzato. Stiamo costruendo un sistema completo per condividere foto, video ed eventi con persistenza reale, moderazione e liquid glass 3D.
+      </p>
+      <div style="display:flex;gap:var(--sp-3);justify-content:center;flex-wrap:wrap;margin-bottom:var(--sp-8)">
+        <span class="tag violet" style="font-size:.9rem;padding:8px 16px">🔧 In sviluppo</span>
+        <span class="tag silver" style="font-size:.9rem;padding:8px 16px">💎 Liquid Glass 3D</span>
+        <span class="tag" style="font-size:.9rem;padding:8px 16px;background:var(--grad-violet-soft);color:var(--violet-900)">🗄️ DB Persistente</span>
       </div>
-      
-      <!-- Dots -->
-      <div class="chronicles-carousel-dots" id="chroniclesCarouselDots" role="tablist" aria-label="Seleziona contenuto"></div>
-    </div>
-
-    <!-- Filtri Unificati -->
-    <div class="chronicles-filters" id="chroniclesFilters" role="group" aria-label="Filtra per categoria">
-      <button class="chronicles-filter is-active" data-filter="all">Tutti</button>
-      <button class="chronicles-filter" data-filter="photo">📷 Foto</button>
-      <button class="chronicles-filter" data-filter="video">🎬 Video</button>
-      <button class="chronicles-filter" data-filter="event">📅 Eventi</button>
-      <button class="chronicles-filter" data-filter="mine">⚔️ I miei</button>
-    </div>
-
-    <!-- Griglia Unificata -->
-    <div class="chronicles-grid" id="chroniclesGrid"></div>
-
-    <!-- Empty state -->
-    <div id="chroniclesEmpty" style="display:none;text-align:center;padding:var(--sp-12) var(--sp-4);color:var(--silver-500)">
-      <span style="font-size:3rem;filter:drop-shadow(0 0 30px rgba(192,132,252,0.3))">📜</span>
-      <h3 style="margin:var(--sp-4) 0 var(--sp-2);font-family:var(--ff-display);color:var(--silver-100)">Nessuna cronaca ancora</h3>
-      <p style="max-width:40ch;margin:0 auto">Sii il primo a condividere una foto, un video o creare un evento. La storia del clan la scrivi tu.</p>
-      <button class="btn btn-violet btn-lg" id="chroniclesEmptyUpload" style="margin-top:var(--sp-6)">+ Crea la tua cronaca</button>
-    </div>
-
-    <!-- Load more -->
-    <div style="text-align:center;margin-top:var(--sp-8)">
-      <button class="btn btn-ghost" id="chroniclesLoadMore" style="display:none">Carica altre cronache</button>
+      <p style="color:var(--silver-500);font-size:.9rem;font-family:var(--ff-mono);margin-bottom:var(--sp-6)">
+        Disponibile prossimamente con piano Premium
+      </p>
+      <button class="btn btn-ghost" onclick="UI.go('home')" style="padding:12px 28px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;vertical-align:-2px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Torna alla Home
+      </button>
     </div>
   </div>
 </section>
