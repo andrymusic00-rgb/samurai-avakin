@@ -186,21 +186,22 @@
     $("#leaderGrid").innerHTML = leadersHtml;
   }
 
-  let gItems = [], gFilter = "all", gRemote = [];
+  let gItems = [], gFilter = "all", gRemote = [], gPublicPhotos = [];
 
   /**
-   * Le foto arrivano da due fonti diverse:
-   *  - il server, con `id/createdAt/filename`
+   * Le foto arrivano da tre fonti diverse:
+   *  - il server (auth), con `id/createdAt/filename`
+   *  - il public API (anonimo cross-device), con `id/createdAt/mediaUrl`
    *  - il localStorage, con `src/name` in base64
    * Le normalizziamo qui per non duplicare la logica piu' avanti.
    */
   const toItem = (u, i, prefix) => ({
     id: u.id ? `${prefix}${u.id}` : `${prefix}${i}`,
-    cat: "personali",
-    titolo: u.filename || u.name || "Foto personale",
-    autore: "Tu",
+    cat: u.category || "personali",
+    titolo: u.title || u.filename || u.name || "Foto personale",
+    autore: u.authorName || u.autore?.nome || "Tu",
     data: u.createdAt ? new Date(u.createdAt).toLocaleDateString("it-IT") : "Oggi",
-    src: u.url || u.src,
+    src: u.mediaUrl || u.url || u.src,
     w: 900,
     h: 900,
     comp: "crest",
@@ -212,7 +213,8 @@
       ? store.get("uploads", []).map((u, i) => toItem(u, i, "l"))
       : [];
     const remote = gRemote.map((u, i) => toItem(u, i, "r"));
-    return [...gItems, ...remote, ...local].filter((g) => g.src);
+    const publicPhotos = gPublicPhotos.map((u, i) => toItem(u, i, "p"));
+    return [...gItems, ...remote, ...publicPhotos, ...local].filter((g) => g.src);
   }
 
   // Persistent listener for uploads - works even before gallery is rendered
@@ -228,6 +230,23 @@
     }
   });
 
+  // Fetch public photos for cross-device sync (anonymous uploads)
+  async function loadPublicPhotos() {
+    try {
+      const res = await fetch("/api/public/content?type=photo&status=approved&limit=50", { credentials: "include" });
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.items)) {
+        gPublicPhotos = data.items;
+        if (typeof paintGallery === "function") {
+          paintGallery();
+          applyFilter(gFilter);
+        }
+      }
+    } catch (err) {
+      console.warn("Public photos load failed:", err);
+    }
+  }
+
   function renderGallery() {
     $("#galleryFilters").innerHTML = DATA.galleryCats.map((c) =>
       `<button class="chip${c.id === "all" ? " is-active" : ""}" data-cat="${c.id}">${c.label}</button>`).join("") +
@@ -238,6 +257,7 @@
       src: g.src ? g.src : pic(g) 
     }));
     paintGallery();
+    loadPublicPhotos(); // Load cross-device photos
   }
 
   function paintGallery() {
@@ -270,8 +290,9 @@
 
   let lbList = [], lbIdx = 0;
   let creativeVideos = []; // video caricati dagli utenti (tipo video da /api/creative)
+  let publicVideos = []; // video anonimi cross-device da /api/public
 
-  // Normalizza video come fa la gallery: unisce DATA.videos + creativeVideos + locali
+  // Normalizza video come fa la gallery: unisce DATA.videos + creativeVideos + publicVideos + locali
   function vAll() {
     const base = DATA.videos.map((v) => ({ ...v, thumb: pic(v), srcType: 'data' }));
     const creativi = creativeVideos.map((v) => ({ 
@@ -281,7 +302,41 @@
       cat: v.cat || 'creativo',
       vcat: v.cat || 'creativo'
     }));
-    return [...base, ...creativi].filter((v) => v.src || v.fonte?.url || v.thumb);
+    const publicVids = publicVideos.map((v) => ({
+      ...v,
+      id: v.id,
+      titolo: v.title,
+      desc: v.description,
+      dur: v.duration || "—",
+      cat: v.category || 'creativo',
+      vcat: v.category || 'creativo',
+      fonte: { url: v.mediaUrl },
+      poster: v.thumbnailUrl,
+      thumb: v.thumbnailUrl ? v.thumbnailUrl : pic({ seed: v.id, w: 320, h: 180, comp: 'crest' }),
+      srcType: 'public',
+      autore: { nome: v.authorName, handle: v.authorName },
+      likes: v.likes || 0,
+      commenti: v.comments || 0,
+      creatoIl: v.createdAt
+    }));
+    return [...base, ...creativi, ...publicVids].filter((v) => v.src || v.fonte?.url || v.thumb);
+  }
+
+  // Fetch public videos for cross-device sync (anonymous uploads)
+  async function loadPublicVideos() {
+    try {
+      const res = await fetch("/api/public/content?type=video&status=approved&limit=50", { credentials: "include" });
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.items)) {
+        publicVideos = data.items;
+        // Re-render if video view is active
+        if (location.hash.includes("video")) {
+          paintVideoGrid();
+        }
+      }
+    } catch (err) {
+      console.warn("Public videos load failed:", err);
+    }
   }
 
   async function loadCreativeVideos() {
@@ -486,6 +541,7 @@
 
   async function renderVideos() {
     await loadCreativeVideos();
+    await loadPublicVideos(); // Cross-device anonymous videos
     try { loadLocalVideos(); } catch {}
     
     const allVideos = vAll();
@@ -1400,14 +1456,41 @@ function handleLocalVideoUpload() {
     submitBtn.disabled = true;
     
     try {
-      // Create object URL for local playback
+      // Generate thumbnail and duration for immediate local playback
       const videoUrl = URL.createObjectURL(file);
+      const duration = await getVideoDuration(file);
+      const durStr = formatDuration(duration);
+      const thumb = await generateVideoThumbnail(file);
       
+      // 1. Upload to public API for cross-device persistence
+      const fd = new FormData();
+      fd.append("files", file);
+      fd.append("type", "video");
+      fd.append("title", titolo);
+      fd.append("description", corpo || "");
+      fd.append("category", "creativo");
+      fd.append("tags", JSON.stringify(tags));
+      fd.append("authorName", "Anonimo");
+      if (thumb) fd.append("thumbnailUrl", thumb);
+      fd.append("duration", durStr);
+      
+      let publicResult = null;
+      try {
+        const res = await fetch("/api/public/upload", { method: "POST", body: fd, credentials: "include" });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          publicResult = data.content;
+        }
+      } catch (err) {
+        console.warn("Public upload failed, using local only:", err);
+      }
+      
+      // 2. Create local video data for immediate playback
       const videoData = {
-        id: "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+        id: publicResult?.id || ("local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)),
         titolo,
         desc: corpo || "",
-        dur: formatDuration(await getVideoDuration(file)),
+        dur: durStr,
         cat: "creativo",
         autore: {
           nome: Account.data?.name || "Test User",
@@ -1415,21 +1498,23 @@ function handleLocalVideoUpload() {
           level: Account.data?.level || 1
         },
         fonte: {
-          url: videoUrl,
+          url: publicResult?.mediaUrl || videoUrl,
           type: file.type
         },
+        poster: publicResult?.thumbnailUrl || thumb,
+        thumb: publicResult?.thumbnailUrl || thumb,
         likes: 0,
         commenti: 0,
         tags,
         pubblico,
-        local: true,
+        local: !publicResult, // Mark as local-only if public upload failed
         createdAt: new Date().toISOString()
       };
       
       creativeVideos.unshift(videoData);
       saveLocalVideos([videoData]);
       
-      // Close modal
+      // Close modals
       const cpModal = document.getElementById('createPostModal');
       if (cpModal) cpModal.classList.remove("is-open");
       const vupModal = document.getElementById('videoUploadModal');
@@ -1437,10 +1522,10 @@ function handleLocalVideoUpload() {
       lockBodyScroll(false);
       try { newForm.reset(); } catch {}
       
-      // Re-render videos (unified grid handles everything)
+      // Re-render videos
       try { await renderVideos(); } catch { try { renderVideos(); } catch {} }
       
-      toast("Video caricato!", "Il video è pronto nella sezione Creatività", "ok");
+      toast("Video pubblicato!", publicResult ? "Visibile su tutti i dispositivi" : "Salvato in locale (public API non disponibile)", "ok");
       
     } catch (err) {
       console.error("[LocalTestMode] Upload error:", err);
@@ -1465,6 +1550,32 @@ function getVideoDuration(file) {
       URL.revokeObjectURL(file);
     };
     video.src = URL.createObjectURL(file);
+  });
+}
+
+function generateVideoThumbnail(file) {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.src = URL.createObjectURL(file);
+    video.onloadeddata = () => {
+      video.currentTime = Math.min(1, video.duration * 0.1);
+      video.onseeked = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 180;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, 320, 180);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        URL.revokeObjectURL(video.src);
+        resolve(dataUrl);
+      };
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      resolve(null);
+    };
   });
 }
 

@@ -1433,20 +1433,34 @@ const Account = (() => {
         return;
       }
 
-      const prev = store.get("uploads", []);
-      const previews = $$("#uploadPreview img")
-        .map((i) => ({ src: i.dataset.src, name: i.dataset.name || "Foto", bytes: Number(i.dataset.bytes || 0) }))
-        .filter((p) => p.src);
-      if (!previews.length) {
-        toast("Anteprime non pronte", "Attendi il caricamento delle immagini.", "err");
-        return;
+      // Anonymous upload to public API (cross-device persistence)
+      const fd = new FormData();
+      files.forEach((f) => fd.append("files", f));
+      fd.append("type", "photo");
+      fd.append("title", files[0].name.replace(/\.[^/.]+$/, ""));
+      fd.append("category", "clan-life");
+      fd.append("authorName", "Anonimo");
+
+      try {
+        const res = await fetch("/api/public/upload", { method: "POST", body: fd, credentials: "include" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Upload fallito");
+
+        // Save to localStorage for immediate visibility
+        const prev = store.get("uploads", []);
+        const previews = $$("#uploadPreview img")
+          .map((i) => ({ src: i.dataset.src, name: i.dataset.name || "Foto", bytes: Number(i.dataset.bytes || 0) }))
+          .filter((p) => p.src);
+        store.set("uploads", prev.concat(previews).slice(-12));
+        
+        document.dispatchEvent(new CustomEvent("sam:uploads", { detail: previews }));
+        closeModal("uploadModal");
+        resetUpload();
+        UI.go("gallery");
+        setTimeout(() => toast("Foto pubblicata!", data.content?.message || "Visibile su tutti i dispositivi.", "ok"), 500);
+      } catch (err) {
+        toast("Errore upload", err.message, "err");
       }
-      store.set("uploads", prev.concat(previews).slice(-12));
-      document.dispatchEvent(new CustomEvent("sam:uploads", { detail: previews }));
-      closeModal("uploadModal");
-      resetUpload();
-      UI.go("gallery");
-      setTimeout(() => toast("Foto salvate in locale", `${previews.length} immagini. Avvia il server per salvarle davvero.`, "warn"), 500);
     });
   }
 
