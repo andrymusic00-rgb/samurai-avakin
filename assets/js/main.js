@@ -3,6 +3,7 @@
   const artCache = new Map();
 
   const pic = (item) => {
+    if (item.src) return item.src;
     const key = `${item.seed}-${item.w}-${item.h}-${item.comp}`;
     if (!artCache.has(key)) artCache.set(key, ART.make(item));
     return artCache.get(key);
@@ -371,6 +372,17 @@
     $("#vmCat").textContent = v.cat.toUpperCase();
     $("#vmDur").textContent = v.dur;
     const wrap = $("#playerWrap");
+    if (v.fonte && v.fonte.url) {
+      wrap.innerHTML = `
+        <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
+          <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
+            <source src="${esc(v.fonte.url)}" type="video/mp4">
+            Il tuo browser non supporta la riproduzione video. Scarica il file per vederlo.
+          </video>
+        </div>`;
+      openModal("videoModal");
+      return;
+    }
     if (v.fonte && v.fonte.youtube) {
       wrap.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${v.fonte.youtube}?autoplay=1&rel=0" title="${esc(v.titolo)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
     } else {
