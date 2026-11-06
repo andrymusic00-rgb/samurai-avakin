@@ -6,25 +6,25 @@
  *  - richieste API: mai in cache, per non mostrare dati di sessione stantii
  */
 
-const VERSION = "samurai-v2";
+const VERSION = "samurai-v3";
 const SHELL = `shell-${VERSION}`;
 const ASSETS = `assets-${VERSION}`;
 
 const PRECACHE = [
   "/",
   "/manifest.webmanifest",
-  "/assets/css/core.css",
-  "/assets/css/layout.css",
-  "/assets/css/components.css",
-  "/assets/css/features.css",
-  "/assets/js/data.js",
-  "/assets/js/art.js",
-  "/assets/js/fx.js",
-  "/assets/js/api.js",
-  "/assets/js/ui.js",
-  "/assets/js/account.js",
-  "/assets/js/views.js",
-  "/assets/js/main.js",
+  "/assets/css/core.css?v=20261106",
+  "/assets/css/layout.css?v=20261106",
+  "/assets/css/components.css?v=20261106",
+  "/assets/css/features.css?v=20261106",
+  "/assets/js/data.js?v=20261106",
+  "/assets/js/art.js?v=20261106",
+  "/assets/js/fx.js?v=20261106",
+  "/assets/js/api.js?v=20261106",
+  "/assets/js/ui.js?v=20261106",
+  "/assets/js/account.js?v=20261106",
+  "/assets/js/views.js?v=20261106",
+  "/assets/js/main.js?v=20261106",
   "/assets/icons/icon-192.png",
   "/assets/icons/icon-512.png",
   "/offline.html"
