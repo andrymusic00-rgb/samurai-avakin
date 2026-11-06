@@ -931,6 +931,7 @@ const Account = (() => {
       const res = await guard(() => (registering ? API.post("/api/auth/register", payload, { noRetry: true }) : API.post("/api/auth/login", payload, { noRetry: true })));
       btn.disabled = false;
       if (!res) return;
+      API.resetAuthLock(); // login/registrazione riuscita: sblocca futuri avvisi di sessione scaduta
 
       if (registering && res.data?.needsEmailVerification) {
         // Registrazione effettuata, ma serve verifica email

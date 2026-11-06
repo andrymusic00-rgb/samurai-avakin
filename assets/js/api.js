@@ -2,6 +2,7 @@ const API = (() => {
   const listeners = { auth: [], error: [] };
   let available = null;
   let refreshing = null;
+  let authLocked = false; // evita lo spam del toast "sessione terminata"
 
   const emit = (evt, payload) => listeners[evt].forEach((fn) => { try { fn(payload); } catch {} });
 
@@ -75,9 +76,13 @@ const API = (() => {
     if (res.status === 401 && !opts.noRetry && path !== "/api/auth/refresh" && path !== "/api/auth/login") {
       try {
         await refresh();
+        authLocked = false; // rinnovo riuscito: sblocca futuri avvisi auth
         res = await fetch(path, init);
       } catch {
-        emit("auth", { authenticated: false, reason: "expired" });
+        if (!authLocked) {
+          authLocked = true;
+          emit("auth", { authenticated: false, reason: "expired" });
+        }
       }
     }
 
@@ -86,7 +91,10 @@ const API = (() => {
 
     if (!res.ok) {
       const e = payload?.error || {};
-      if (res.status === 401 && !opts.noRetry) emit("auth", { authenticated: false, reason: e.code || "unauthorized" });
+      if (res.status === 401 && !opts.noRetry && !authLocked) {
+        authLocked = true;
+        emit("auth", { authenticated: false, reason: e.code || "unauthorized" });
+      }
       throw new ApiError(res.status, e.code, e.message, e.details);
     }
     return payload;
@@ -100,6 +108,7 @@ const API = (() => {
     patch: (p, b, o) => call("PATCH", p, b, o),
     del: (p, b, o) => call("DELETE", p, b, o),
     upload: (p, formData) => call("POST", p, formData),
+    resetAuthLock: () => { authLocked = false; },
     get meta() { return available; }
   };
 })();
