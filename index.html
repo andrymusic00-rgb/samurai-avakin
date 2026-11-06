@@ -112,6 +112,7 @@
     <button class="icon-btn only-desktop violet" id="btnPalette" title="Comandi (⌘K)" aria-label="Apri palette comandi">⌘</button>
     <button class="icon-btn only-desktop violet" id="btnSound" title="Suono UI" aria-label="Attiva/disattiva suono">♪</button>
     <button class="icon-btn violet" id="btnNotif" title="Notifiche" aria-label="Notifiche" hidden>◔</button>
+    <button class="icon-btn violet" id="btnDomain" title="Dominio" aria-label="Gestisci dominio">🌐</button>
     <button class="btn btn-primary btn-sm" id="btnEnter"><span class="lbl-full">Entra nella Gate</span><span class="lbl-short">Entra</span></button>
     <button class="icon-btn violet" id="btnMenu" title="Menu" aria-label="Apri menu" aria-expanded="false">☰</button>
   </div>
@@ -384,6 +385,9 @@
             portare il livello di gioco da buono a leggendario.
           </p>
         </div>
+        <button class="btn btn-violet" id="btnOpenVideoUpload" data-reveal style="--d:200ms" aria-label="Carica video">
+          <span class="ico">🎬</span> Carica Video
+        </button>
       </div>
 
       <div class="vid-featured vid-featured-cine vid-featured-live" id="vidFeatured" data-reveal style="margin-bottom:44px"></div>
@@ -392,6 +396,46 @@
       <div class="video-grid" id="videoGrid"></div>
     </div>
     <div class="view-pad-sm" style="padding-bottom:100px"></div>
+  </section>
+
+  <!-- Dark/Development Sections (Hidden by default, shown in dev mode) -->
+  <section class="view dev-section" id="view-video-dev" data-view="video-dev" style="display:none">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow danger" data-reveal>🔧 Video Dev</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Sviluppo Video</h1>
+          <p class="section-lead" data-reveal style="--d:140ms">Area di sviluppo per testare upload, streaming, chunked upload, thumbnail generation.</p>
+        </div>
+      </div>
+      <div class="view-pad-sm" style="padding-bottom:100px"></div>
+    </div>
+  </section>
+
+  <section class="view dev-section" id="view-events-dev" data-view="events-dev" style="display:none">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow danger" data-reveal>🔧 Events Dev</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Sviluppo Eventi</h1>
+          <p class="section-lead" data-reveal style="--d:140ms">Test creazione eventi, template, RSVP, calendario, notifiche.</p>
+        </div>
+      </div>
+      <div class="view-pad-sm" style="padding-bottom:100px"></div>
+    </div>
+  </section>
+
+  <section class="view dev-section" id="view-gallery-dev" data-view="gallery-dev" style="display:none">
+    <div class="view-pad">
+      <div class="section-head section-head-row">
+        <div class="stack" style="gap:14px">
+          <span class="eyebrow danger" data-reveal>🔧 Gallery Dev</span>
+          <h1 class="section-title" data-reveal style="--d:80ms">Sviluppo Gallery</h1>
+          <p class="section-lead" data-reveal style="--d:140ms">Test upload immagini, filtri, lightbox, tag, categorie.</p>
+        </div>
+      </div>
+      <div class="view-pad-sm" style="padding-bottom:100px"></div>
+    </div>
   </section>
 
   <section class="view" id="view-classifica" data-view="classifica">
@@ -1746,6 +1790,8 @@
 <script src="assets/js/avatar-creator.js"></script>
 <script src="assets/js/filigrana.js"></script>
   <script src="assets/js/watermark.js"></script>
+  <script src="assets/js/VideoSystem.js"></script>
+  <script src="assets/js/DomainPurchase.js"></script>
   <script src="assets/js/chronicles.js"></script>
   <script type="module" src="assets/js/avatar3d-advanced.js"></script>
 <script type="module" src="assets/js/avatar3d.js"></script>

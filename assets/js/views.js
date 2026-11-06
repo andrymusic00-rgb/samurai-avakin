@@ -1293,6 +1293,7 @@ const Views = (() => {
     }
     if (view === "comando") loadComando();
     if (view === "blog" && window.Blog) window.Blog.loadBlog();
+    if (view === "video") loadVideos();
   }
 
   function bind() {
@@ -1323,6 +1324,32 @@ const Views = (() => {
       if (dec) return decide(dec.dataset.decide, dec.dataset.decision);
 
       if (e.target.closest("#btnNotif")) return openNotifications();
+      
+      if (e.target.closest("#btnOpenVideoUpload")) {
+        if (!Account.authed) {
+          toast("Accedi per caricare", "Devi essere loggato per caricare video.", "warn");
+          openModal("enterModal");
+          return;
+        }
+        if (typeof VideoSystem !== 'undefined') {
+          const dropzone = VideoSystem.createUploadDropzone({
+            onUploadStart: (count) => toast("Caricamento", `${count} video in coda`, "info"),
+            onUploadProgress: (id, progress) => {
+              const el = document.querySelector(`[data-vid="${id}"] .vid-progress`);
+              if (el) el.style.width = `${progress}%`;
+            },
+            onUploadComplete: (video) => {
+              toast("Video caricato", `"${video.title}" è online`, "ok");
+              loadVideos();
+            },
+            onUploadError: (id, error) => {
+              toast("Errore upload", error.message, "err");
+            }
+          });
+          document.body.appendChild(dropzone.element);
+        }
+        return;
+      }
     });
 
     document.addEventListener("change", (e) => {
@@ -1337,6 +1364,8 @@ const Views = (() => {
         return patchMember(st.dataset.statusFor, { status: st.value }, `${m?.nome || ""} → ${st.value}`);
       }
     });
+
+    bindVideoActions();
 
     // Il countdown gira una volta al secondo finche' la vista Eventi e' aperta.
     setInterval(() => {
@@ -1387,10 +1416,246 @@ const Views = (() => {
         .join("")}</div>`;
   }
 
+  /* --------------------------------------------------------- video */
+
+  async function loadVideos() {
+    const box = $("#videoGrid");
+    const filterBar = $("#videoFilters");
+    if (!box) return;
+    
+    box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--silver-500)">Caricamento video…</div>';
+    
+    let list = [];
+    try {
+      const d = await API.get("/api/video?limit=50");
+      list = d.videos ?? [];
+    } catch {
+      list = [];
+    }
+    
+    CFG.videos = list;
+    paintVideos();
+    
+    if (filterBar && !filterBar.dataset.bound) {
+      filterBar.dataset.bound = "1";
+      filterBar.innerHTML = `
+        <button class="chip violet is-active" data-vfilter="all">Tutti</button>
+        <button class="chip violet" data-vfilter="video">Video</button>
+        <button class="chip violet" data-vfilter="raid">Raid</button>
+        <button class="chip violet" data-vfilter="guida">Guide</button>
+        <button class="chip violet" data-vfilter="evento">Eventi</button>
+      `;
+      filterBar.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-vfilter]");
+        if (!btn) return;
+        $$("#videoFilters .chip").forEach(c => c.classList.toggle("is-active", c === btn));
+        paintVideos(btn.dataset.vfilter);
+      });
+    }
+  }
+
+  function paintVideos(filter = "all") {
+    const box = $("#videoGrid");
+    if (!box) return;
+    const list = (CFG.videos || []).filter(v => filter === "all" || v.categoria === filter);
+    
+    if (!list.length) {
+      box.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:60px 20px" data-reveal="scale">
+          <div style="font-size:3rem;margin-bottom:16px">🎬</div>
+          <h3 style="color:var(--silver-100);margin-bottom:8px">Nessun video</h3>
+          <p style="color:var(--silver-500);max-width:400px;margin:0 auto">
+            ${filter === "all" ? "Nessun video caricato. Sii il primo a condividere una guida o un raid!" : `Nessun video nella categoria "${filter}".`}
+          </p>
+        </div>`;
+      return;
+    }
+    
+    box.innerHTML = list.map(v => renderVideoCard(v)).join("");
+    observePosts(box);
+    animateInside(box);
+  }
+
+  function renderVideoCard(v) {
+    const thumb = v.thumbnailUrl || `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect fill="%231a1f2e" width="320" height="180"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-size="24">🎬</text></svg>`)}`;
+    const dur = v.durata ? formatDuration(v.durata) : "—";
+    const miaReazione = v.miaReazione ? ` is-liked` : "";
+    
+    return `
+      <article class="vid-card glass-violet card-3d border-beam${miaReazione}" data-vid="${esc(v.id)}" data-reveal>
+        <div class="vid-thumb">
+          <img src="${esc(v.thumbnailUrl || thumb)}" alt="${esc(v.titolo)}" loading="lazy">
+          <span class="vid-dur">${esc(dur)}</span>
+          <button class="vid-like${miaReazione}" data-vlike="${esc(v.id)}" aria-label="Like">
+            <span>⚔</span> <b>${num(v.likes ?? 0)}</b>
+          </button>
+        </div>
+        <div class="vid-body">
+          <div class="vid-meta">
+            <span class="vid-tipo">${esc(v.categoria || "video")}</span>
+            ${(v.tags ?? []).map(t => `<span class="bp-tag">${esc(t)}</span>`).join("")}
+          </div>
+          <h3 style="margin:8px 0 6px;color:var(--silver-100)">${esc(v.titolo)}</h3>
+          <p style="color:var(--silver-400);font-size:.85rem;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(v.descrizione || "")}</p>
+          <div class="vid-meta2">
+            <span class="mono">${esc(v.autore?.handle)} · Lv ${v.autore?.level ?? 1}</span>
+            <span class="mono">${dt(v.creatoIl)}</span>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds) return "—";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return h ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  function bindVideoActions() {
+    document.addEventListener("click", async (e) => {
+      const like = e.target.closest("[data-vlike]");
+      if (like) {
+        e.preventDefault();
+        const vid = like.dataset.vlike;
+        try {
+          const r = await API.post(`/api/video/${encodeURIComponent(vid)}/reaction`, { emoji: "⚔" });
+          loadVideos();
+        } catch (err) {
+          toast("Reazione non salvata", err?.message || "Riprova.", "err");
+        }
+        return;
+      }
+      
+      const card = e.target.closest("[data-vid]");
+      if (card && !like && !e.target.closest("button")) {
+        openVideoDetail(card.dataset.vid);
+      }
+    });
+  }
+
+  async function openVideoDetail(vid) {
+    try {
+      const d = await API.get(`/api/video/${encodeURIComponent(vid)}`);
+      const v = d.video;
+      if (!v) return;
+      
+      const wrap = document.createElement("div");
+      wrap.id = "vidDetailModal";
+      wrap.className = "modal violet";
+      wrap.setAttribute("role", "dialog");
+      wrap.setAttribute("aria-modal", "true");
+      wrap.innerHTML = `
+        <div class="modal-backdrop" data-close></div>
+        <div class="modal-box glass violet vid-detail-modal" style="max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+          <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+          ${v.thumbnailUrl ? `<div class="vid-detail-img"><img src="${esc(v.thumbnailUrl)}" alt="${esc(v.titolo)}"></div>` : ""}
+          <div class="vid-detail-body" style="flex:1;padding:24px;overflow-y:auto;display:flex;flex-direction:column">
+            <div class="row" style="gap:12px;align-items:center;margin-bottom:14px">
+              <span class="vid-kanji">🎬</span>
+              <div style="min-width:0">
+                <span class="eyebrow violet">${esc(v.categoria || "Video")}</span>
+                <h3 class="vid-detail-title animate-text" style="font-size:1.5rem;margin:0;color:var(--silver-100)">${esc(v.titolo)}</h3>
+              </div>
+              ${v.autore ? `<span class="tag silver" style="font-size:10px">di ${esc(v.autore.nome || v.autore.handle)}</span>` : ""}
+            </div>
+            <p class="vid-detail-desc animate-text" style="color:var(--silver-400);line-height:1.7;font-size:1rem;margin:0 0 16px">${esc(v.descrizione || "Nessuna descrizione.")}</p>
+            
+            <video class="vid-player" controls style="width:100%;border-radius:var(--r-md);background:#000" poster="${esc(v.thumbnailUrl || "")}">
+              <source src="${esc(v.mediaUrl)}" type="${esc(v.mimeType || "video/mp4")}">
+            </video>
+            
+            <div class="vid-detail-meta" style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+              <span class="vid-meta-item animate-text"><span class="kanji">◷</span> ${esc(dt(v.creatoIl, { year: "numeric" }))}</span>
+              <span class="vid-meta-item animate-text"><span class="kanji">⏱</span> ${formatDuration(v.durata)}</span>
+              <span class="vid-meta-item animate-text"><span class="kanji">⚔</span> ${num(v.likes ?? 0)} like</span>
+              <span class="vid-meta-item animate-text"><span class="kanji">💬</span> ${num(v.commenti?.length ?? 0)} commenti</span>
+            </div>
+            
+            <div class="row vid-actions" style="gap:10px;margin-top:auto">
+              <button class="btn ${v.miaReazione ? "" : "btn-violet"}" data-vlike="${esc(v.id)}" style="flex:1">
+                ${v.miaReazione ? "Hai messo like" : "Like ⚔"}
+              </button>
+              <button class="btn btn-ghost" data-vcomment="${esc(v.id)}">Commenti</button>
+              ${v.autore?.id === (Account?.data?.id) ? `<button class="btn btn-sm btn-danger" data-vdelete="${esc(v.id)}">Elimina</button>` : ""}
+            </div>
+            
+            <div class="vid-comments" style="margin-top:16px;max-height:300px;overflow:auto">
+              <h4 style="margin:0 0 12px;color:var(--silver-100)">Commenti</h4>
+              <div id="vidCommentList">${(v.commenti ?? []).map(c => `
+                <div class="cm-item" style="display:flex;gap:8px;margin-bottom:12px">
+                  <div class="cm-av">${esc((c.autore?.handle || "?")[0])}</div>
+                  <div style="min-width:0">
+                    <b>${esc(c.autore?.nome || c.autore?.handle)}</b>
+                    <p style="color:var(--silver-400);font-size:.88rem;margin:2px 0">${esc(c.corpo)}</p>
+                    <small class="mono" style="color:var(--silver-600)">${dt(c.creatoIl)}</small>
+                  </div>
+                </div>`).join("")}</div>
+              <form id="vidCommentForm" style="margin-top:16px;display:flex;gap:8px">
+                <input class="input violet" id="vidCommentInput" type="text" placeholder="Scrivi un commento…" required style="flex:1">
+                <button type="submit" class="btn btn-violet">Invia</button>
+              </form>
+            </div>
+          </div>
+        </div>`;
+      document.body.appendChild(wrap);
+      wrap.classList.add("is-open");
+      
+      wrap.querySelector("#vidCommentForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const input = wrap.querySelector("#vidCommentInput");
+        const corpo = input.value.trim();
+        if (!corpo) return;
+        try {
+          await API.post(`/api/video/${encodeURIComponent(vid)}/comments`, { corpo });
+          input.value = "";
+          loadVideos();
+          openVideoDetail(vid);
+        } catch (err) {
+          toast("Commento non inviato", err?.message || "Riprova.", "err");
+        }
+      });
+      
+      wrap.addEventListener("click", (e) => {
+        if (e.target.closest("[data-close]")) { wrap.remove(); }
+        if (e.target.closest("[data-vlike]")) {
+          e.preventDefault();
+          // handled by global listener
+        }
+        if (e.target.closest("[data-vdelete]")) {
+          if (confirm("Eliminare questo video?")) {
+            try {
+              await API.del(`/api/video/${encodeURIComponent(vid)}`);
+              toast("Video eliminato", "", "ok", 2000);
+              wrap.remove();
+              loadVideos();
+            } catch (err) {
+              toast("Eliminazione fallita", err?.message || "Riprova.", "err");
+            }
+          }
+        }
+      });
+    } catch (err) {
+      toast("Errore caricamento video", err?.message, "err");
+    }
+  }
+
+  function observePosts(container = document) {
+    container.querySelectorAll("[data-post]").forEach((card) => {
+      if (card.dataset.bpBound) return;
+      card.dataset.bpBound = "1";
+    });
+  }
+
   return {
     init: bind,
     onRoute,
     loadEvents,
+    loadLeaderboard,
+    loadRaid,
+    loadComando,
+    loadVideos,
     loadLeaderboard,
     loadRaid,
     loadComando,
@@ -1400,6 +1665,9 @@ const Views = (() => {
     loadReactions,
     toggleReaction,
     roleLabel,
-    countdown
+    countdown,
+    formatDuration,
+    openVideoDetail,
+    bindVideoActions
   };
 })();

@@ -15,6 +15,7 @@ import { cmsRouter } from "./routes/cms.js";
 import { chatRouter } from "./routes/chat.js";
 import { pushRouter } from "./routes/push.js";
 import { creativeRouter } from "./routes/creative.js";
+import { videoRouter } from "./routes/video.js";
 import { publicRouter } from "./routes/public.js";
 import { i18nMiddleware } from "./middleware/i18n.js";
 import { dbName } from "../db/index.js";
@@ -70,6 +71,7 @@ export function createApp() {
   app.use("/api/chat", chatRouter);
   app.use("/api/push", pushRouter);
   app.use("/api/creative", creativeRouter);
+  app.use("/api/video", videoRouter);
   app.use("/api/public", publicRouter);
 
   app.get("/api/meta", (_req, res) => {

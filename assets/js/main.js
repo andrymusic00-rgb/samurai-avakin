@@ -2022,3 +2022,50 @@ if (typeof WATERMARK !== 'undefined') {
     WATERMARK.observeVisibility();
   });
 }
+
+/* ── VideoSystem Integration ── */
+if (typeof VideoSystem !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await VideoSystem.init();
+      VideoSystem.on('onSyncStatusChange', (online) => {
+        const indicator = document.getElementById('videoSyncIndicator');
+        if (indicator) {
+          indicator.textContent = online ? '🟢 Online' : '🔴 Offline';
+          indicator.style.color = online ? 'var(--fuji)' : 'var(--danger)';
+        }
+      });
+      VideoSystem.on('onUploadProgress', (id, progress) => {
+        const el = document.querySelector(`[data-vid="${id}"] .vid-progress`);
+        if (el) el.style.width = `${progress}%`;
+      });
+      VideoSystem.on('onUploadComplete', (video) => {
+        toast("Video caricato", `"${video.title}" è online`, "ok");
+        if (window.Views) window.Views.loadVideos();
+      });
+      VideoSystem.on('onUploadError', (id, error) => {
+        toast("Errore upload", error.message, "err");
+      });
+      VideoSystem.on('onVideoSaved', (video) => {
+        console.log("Video salvato localmente:", video.id);
+      });
+    } catch (error) {
+      console.error("VideoSystem init failed:", error);
+    }
+  });
+}
+
+/* ── DomainPurchase Integration ── */
+if (typeof DomainPurchase !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    DomainPurchase.init();
+    
+    document.getElementById('btnDomain')?.addEventListener('click', () => {
+      DomainPurchase.createDomainModal();
+    });
+    
+    DomainPurchase.on('onStatusChange', (status, domain) => {
+      console.log('Domain status:', status, domain);
+    });
+  });
+}
