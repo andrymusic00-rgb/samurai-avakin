@@ -1164,6 +1164,10 @@
     navigate();
     UI.observe();
     UI.initWelcome();
+    // Init toolbar liquid glass glow
+    if (typeof UI.initToolbarGlow === "function") {
+      UI.initToolbarGlow();
+    }
     UI.setAccent(store.get("accent", "#5aa8ff"));
     if (!reduceMotion && !isCoarsePointer) {
       initMicroInteractions();

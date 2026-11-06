@@ -574,6 +574,65 @@ const UI = (() => {
     }
   }
 
+  /* ------------------------------------------------------------
+     TOOLBAR — Liquid Glass Mouse-Following Glow
+     ------------------------------------------------------------ */
+  let toolbarGlowRAF = null;
+  let toolbarMouse = { x: 0, y: 0 };
+  let toolbarGlowEl = null;
+
+  function initToolbarGlow() {
+    const topbar = $("#topbar");
+    if (!topbar) return;
+
+    toolbarGlowEl = $("#toolbarMouseGlow");
+    if (!toolbarGlowEl) return;
+
+    const onMouseMove = (e) => {
+      const rect = topbar.getBoundingClientRect();
+      // Only activate when mouse is near/over toolbar
+      const isNear = e.clientY < rect.bottom + 100 && e.clientY > rect.top - 100;
+      
+      if (isNear) {
+        toolbarMouse.x = e.clientX - rect.left;
+        toolbarMouse.y = e.clientY - rect.top;
+        toolbarGlowEl.style.opacity = '0.7';
+      } else {
+        toolbarGlowEl.style.opacity = '0';
+      }
+    };
+
+    function animateGlow() {
+      if (toolbarGlowEl && toolbarGlowEl.style.opacity !== '0') {
+        // Add subtle organic wobble
+        const time = Date.now() * 0.001;
+        const wobbleX = Math.sin(time * 0.7) * 12;
+        const wobbleY = Math.cos(time * 0.5) * 8;
+        
+        toolbarGlowEl.style.transform = `translate(${toolbarMouse.x + wobbleX}px, ${toolbarMouse.y + wobbleY}px)`;
+      }
+      
+      toolbarGlowRAF = requestAnimationFrame(animateGlow);
+    }
+
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
+    animateGlow();
+
+    topbar._toolbarGlowCleanup = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      if (toolbarGlowRAF) cancelAnimationFrame(toolbarGlowRAF);
+      if (toolbarGlowEl) toolbarGlowEl.style.opacity = '0';
+    };
+  }
+
+  function destroyToolbarGlow() {
+    const topbar = $("#topbar");
+    if (topbar && topbar._toolbarGlowCleanup) {
+      topbar._toolbarGlowCleanup();
+      topbar._toolbarGlowCleanup = null;
+    }
+  }
+
   function showPerfStats() {
     if (document.getElementById("perfStats")) return;
     const el = document.createElement("div");
@@ -603,5 +662,5 @@ const UI = (() => {
     audio.hit("nav");
   });
 
-  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, initChiSiamoBubbles, destroyChiSiamoBubbles, get sound() { return soundOn; } };
+  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, initChiSiamoBubbles, destroyChiSiamoBubbles, initToolbarGlow, destroyToolbarGlow, get sound() { return soundOn; } };
 })();
