@@ -95,6 +95,25 @@ export function requireAuth(req, _res, next) {
   next();
 }
 
+export function optionalAuth(req, _res, next) {
+  // Attach user if token exists, but don't require it
+  if (req.user) return next();
+  // Try to resolve user from token if not already attached
+  const token = req.cookies?.[config.cookieName];
+  if (!token) return next();
+  try {
+    const payload = verifyAccess(token);
+    if (payload) {
+      findUserById(payload.sub).then(user => {
+        if (user && user.status === "attivo" && user.email_verified_at) {
+          req.user = user;
+        }
+      }).catch(() => {});
+    }
+  } catch {}
+  next();
+}
+
 export function requireRole(...roles) {
   return (req, _res, next) => {
     if (!req.user) return next(ApiError.unauthorized());

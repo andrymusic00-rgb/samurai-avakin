@@ -92,6 +92,7 @@
     <a class="nav-link glass-nav" href="#/home" data-nav="home">Home</a>
     <a class="nav-link glass-nav" href="#/chi-siamo" data-nav="chi-siamo">Chi Siamo</a>
     <a class="nav-link glass-nav" href="#/eventi" data-nav="eventi">Eventi</a>
+    <a class="nav-link glass-nav" href="#/chronicles" data-nav="chronicles">Cronache</a>
     <a class="nav-link glass-nav" href="#/gallery" data-nav="gallery">Gallery</a>
     <a class="nav-link glass-nav" href="#/video" data-nav="video">Video</a>
     <a class="nav-link glass-nav" href="#/blog" data-nav="creativita">Creatività</a>
@@ -851,6 +852,235 @@
   </div>
 </section>
 
+<!-- ============================================
+     CRONACHE DEL CLAN — Sezione unificata Foto/Video/Eventi
+     Liquid Glass 3D, Bolle animate, Carousel Hero
+     ============================================ -->
+<section class="view reveal-glass" id="view-chronicles" data-view="chronicles">
+  <div class="chronicles-bg" aria-hidden="true"></div>
+  <div class="chronicles-bubbles" aria-hidden="true">
+    <div class="chronicles-bubble"></div>
+    <div class="chronicles-bubble"></div>
+    <div class="chronicles-bubble"></div>
+    <div class="chronicles-bubble"></div>
+    <div class="chronicles-bubble"></div>
+    <div class="chronicles-bubble"></div>
+  </div>
+
+  <div class="view-pad" style="position:relative;z-index:2">
+    <!-- Header -->
+    <header class="chronicles-header" data-reveal style="--d:100ms">
+      <h1 class="chronicles-title">Cronache del Clan</h1>
+      <p class="chronicles-subtitle">Le imprese, i ricordi e le creazioni dei Samurai. Ogni membro lascia la propria traccia nel tempo.</p>
+    </header>
+
+    <!-- Carousel Hero Unificato -->
+    <div class="chronicles-carousel" id="chroniclesCarousel" data-reveal style="--d:200ms" role="region" aria-label="Contenuti in evidenza">
+      <div class="chronicles-carousel-track" id="chroniclesCarouselTrack"></div>
+      
+      <!-- Nav arrows -->
+      <div class="chronicles-carousel-nav">
+        <button class="chronicles-carousel-btn" id="chroniclesCarouselPrev" aria-label="Precedente" disabled>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="chronicles-carousel-btn" id="chroniclesCarouselNext" aria-label="Successivo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      
+      <!-- Dots -->
+      <div class="chronicles-carousel-dots" id="chroniclesCarouselDots" role="tablist" aria-label="Seleziona contenuto"></div>
+    </div>
+
+    <!-- Filtri Unificati -->
+    <div class="chronicles-filters" id="chroniclesFilters" role="group" aria-label="Filtra per categoria">
+      <button class="chronicles-filter is-active" data-filter="all">Tutti</button>
+      <button class="chronicles-filter" data-filter="photo">📷 Foto</button>
+      <button class="chronicles-filter" data-filter="video">🎬 Video</button>
+      <button class="chronicles-filter" data-filter="event">📅 Eventi</button>
+      <button class="chronicles-filter" data-filter="mine">⚔️ I miei</button>
+    </div>
+
+    <!-- Griglia Unificata -->
+    <div class="chronicles-grid" id="chroniclesGrid"></div>
+
+    <!-- Empty state -->
+    <div id="chroniclesEmpty" style="display:none;text-align:center;padding:var(--sp-12) var(--sp-4);color:var(--silver-500)">
+      <span style="font-size:3rem;filter:drop-shadow(0 0 30px rgba(192,132,252,0.3))">📜</span>
+      <h3 style="margin:var(--sp-4) 0 var(--sp-2);font-family:var(--ff-display);color:var(--silver-100)">Nessuna cronaca ancora</h3>
+      <p style="max-width:40ch;margin:0 auto">Sii il primo a condividere una foto, un video o creare un evento. La storia del clan la scrivi tu.</p>
+      <button class="btn btn-violet btn-lg" id="chroniclesEmptyUpload" style="margin-top:var(--sp-6)">+ Crea la tua cronaca</button>
+    </div>
+
+    <!-- Load more -->
+    <div style="text-align:center;margin-top:var(--sp-8)">
+      <button class="btn btn-ghost" id="chroniclesLoadMore" style="display:none">Carica altre cronache</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal: Upload Unificato (Foto / Video / Evento) -->
+<div class="modal violet unified-upload-modal" id="unifiedUploadModal" role="dialog" aria-modal="true" aria-labelledby="uumTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet glass-morph" style="width:min(95vw, 720px);max-height:95vh;overflow:auto;display:flex;flex-direction:column">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head" style="padding:16px 24px;border-bottom:1px solid var(--silver-800);flex-shrink:0">
+      <span class="eyebrow violet">Nuova Cronaca</span>
+      <h3 id="uumTitle">Condividi la tua storia</h3>
+    </div>
+    
+    <form id="unifiedUploadForm" novalidate style="flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:16px;overflow:auto">
+      <!-- Tabs tipo contenuto -->
+      <div class="unified-upload-tabs" role="tablist" aria-label="Tipo di contenuto">
+        <button class="unified-upload-tab is-active" data-tab="photo" role="tab" aria-selected="true">📷 Foto</button>
+        <button class="unified-upload-tab" data-tab="video" role="tab" aria-selected="false">🎬 Video</button>
+        <button class="unified-upload-tab" data-tab="event" role="tab" aria-selected="false">📅 Evento</button>
+      </div>
+
+      <!-- PANNELLO FOTO -->
+      <div class="unified-tab-panel" data-panel="photo" style="display:block">
+        <div class="unified-dropzone" id="photoDropzone" tabindex="0" role="button" aria-label="Carica foto">
+          <div class="unified-dropzone-icon">📷</div>
+          <p class="unified-dropzone-text">Trascina qui le tue foto</p>
+          <p class="unified-dropzone-hint">JPG, PNG, WebP, GIF · Max 20MB · Fino a 10 file</p>
+          <input type="file" id="photoInput" accept="image/*" multiple class="sr-only">
+        </div>
+
+        <div class="unified-previews" id="photoPreviews" aria-label="Anteprime foto"></div>
+
+        <div class="unified-form-grid">
+          <div class="unified-field full-width">
+            <label class="unified-label" for="photoTitle">Titolo *</label>
+            <input class="unified-input" id="photoTitle" maxlength="200" placeholder="Es. Vittoria War #248 al tramonto" required>
+          </div>
+          <div class="unified-field">
+            <label class="unified-label" for="photoCategory">Categoria</label>
+            <select class="unified-select" id="photoCategory">
+              <option value="clan-life">Vita di Clan</option>
+              <option value="raid">Raid / War</option>
+              <option value="guida">Guide</option>
+              <option value="evento">Eventi</option>
+              <option value="creativo">Creatività</option>
+            </select>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="photoDescription">Descrizione</label>
+            <textarea class="unified-textarea" id="photoDescription" rows="3" maxlength="5000" placeholder="Racconta la storia dietro questa foto..."></textarea>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="photoTags">Tag (separati da virgola)</label>
+            <input class="unified-input" id="photoTags" maxlength="200" placeholder="es. vittoria, tramonto, bushido, clan">
+          </div>
+        </div>
+      </div>
+
+      <!-- PANNELLO VIDEO -->
+      <div class="unified-tab-panel" data-panel="video" style="display:none">
+        <div class="unified-dropzone" id="videoDropzone" tabindex="0" role="button" aria-label="Carica video">
+          <div class="unified-dropzone-icon">🎬</div>
+          <p class="unified-dropzone-text">Trascina qui il tuo video</p>
+          <p class="unified-dropzone-hint">MP4, WebM, MOV, MKV · Max 100MB · 1 file</p>
+          <input type="file" id="videoInput" accept="video/*" class="sr-only">
+        </div>
+
+        <div class="unified-previews" id="videoPreviews" aria-label="Anteprima video"></div>
+
+        <div class="unified-form-grid">
+          <div class="unified-field full-width">
+            <label class="unified-label" for="videoTitle">Titolo *</label>
+            <input class="unified-input" id="videoTitle" maxlength="200" placeholder="Es. Tutorial: Kata Avanzato Bushido" required>
+          </div>
+          <div class="unified-field">
+            <label class="unified-label" for="videoCategory">Categoria</label>
+            <select class="unified-select" id="videoCategory">
+              <option value="raid">Raid / War</option>
+              <option value="guida">Guide / Tutorial</option>
+              <option value="evento">Eventi Clan</option>
+              <option value="creativo">Creatività</option>
+              <option value="clan-life">Vita di Clan</option>
+            </select>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="videoDescription">Descrizione</label>
+            <textarea class="unified-textarea" id="videoDescription" rows="3" maxlength="5000" placeholder="Di cosa parla il video? Timestamp, tecniche, note..."></textarea>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="videoTags">Tag (separati da virgola)</label>
+            <input class="unified-input" id="videoTags" maxlength="200" placeholder="es. tutorial, kata, bushido, avanzato">
+          </div>
+        </div>
+      </div>
+
+      <!-- PANNELLO EVENTO -->
+      <div class="unified-tab-panel" data-panel="event" style="display:none">
+        <div class="unified-form-grid">
+          <div class="unified-field full-width">
+            <label class="unified-label" for="eventTitle">Titolo evento *</label>
+            <input class="unified-input" id="eventTitle" maxlength="200" placeholder="Es. Torneo Kendo di Primavera" required>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="eventDescription">Descrizione</label>
+            <textarea class="unified-textarea" id="eventDescription" rows="3" maxlength="5000" placeholder="Dettagli, regole, cosa portare..."></textarea>
+          </div>
+          <div class="unified-field">
+            <label class="unified-label" for="eventDate">Data e ora *</label>
+            <input class="unified-input" id="eventDate" type="datetime-local" required>
+          </div>
+          <div class="unified-field">
+            <label class="unified-label" for="eventCategory">Categoria</label>
+            <select class="unified-select" id="eventCategory">
+              <option value="evento">Evento Clan</option>
+              <option value="raid">Raid Programmato</option>
+              <option value="guida">Guida / Workshop</option>
+              <option value="riunione">Riunione Ufficiale</option>
+            </select>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="eventLocation">Luogo (Discord / In-game / Esterno) *</label>
+            <input class="unified-input" id="eventLocation" maxlength="200" placeholder="Es. Discord #voice-raid / Piazza Centrale In-game" required>
+          </div>
+          <div class="unified-field full-width">
+            <label class="unified-label" for="eventTags">Tag</label>
+            <input class="unified-input" id="eventTags" maxlength="200" placeholder="es. torneo, primavera, kendo, competizione">
+          </div>
+        </div>
+
+        <!-- Upload immagine opzionale per evento -->
+        <div style="margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--silver-800)">
+          <label class="unified-label">Immagine copertina (opzionale)</label>
+          <div class="unified-dropzone" id="eventImageDropzone" tabindex="0" role="button" aria-label="Carica immagine evento">
+            <div class="unified-dropzone-icon">🖼️</div>
+            <p class="unified-dropzone-text">Aggiungi un'immagine per l'evento</p>
+            <p class="unified-dropzone-hint">JPG, PNG, WebP · Max 10MB · 1 file</p>
+            <input type="file" id="eventImageInput" accept="image/*" class="sr-only">
+          </div>
+          <div class="unified-previews" id="eventImagePreviews" aria-label="Anteprima immagine evento"></div>
+        </div>
+      </div>
+
+      <!-- CAMPI COMUNI (Nickname per anonimi) -->
+      <div style="margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--silver-800)">
+        <div class="unified-field">
+          <label class="unified-label" for="uploaderName">Il tuo nome / Nickname *</label>
+          <input class="unified-input" id="uploaderName" maxlength="100" placeholder="Come vuoi apparire (es. Ronin_Kaito)" required>
+        </div>
+      </div>
+
+      <!-- Progress bar (hidden until upload) -->
+      <div class="unified-progress" id="unifiedProgress" style="display:none" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div class="unified-progress-bar" id="unifiedProgressBar"></div>
+        <span class="unified-progress-text" id="unifiedProgressText">0%</span>
+      </div>
+
+      <!-- Submit -->
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:var(--sp-2)">
+        <button type="button" class="btn btn-ghost" data-close>Annulla</button>
+        <button type="submit" class="btn btn-violet btn-lg unified-submit" id="unifiedSubmit">Pubblica Cronaca</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: crea post creativo -->
 <div class="modal violet" id="createPostModal" role="dialog" aria-modal="true" aria-labelledby="cpTitle">
   <div class="modal-backdrop" data-close></div>
@@ -1528,7 +1758,8 @@
 <script src="assets/js/account.js"></script>
 <script src="assets/js/avatar-creator.js"></script>
 <script src="assets/js/filigrana.js"></script>
-<script type="module" src="assets/js/avatar3d-advanced.js"></script>
+  <script src="assets/js/chronicles.js"></script>
+  <script type="module" src="assets/js/avatar3d-advanced.js"></script>
 <script type="module" src="assets/js/avatar3d.js"></script>
 <script src="assets/js/main.js"></script>
 <script>

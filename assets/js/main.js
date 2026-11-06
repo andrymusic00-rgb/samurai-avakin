@@ -682,7 +682,7 @@
     lockBodyScroll(true);
   }
 
-  const ROUTES = ["home", "chi-siamo", "eventi", "gallery", "video", "blog", "classifica", "comando", "account"];
+  const ROUTES = ["home", "chi-siamo", "eventi", "chronicles", "gallery", "video", "blog", "classifica", "comando", "account"];
 
   let lastView = null;
 
@@ -745,6 +745,11 @@
       if (typeof paintGallery === "function") {
         paintGallery();
         applyFilter(gFilter);
+      }
+    } else if (view === "chronicles") {
+      // Init chronicles section
+      if (typeof Chronicles !== "undefined" && Chronicles.init) {
+        Chronicles.init();
       }
     } else {
       const overlay = $("#videoIntroOverlay");
