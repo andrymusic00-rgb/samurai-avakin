@@ -6,12 +6,11 @@ const AvatarCreator = (() => {
   let _wrap = null;
   let _mode = 'photo'; // 'photo' | 'avatar3d'
   let _originalImage = null;
-  let _currentStyle = 'mii';
+  let _currentStyle = 'classic';
   let _canvas = null;
   let _ctx = null;
   let _v2 = null;
-  let _photoAnalysis = null;
-  let _customizationState = null;
+  let _photoAnalysis = null; // analisi automatica della foto 2D
 
   /* ---------------------------------------------------------------- analisi foto */
   function toHex(c) {
@@ -105,10 +104,9 @@ const AvatarCreator = (() => {
     bindStyles();
     bindControls();
     bindModeSwitch();
-    bindCustomization();
 
     if (typeof window !== 'undefined') {
-      window.AvatarCreator = { open, openWithImage, openWithAvatar, close, init, getState: () => _customizationState };
+      window.AvatarCreator = { open, openWithImage, openWithAvatar, close, init };
     }
   }
 
@@ -127,14 +125,14 @@ const AvatarCreator = (() => {
 
   function loadFile(file) {
     if (!file || !file.type.startsWith('image/')) { toast('Formato non valido', 'Carica un\'immagine.', 'warn'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast('File troppo grande', 'Massimo 5 MB.', 'warn'); return; }
     const r = new FileReader();
     r.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
         _originalImage = img;
-        _photoAnalysis = analyzePhoto(img);
         render2D(img);
+        // Analisi automatica della foto per l'avatar 3D
+        _photoAnalysis = analyzePhoto(img);
         open();
       };
       img.src = ev.target.result;
@@ -149,7 +147,6 @@ const AvatarCreator = (() => {
         btn.classList.add('is-active');
         _currentStyle = btn.dataset.style;
         if (_originalImage) render2D(_originalImage);
-        if (_mode === 'avatar3d' && _v2) applyStyleTo3D(_currentStyle);
       });
     });
   }
@@ -159,13 +156,11 @@ const AvatarCreator = (() => {
     const reset = $('#acReset');
     const download = $('#acDownload');
     const clear = $('#acClear');
-    const exportGLB = $('#acExportGLB');
 
     if (apply) apply.addEventListener('click', saveAvatar);
     if (reset) reset.addEventListener('click', resetPhoto);
     if (download) download.addEventListener('click', download2D);
     if (clear) clear.addEventListener('click', () => { _originalImage = null; _photoAnalysis = null; show2D(); });
-    if (exportGLB) exportGLB.addEventListener('click', exportGLBFile);
   }
 
   function bindModeSwitch() {
@@ -176,71 +171,6 @@ const AvatarCreator = (() => {
     });
   }
 
-  function bindCustomization() {
-    // 3D customization controls
-    const container = _wrap;
-    $$('.ac3d-control select, .ac3d-control input[type=range]', container).forEach(el => {
-      el.addEventListener('change', () => applyCustomization());
-      el.addEventListener('input', () => applyCustomization());
-    });
-    $$('.ac3d-preset', container).forEach(btn => {
-      btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
-    });
-  }
-
-  function applyPreset(presetId) {
-    const presets = {
-      ronin: { head: 'round', hair: 'messy', hairColor: '#3a2a1a', armorColor: '#2a1a1a', lacquerColor: '#1a0a0a', metalColor: '#8a7a4e', fabricColor: '#1a1a2e', helmet: 'none', face: 'mask', weapon: 'katana', expression: 'serious' },
-      bushi: { head: 'square', hair: 'tied', hairColor: '#1a1a2e', armorColor: '#1a3a5a', lacquerColor: '#0d1b2a', metalColor: '#b8a35e', fabricColor: '#1a1a2e', helmet: 'kabuto', face: 'none', weapon: 'naginata', expression: 'calm' },
-      shogun: { head: 'round', hair: 'long', hairColor: '#0a0a1a', armorColor: '#8b0000', lacquerColor: '#4a0e0e', metalColor: '#d4af37', fabricColor: '#2a1a1a', helmet: 'shogun', face: 'none', weapon: 'daisho', expression: 'authoritative' },
-      onna: { head: 'heart', hair: 'long', hairColor: '#2a1a2a', armorColor: '#4a1a3a', lacquerColor: '#2a0a1a', metalColor: '#e8c547', fabricColor: '#1a1a2e', helmet: 'none', face: 'fan', weapon: 'nagamaki', expression: 'gentle' }
-    };
-    const preset = presets[presetId];
-    if (!preset) return;
-    Object.entries(preset).forEach(([key, value]) => {
-      const el = $(`.ac3d-control [name="${key}"]`, _wrap);
-      if (el) {
-        el.value = value;
-        if (el.type === 'range') {
-          const lbl = $(`#ac3d-${key}-val`);
-          if (lbl) lbl.textContent = value;
-        }
-      }
-    });
-    applyCustomization();
-    toast(`Preset applicato: ${presetId}`, 'Personalizza ulteriormente se vuoi.', 'ok', 2500);
-  }
-
-  function applyCustomization() {
-    if (!_v2 || !_v2.setState) return;
-    const state = getCustomizationState();
-    _v2.setState(state);
-    _customizationState = state;
-  }
-
-  function getCustomizationState() {
-    const container = _wrap;
-    const state = {};
-    $$('.ac3d-control select, .ac3d-control input', container).forEach(el => {
-      if (el.name) state[el.name] = el.type === 'checkbox' ? el.checked : el.value;
-    });
-    return state;
-  }
-
-  function applyStyleTo3D(style) {
-    if (!_v2 || !_v2.setState) return;
-    const styleMap = {
-      mii: { head: 'round', hair: 'short', helmet: 'none', expression: 'smile' },
-      'mii-neon': { head: 'round', hair: 'spiky', hairColor: '#c084fc', helmet: 'none', expression: 'smile' },
-      'mii-ink': { head: 'round', hair: 'short', helmet: 'none', expression: 'neutral' },
-      classic: { head: 'square', hair: 'tied', helmet: 'kabuto', expression: 'serious' },
-      ink: { head: 'round', hair: 'messy', helmet: 'none', expression: 'calm' },
-      mask: { head: 'heart', hair: 'long', helmet: 'none', face: 'oni', expression: 'fierce' }
-    };
-    const s = styleMap[style] || styleMap.mii;
-    _v2.setState({ ...getCustomizationState(), ...s });
-  }
-
   /* ---------------------------------------------------------------- 2D */
   function show2D() {
     const stage = $('#acStage');
@@ -249,10 +179,6 @@ const AvatarCreator = (() => {
     if (controls) controls.style.display = _originalImage ? 'flex' : 'none';
     const el3d = $('#ac3d', _wrap);
     if (el3d) el3d.style.display = 'none';
-    const toggle = $('#acToggleView');
-    if (toggle) { toggle.textContent = 'Passa a 3D'; toggle.classList.remove('is-active'); }
-    const exportBtn = $('#acExportGLB');
-    if (exportBtn) exportBtn.disabled = true;
   }
 
   function render2D(img) {
@@ -273,24 +199,11 @@ const AvatarCreator = (() => {
         d.data[i] = d.data[i + 1] = d.data[i + 2] = step;
       }
       _ctx.putImageData(d, 0, 0);
-    } else if (_currentStyle === 'mii-neon') {
-      _ctx.filter = 'contrast(1.2) saturate(1.3) hue-rotate(270deg)';
+    } else if (_currentStyle === 'bushi') {
+      _ctx.filter = 'contrast(1.15) saturate(1.1) hue-rotate(-10deg)';
       _ctx.drawImage(img, 0, 0, c.width, c.height);
       _ctx.filter = 'none';
-      // Add glow effect
-      _ctx.shadowColor = '#c084fc';
-      _ctx.shadowBlur = 20;
-      _ctx.drawImage(img, 0, 0, c.width, c.height);
-      _ctx.shadowBlur = 0;
-    } else if (_currentStyle === 'mii-ink') {
-      _ctx.filter = 'grayscale(1) contrast(1.5)';
-      _ctx.drawImage(img, 0, 0, c.width, c.height);
-      _ctx.filter = 'none';
-    } else if (_currentStyle === 'classic') {
-      _ctx.filter = 'sepia(0.3) contrast(1.1) saturate(1.2) hue-rotate(-10deg)';
-      _ctx.drawImage(img, 0, 0, c.width, c.height);
-      _ctx.filter = 'none';
-    } else if (_currentStyle === 'mask') {
+    } else if (_currentStyle === 'oni') {
       _ctx.filter = 'contrast(1.3) saturate(0.5) hue-rotate(15deg)';
       _ctx.drawImage(img, 0, 0, c.width, c.height);
       _ctx.filter = 'none';
@@ -309,31 +222,42 @@ const AvatarCreator = (() => {
     if (!_canvas) return;
     const url = _canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.href = url; a.download = `samurai-avatar-2d-${Date.now()}.png`;
+    a.href = url; a.download = 'samurai-avatar-2d.png';
     a.click();
   }
 
-  async function exportGLBFile() {
-    if (!_v2 || !_v2.exportGLB) {
-      toast('Esportazione non disponibile', 'Il modello 3D non supporta l\'esportazione GLB.', 'warn');
-      return;
+  async function saveAvatar() {
+    let payload = {};
+    if (_mode === 'photo') {
+      if (!_canvas) { toast('Nessuna immagine', '', 'warn'); return; }
+      payload = { avatar2d: _canvas.toDataURL('image/png'), style: _currentStyle, type: 'mii' };
+    } else {
+      if (!_v2) { toast('Avatar 3D non caricato', '', 'warn'); return; }
+      payload = { avatar3d: _v2.getState ? _v2.getState() : null, type: 'avatar3d' };
     }
+
     try {
-      const blob = await _v2.exportGLB();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `samurai-avatar-3d-${Date.now()}.glb`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('Modello esportato', 'File GLB pronto per Blender, Three.js, ecc.', 'ok');
+      let res;
+      if (typeof API !== 'undefined') {
+        res = await API.post('/api/account/avatar', payload, { noRetry: true });
+      } else {
+        res = await fetch('/api/account/avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      }
+      if (res?.ok) {
+        toast('Avatar salvato', 'Il tuo avatar è ora sul profilo.', 'ok');
+        close();
+      } else {
+        toast('Salvataggio fallito', res?.message || 'Riprova.', 'err');
+      }
     } catch (e) {
-      toast('Errore esportazione', e.message, 'err');
+      toast('Errore salvataggio', e.message, 'err');
     }
   }
 
   /* ---------------------------------------------------------------- 3D */
   async function initAvatar3D() {
     if (_v2) {
+      // Se c'è già un'analisi della foto 2D, applicala
       if (_photoAnalysis) {
         _v2.setState(mapAnalysisToAvatar3D(_photoAnalysis));
       }
@@ -345,12 +269,10 @@ const AvatarCreator = (() => {
       const mod = await import('./avatar-v2/index.js');
       _v2 = mod.avatarV2;
       _v2.init({ uiContainer: null, stageContainer: container });
+      // Applica subito l'analisi della foto 2D se disponibile
       if (_photoAnalysis) {
         _v2.setState(mapAnalysisToAvatar3D(_photoAnalysis));
       }
-      // Enable export button
-      const exportBtn = $('#acExportGLB');
-      if (exportBtn) exportBtn.disabled = false;
       toast('Avatar 3D pronto', 'Generato automaticamente dalla tua foto.', 'ok', 3000);
     } catch (e) {
       toast('Errore caricamento 3D', 'Usa la modalità foto.', 'warn');
@@ -361,22 +283,12 @@ const AvatarCreator = (() => {
   function showMode() {
     const stage = $('#acStage');
     const panel3d = $('#ac3d', _wrap);
-    const toggle = $('#acToggleView');
-    const exportBtn = $('#acExportGLB');
-    const controls3d = $('#ac3dControls', _wrap);
-
     if (_mode === 'avatar3d') {
       if (stage) stage.style.display = 'none';
       if (panel3d) panel3d.style.display = '';
-      if (controls3d) controls3d.style.display = '';
-      if (toggle) { toggle.textContent = 'Passa a Foto'; toggle.classList.add('is-active'); }
-      if (exportBtn) exportBtn.disabled = false;
       initAvatar3D();
     } else {
       if (panel3d) panel3d.style.display = 'none';
-      if (controls3d) controls3d.style.display = 'none';
-      if (toggle) { toggle.textContent = 'Passa a 3D'; toggle.classList.remove('is-active'); }
-      if (exportBtn) exportBtn.disabled = true;
       show2D();
     }
   }
@@ -396,8 +308,6 @@ const AvatarCreator = (() => {
     if (controls) controls.style.display = _originalImage ? 'flex' : 'none';
     const el3d = $('#ac3d', _wrap);
     if (el3d) el3d.style.display = 'none';
-    const controls3d = $('#ac3dControls', _wrap);
-    if (controls3d) controls3d.style.display = 'none';
     _wrap.classList.add('is-open');
     _wrap.setAttribute('aria-modal', 'true');
   }
@@ -425,34 +335,6 @@ const AvatarCreator = (() => {
     }
   }
 
-  async function saveAvatar() {
-    let payload = {};
-    if (_mode === 'photo') {
-      if (!_canvas) { toast('Nessuna immagine', '', 'warn'); return; }
-      payload = { avatar2d: _canvas.toDataURL('image/png'), style: _currentStyle, type: 'mii' };
-    } else {
-      if (!_v2) { toast('Avatar 3D non caricato', '', 'warn'); return; }
-      payload = { avatar3d: _v2.getState ? _v2.getState() : _customizationState, type: 'avatar3d' };
-    }
-
-    try {
-      let res;
-      if (typeof API !== 'undefined') {
-        res = await API.post('/api/account/avatar', payload, { noRetry: true });
-      } else {
-        res = await fetch('/api/account/avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      }
-      if (res?.ok) {
-        toast('Avatar salvato', 'Il tuo avatar è ora sul profilo.', 'ok');
-        close();
-      } else {
-        toast('Salvataggio fallito', res?.message || 'Riprova.', 'err');
-      }
-    } catch (e) {
-      toast('Errore salvataggio', e.message, 'err');
-    }
-  }
-
   function close() {
     if (_wrap) {
       _wrap.classList.remove('is-open');
@@ -468,5 +350,5 @@ const AvatarCreator = (() => {
     }
   }
 
-  return { open, openWithImage, openWithAvatar, close, init, getState: () => _customizationState };
+  return { open, openWithImage, openWithAvatar, close, init };
 })();

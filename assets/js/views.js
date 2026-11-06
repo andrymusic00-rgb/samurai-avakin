@@ -85,35 +85,7 @@ const Views = (() => {
       status.classList.toggle("is-offline", !live);
     }
     if (!list.length) {
-      box.innerHTML = `
-        <div class="empty-state ev-empty-sophisticated" data-reveal="scale">
-          <div class="ev-empty-illustration">
-            <div class="ev-empty-ring"></div>
-            <div class="ev-empty-ring"></div>
-            <div class="ev-empty-ring"></div>
-            <span class="kanji ev-empty-kanji">門</span>
-          </div>
-          <h3 class="ev-empty-title">Nessun evento in programma</h3>
-          <p class="ev-empty-lead">Il calendario del clan è vuoto. Sii il primo a organizzare un raid, una guida o una riunione.</p>
-          <div class="ev-empty-actions">
-            <button class="btn btn-violet btn-lg ev-empty-create" data-action="create-first">
-              <span class="ico">+</span> Crea il primo evento
-            </button>
-            <button class="btn btn-glass btn-lg ev-empty-template" data-action="template">
-              <span class="ico">◈</span> Usa un template
-            </button>
-          </div>
-          <div class="ev-empty-hint">
-            <span class="ico">💡</span> Gli eventi appaiono qui automaticamente quando vengono creati da te o dal comando.
-          </div>
-        </div>`;
-      observe(box);
-      box.querySelectorAll("[data-action]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          if (e.currentTarget.dataset.action === "create-first") createEvent();
-          else if (e.currentTarget.dataset.action === "template") openTemplatePicker();
-        });
-      });
+      box.innerHTML = `<div class="empty-state"><span class="kanji">無</span>Nessun evento in programma.</div>`;
       return;
     }
     box.innerHTML = list
@@ -126,7 +98,7 @@ const Views = (() => {
           ? `<div class="ev-img-wrap"><img class="ev-img" src="${esc(e.immagine)}" alt="${esc(e.titolo)}" loading="lazy"></div>`
           : "";
         return `
-      <article class="ev-card glass-violet card-3d border-beam${e.iscritto ? " is-joined" : ""}${isCustom ? " ev-custom" : ""}" data-ev="${esc(e.id)}" data-reveal>
+      <article class="ev-card glass-violet${e.iscritto ? " is-joined" : ""}${isCustom ? " ev-custom" : ""}" data-ev="${esc(e.id)}" data-reveal>
         ${immagineHtml}
         <div class="ev-side">
           <span class="ev-kanji">${CAT_ICON[e.categoria] || "門"}</span>
@@ -161,254 +133,6 @@ const Views = (() => {
       })
       .join("");
     observe(box);
-    animateInside(box);
-  }
-
-  function openTemplatePicker() {
-    const templates = [
-      { id: "raid-settimanale", label: "Raid Settimanale", icon: "戦", cat: "raid", desc: "Appuntamento fisso per il raid del clan", posti: 20, duration: 2 },
-      { id: "guida-build", label: "Guida Build", icon: "道", cat: "guida", desc: "Sessione per ottimizzare build e strategie", posti: 15, duration: 1.5 },
-      { id: "riunione-clan", label: "Riunione Clan", icon: "議", cat: "riunione", desc: "Allineamento settimanale con i Bushi", posti: 0, duration: 1 },
-      { id: "evento-social", label: "Evento Sociale", icon: "門", cat: "evento", desc: "Divertimento libero: foto, chat, minigiochi", posti: 0, duration: 3 }
-    ];
-    const wrap = document.createElement("div");
-    wrap.id = "templatePickerModal";
-    wrap.className = "modal violet";
-    wrap.setAttribute("role", "dialog");
-    wrap.setAttribute("aria-modal", "true");
-    wrap.innerHTML = `
-      <div class="modal-backdrop" data-close></div>
-      <div class="modal-box glass violet glass-morph" style="max-width:560px;max-height:85vh;overflow:auto">
-        <button class="modal-x" data-close aria-label="Chiudi">✕</button>
-        <div class="modal-head">
-          <span class="eyebrow violet">Template Eventi</span>
-          <h3>Scegli un template</h3>
-          <p>Parti da una base precompilata e personalizza i dettagli.</p>
-        </div>
-        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:12px">
-          ${templates.map(t => `
-            <button class="template-card glass-violet card-3d border-beam" data-template="${t.id}" style="padding:20px;display:flex;gap:16px;align-items:center;text-align:left">
-              <span class="template-icon" style="font-size:2.5rem">${t.icon}</span>
-              <div style="flex:1">
-                <h4 style="color:var(--silver-100);margin-bottom:4px">${t.label}</h4>
-                <p style="color:var(--silver-500);font-size:.9rem;margin-bottom:8px">${t.desc}</p>
-                <div class="row" style="gap:8px;font-size:.8rem">
-                  <span class="tag violet">${t.cat.toUpperCase()}</span>
-                  <span class="tag silver">${t.posti > 0 ? t.posti + " posti" : "Illimitato"}</span>
-                  <span class="tag silver">${t.duration}h</span>
-                </div>
-              </div>
-            </button>
-          `).join("")}
-        </div>
-      </div>`;
-    document.body.appendChild(wrap);
-    wrap.classList.add("is-open");
-    observe(wrap);
-    wrap.querySelectorAll(".template-card").forEach(card => {
-      card.addEventListener("click", () => {
-        wrap.remove();
-        createEventWithTemplate(card.dataset.template);
-      });
-    });
-    wrap.querySelectorAll("[data-close]").forEach(el => el.addEventListener("click", () => wrap.remove()));
-  }
-
-  async function createEventWithTemplate(templateId) {
-    const templates = {
-      "raid-settimanale": { titolo: "Raid Settimanale del Clan", categoria: "raid", sommaio: "Appuntamento fisso per il raid del clan. Porta la tua build migliore!", posti: 20, durata: 2 },
-      "guida-build": { titolo: "Guida Build & Strategie", categoria: "guida", sommaio: "Sessione per ottimizzare build, rotazioni e strategie di combattimento.", posti: 15, durata: 1.5 },
-      "riunione-clan": { titolo: "Riunione Settimanale Clan", categoria: "riunione", sommaio: "Allineamento con i Bushi: obiettivi, reclute, eventi futuri.", posti: 0, durata: 1 },
-      "evento-social": { titolo: "Evento Sociale: Foto & Minigiochi", categoria: "evento", sommaio: "Serata libera: screenshot, foto di gruppo, minigiochi in arena.", posti: 0, durata: 3 }
-    };
-    const t = templates[templateId];
-    if (!t) return;
-    const now = new Date();
-    now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15);
-    const inizio = now.toISOString().slice(0, 16);
-    const fine = new Date(now.getTime() + t.durata * 3600000).toISOString().slice(0, 16);
-    createEvent({ ...t, inizio, fine });
-  }
-
-  function createEvent(prefill = {}) {
-    if (!Account.authed) {
-      toast("Accedi prima", "Per creare un evento devi essere loggato.", "warn");
-      openModal("enterModal");
-      return;
-    }
-    const wrap = document.createElement("div");
-    wrap.id = "createEventModal";
-    wrap.className = "modal violet";
-    wrap.setAttribute("role", "dialog");
-    wrap.setAttribute("aria-modal", "true");
-    const today = new Date().toISOString().slice(0, 16);
-    wrap.innerHTML = `
-      <div class="modal-backdrop" data-close></div>
-      <div class="modal-box glass violet glass-morph" style="max-width:560px;max-height:90vh;overflow:auto;display:flex;flex-direction:column">
-        <button class="modal-x" data-close aria-label="Chiudi">✕</button>
-        <div class="modal-head">
-          <span class="eyebrow violet">Crea evento samurai</span>
-          <h3>Nuovo evento personalizzato</h3>
-        </div>
-        <form id="createEventForm" novalidate style="flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:14px">
-          <div class="field">
-            <label for="cev-titolo">Titolo evento <span class="hint">Max 90 caratteri</span></label>
-            <input class="input violet" id="cev-titolo" maxlength="90" placeholder="Es. Torneo di Kendo al tramonto" required value="${esc(prefill.titolo || "")}">
-            <span class="err-msg" data-for="cev-titolo"></span>
-          </div>
-          <div class="field">
-            <label for="cev-descrizione">Descrizione completa <span class="hint">Max 1000 caratteri</span></label>
-            <textarea class="input violet" id="cev-descrizione" rows="4" maxlength="1000" placeholder="Racconta cosa succederà, chi può partecipare, cosa portare, regole speciali...">${esc(prefill.sommario || "")}</textarea>
-            <span class="err-msg" data-for="cev-descrizione"></span>
-          </div>
-          <div class="form-grid" style="gap:10px">
-            <div class="field">
-              <label for="cev-categoria">Categoria</label>
-              <select class="input violet" id="cev-categoria">
-                <option value="evento"${prefill.categoria === "evento" ? " selected" : ""}>Evento</option>
-                <option value="raid"${prefill.categoria === "raid" ? " selected" : ""}>Raid</option>
-                <option value="guida"${prefill.categoria === "guida" ? " selected" : ""}>Guida</option>
-                <option value="riunione"${prefill.categoria === "riunione" ? " selected" : ""}>Riunione</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="cev-posti">Posti disponibili <span class="hint">0 = illimitato</span></label>
-              <input class="input violet" id="cev-posti" type="number" min="0" value="${prefill.posti ?? 0}">
-            </div>
-          </div>
-          <div class="form-grid" style="gap:10px">
-            <div class="field">
-              <label for="cev-inizio">Data e ora inizio <span class="hint">Obbligatorio</span></label>
-              <input class="input violet" id="cev-inizio" type="datetime-local" required min="${today}" value="${prefill.inizio || ""}">
-            </div>
-            <div class="field">
-              <label for="cev-fine">Data e ora fine</label>
-              <input class="input violet" id="cev-fine" type="datetime-local" min="${today}" value="${prefill.fine || ""}">
-            </div>
-          </div>
-          <div class="field">
-            <label for="cev-luogo">Luogo <span class="hint">Max 100 caratteri</span></label>
-            <input class="input violet" id="cev-luogo" maxlength="100" placeholder="Es. Dojo Centrale, Arena 3, Discord #generale" value="${esc(prefill.luogo || "")}">
-            <span class="err-msg" data-for="cev-luogo"></span>
-          </div>
-          <div class="field">
-            <label for="cev-immagine">URL immagine copertina <span class="hint">Opzionale</span></label>
-            <input class="input violet" id="cev-immagine" placeholder="https://esempio.it/immagine.jpg" value="${esc(prefill.immagine || "")}">
-            <small style="color:var(--silver-600);font-size:.82rem">Link diretto a JPG, PNG, WEBP. Aspect ratio consigliato 16:9</small>
-          </div>
-          <div class="field">
-            <label class="row" style="gap:10px;align-items:center;font-size:.9rem">
-              <input type="checkbox" id="cev-pubblico"${prefill.pubblico !== false ? " checked" : ""}> Visibile a tutto il clan
-              <span class="tag violet" style="font-size:10px">Pubblico</span>
-            </label>
-          </div>
-          <div class="field">
-            <label class="row" style="gap:10px;align-items:center;font-size:.9rem">
-              <input type="checkbox" id="cev-notifica" checked> Notifica membri all'uscita
-              <span class="tag silver" style="font-size:10px">Push</span>
-            </label>
-          </div>
-          <div style="margin-top:auto;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
-            <button type="button" class="btn btn-ghost" data-close>Annulla</button>
-            <button type="button" class="btn btn-glass" id="cevSaveDraft">Salva bozza</button>
-            <button type="submit" class="btn btn-violet btn-lg" id="cevSubmit">Crea evento</button>
-          </div>
-        </form>
-      </div>`;
-    document.body.appendChild(wrap);
-    wrap.classList.add("is-open");
-    observe(wrap);
-    animateInside(wrap);
-
-    // Set min date to now
-    const inizioInput = $("#cev-inizio", wrap);
-    const fineInput = $("#cev-fine", wrap);
-    if (inizioInput) inizioInput.min = today;
-    if (fineInput) fineInput.min = today;
-    inizioInput?.addEventListener("change", () => {
-      if (fineInput && fineInput.value < inizioInput.value) fineInput.value = inizioInput.value;
-      fineInput.min = inizioInput.value;
-    });
-
-    wrap.addEventListener("click", (e) => {
-      if (e.target.closest("[data-close]")) { wrap.remove(); }
-    });
-
-    $("#createEventForm", wrap).addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const titolo = $("#cev-titolo", wrap).value.trim();
-      const descrizione = $("#cev-descrizione", wrap).value.trim();
-      const categoria = $("#cev-categoria", wrap).value;
-      const inizio = $("#cev-inizio", wrap).value;
-      const fine = $("#cev-fine", wrap).value || null;
-      const posti = Number($("#cev-posti", wrap).value || 0);
-      const luogo = $("#cev-luogo", wrap).value.trim();
-      const immagine = $("#cev-immagine", wrap).value.trim();
-      const pubblico = $("#cev-pubblico", wrap).checked;
-      const notifica = $("#cev-notifica", wrap).checked;
-
-      if (!titolo) { toast("Titolo richiesto", "", "warn"); return; }
-      if (!inizio) { toast("Data inizio richiesta", "", "warn"); return; }
-      if (new Date(inizio) < new Date()) { toast("Data passata", "Scegli una data futura.", "warn"); return; }
-
-      const btn = $("#cevSubmit", wrap);
-      btn.disabled = true;
-      btn.textContent = "Creazione…";
-
-      try {
-        const r = await API.post("/api/clan/events-custom", {
-          titolo, descrizione, categoria, inizio, fine, posti, luogo, immagine, pubblico, notifica
-        }, { noRetry: true });
-        if (r?.ok) {
-          toast("Evento creato", "Il tuo evento è ora visibile al clan.", "ok");
-          wrap.remove();
-          loadEvents();
-        } else {
-          toast("Creazione fallita", r?.message || "Riprova.", "err");
-        }
-      } catch (err) {
-        toast("Errore creazione", err?.message, "err");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Crea evento";
-      }
-    });
-
-    $("#cevSaveDraft", wrap)?.addEventListener("click", async () => {
-      const draft = {
-        titolo: $("#cev-titolo", wrap).value.trim(),
-        descrizione: $("#cev-descrizione", wrap).value.trim(),
-        categoria: $("#cev-categoria", wrap).value,
-        inizio: $("#cev-inizio", wrap).value,
-        fine: $("#cev-fine", wrap).value || null,
-        posti: Number($("#cev-posti", wrap).value || 0),
-        luogo: $("#cev-luogo", wrap).value.trim(),
-        immagine: $("#cev-immagine", wrap).value.trim(),
-        pubblico: $("#cev-pubblico", wrap).checked,
-        notifica: $("#cev-notifica", wrap).checked,
-        savedAt: Date.now()
-      };
-      const drafts = JSON.parse(localStorage.getItem("sam.eventDrafts") || "[]");
-      drafts.unshift(draft);
-      if (drafts.length > 10) drafts.pop();
-      localStorage.setItem("sam.eventDrafts", JSON.stringify(drafts));
-      toast("Bozza salvata", "La ritrovi qui la prossima volta.", "ok");
-    });
-
-    // Load existing draft if any
-    const drafts = JSON.parse(localStorage.getItem("sam.eventDrafts") || "[]");
-    if (drafts.length && !prefill.titolo) {
-      const latest = drafts[0];
-      const use = confirm("Hai una bozza salvata. Vuoi riprenderla?");
-      if (use) {
-        Object.keys(latest).forEach(k => {
-          const el = $(`#cev-${k}`, wrap);
-          if (el) el.value = latest[k];
-        });
-        if (latest.pubblico !== undefined) $("#cev-pubblico", wrap).checked = latest.pubblico;
-        if (latest.notifica !== undefined) $("#cev-notifica", wrap).checked = latest.notifica;
-      }
-    }
   }
 
   function tickCountdowns() {
@@ -857,7 +581,7 @@ const Views = (() => {
       [num(totalH), "Ore in clan"],
       [`${avgWr}%`, "Win rate medio"]
     ]
-      .map(([v, l]) => `<div class="stat glass-violet stat-violet border-glow border-beam glass-morph"><div class="stat-num stat-number text-gradient-animate"><span class="n">${v}</span></div><div class="stat-label">${l}</div></div>`)
+      .map(([v, l]) => `<div class="stat glass-violet stat-violet"><div class="stat-num"><span class="n">${v}</span></div><div class="stat-label">${l}</div></div>`)
       .join("");
   }
 
@@ -965,7 +689,7 @@ const Views = (() => {
             [ov.eventi.n, "Eventi in programma"],
             [ov.subscribers.n, "Iscritti newsletter"]
           ]
-            .map(([v, l]) => `<div class="stat glass-violet stat-violet border-glow border-beam glass-morph"><div class="stat-num stat-number text-gradient-animate"><span class="n">${num(v)}</span></div><div class="stat-label">${l}</div></div>`)
+            .map(([v, l]) => `<div class="stat glass-violet stat-violet"><div class="stat-num"><span class="n">${num(v)}</span></div><div class="stat-label">${l}</div></div>`)
             .join("")}
         </div>`
       : "";
@@ -1293,7 +1017,6 @@ const Views = (() => {
     }
     if (view === "comando") loadComando();
     if (view === "blog" && window.Blog) window.Blog.loadBlog();
-    if (view === "video") loadVideos();
   }
 
   function bind() {
@@ -1324,42 +1047,6 @@ const Views = (() => {
       if (dec) return decide(dec.dataset.decide, dec.dataset.decision);
 
       if (e.target.closest("#btnNotif")) return openNotifications();
-      
-      if (e.target.closest("#btnOpenVideoUpload")) {
-        if (!Account.authed) {
-          toast("Accedi per caricare", "Devi essere loggato per caricare video.", "warn");
-          openModal("enterModal");
-          return;
-        }
-        if (typeof VideoSystem !== 'undefined') {
-          const dropzone = VideoSystem.createUploadDropzone({
-            onUploadStart: (count) => toast("Caricamento", `${count} video in coda`, "info"),
-            onUploadProgress: (id, progress) => {
-              const el = document.querySelector(`[data-vid="${id}"] .vid-progress`);
-              if (el) el.style.width = `${progress}%`;
-            },
-            onUploadComplete: (video) => {
-              toast("Video caricato", `"${video.title}" è online`, "ok");
-              loadVideos();
-            },
-            onUploadError: (id, error) => {
-              toast("Errore upload", error.message, "err");
-            }
-          });
-          document.body.appendChild(dropzone.element);
-        }
-        return;
-      }
-
-      if (e.target.closest("#btnNuovoVideo")) {
-        if (!Account.authed) {
-          toast("Accedi per creare", "Devi essere loggato per creare video.", "warn");
-          openModal("enterModal");
-          return;
-        }
-        openModal("createVideoModal");
-        return;
-      }
     });
 
     document.addEventListener("change", (e) => {
@@ -1374,9 +1061,6 @@ const Views = (() => {
         return patchMember(st.dataset.statusFor, { status: st.value }, `${m?.nome || ""} → ${st.value}`);
       }
     });
-
-    bindVideoActions();
-    bindCreateVideo();
 
     // Il countdown gira una volta al secondo finche' la vista Eventi e' aperta.
     setInterval(() => {
@@ -1427,356 +1111,10 @@ const Views = (() => {
         .join("")}</div>`;
   }
 
-  /* --------------------------------------------------------- video */
-
-  async function loadVideos() {
-    const box = $("#videoGrid");
-    const filterBar = $("#videoFilters");
-    if (!box) return;
-    
-    box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--silver-500)">Caricamento video…</div>';
-    
-    let list = [];
-    try {
-      const d = await API.get("/api/video?limit=50");
-      list = d.videos ?? [];
-    } catch {
-      list = [];
-    }
-    
-    CFG.videos = list;
-    paintVideos();
-    
-    if (filterBar && !filterBar.dataset.bound) {
-      filterBar.dataset.bound = "1";
-      filterBar.innerHTML = `
-        <button class="chip violet is-active" data-vfilter="all">Tutti</button>
-        <button class="chip violet" data-vfilter="video">Video</button>
-        <button class="chip violet" data-vfilter="raid">Raid</button>
-        <button class="chip violet" data-vfilter="guida">Guide</button>
-        <button class="chip violet" data-vfilter="evento">Eventi</button>
-      `;
-      filterBar.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-vfilter]");
-        if (!btn) return;
-        $$("#videoFilters .chip").forEach(c => c.classList.toggle("is-active", c === btn));
-        paintVideos(btn.dataset.vfilter);
-      });
-    }
-  }
-
-  function paintVideos(filter = "all") {
-    const box = $("#videoGrid");
-    if (!box) return;
-    const list = (CFG.videos || []).filter(v => filter === "all" || v.categoria === filter);
-    
-    if (!list.length) {
-      box.innerHTML = `
-        <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:60px 20px" data-reveal="scale">
-          <div style="font-size:3rem;margin-bottom:16px">🎬</div>
-          <h3 style="color:var(--silver-100);margin-bottom:8px">Nessun video</h3>
-          <p style="color:var(--silver-500);max-width:400px;margin:0 auto">
-            ${filter === "all" ? "Nessun video caricato. Sii il primo a condividere una guida o un raid!" : `Nessun video nella categoria "${filter}".`}
-          </p>
-        </div>`;
-      return;
-    }
-    
-    box.innerHTML = list.map(v => renderVideoCard(v)).join("");
-    observePosts(box);
-    animateInside(box);
-  }
-
-  function renderVideoCard(v) {
-    const thumb = v.thumbnailUrl || `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect fill="%231a1f2e" width="320" height="180"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-size="24">🎬</text></svg>`)}`;
-    const dur = v.durata ? formatDuration(v.durata) : "—";
-    const miaReazione = v.miaReazione ? ` is-liked` : "";
-    
-    return `
-      <article class="vid-card glass-violet card-3d border-beam${miaReazione}" data-vid="${esc(v.id)}" data-reveal>
-        <div class="vid-thumb">
-          <img src="${esc(v.thumbnailUrl || thumb)}" alt="${esc(v.titolo)}" loading="lazy">
-          <span class="vid-dur">${esc(dur)}</span>
-          <button class="vid-like${miaReazione}" data-vlike="${esc(v.id)}" aria-label="Like">
-            <span>⚔</span> <b>${num(v.likes ?? 0)}</b>
-          </button>
-        </div>
-        <div class="vid-body">
-          <div class="vid-meta">
-            <span class="vid-tipo">${esc(v.categoria || "video")}</span>
-            ${(v.tags ?? []).map(t => `<span class="bp-tag">${esc(t)}</span>`).join("")}
-          </div>
-          <h3 style="margin:8px 0 6px;color:var(--silver-100)">${esc(v.titolo)}</h3>
-          <p style="color:var(--silver-400);font-size:.85rem;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(v.descrizione || "")}</p>
-          <div class="vid-meta2">
-            <span class="mono">${esc(v.autore?.handle)} · Lv ${v.autore?.level ?? 1}</span>
-            <span class="mono">${dt(v.creatoIl)}</span>
-          </div>
-        </div>
-      </article>`;
-  }
-
-  function formatDuration(seconds) {
-    if (!seconds) return "—";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return h ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
-  }
-
-  function bindVideoActions() {
-    document.addEventListener("click", async (e) => {
-      const like = e.target.closest("[data-vlike]");
-      if (like) {
-        e.preventDefault();
-        const vid = like.dataset.vlike;
-        try {
-          const r = await API.post(`/api/video/${encodeURIComponent(vid)}/reaction`, { emoji: "⚔" });
-          loadVideos();
-        } catch (err) {
-          toast("Reazione non salvata", err?.message || "Riprova.", "err");
-        }
-        return;
-      }
-      
-      const card = e.target.closest("[data-vid]");
-      if (card && !like && !e.target.closest("button")) {
-        openVideoDetail(card.dataset.vid);
-      }
-    });
-  }
-
-  async function openVideoDetail(vid) {
-    try {
-      const d = await API.get(`/api/video/${encodeURIComponent(vid)}`);
-      const v = d.video;
-      if (!v) return;
-      
-      const wrap = document.createElement("div");
-      wrap.id = "vidDetailModal";
-      wrap.className = "modal violet";
-      wrap.setAttribute("role", "dialog");
-      wrap.setAttribute("aria-modal", "true");
-      wrap.innerHTML = `
-        <div class="modal-backdrop" data-close></div>
-        <div class="modal-box glass violet vid-detail-modal" style="max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
-          <button class="modal-x" data-close aria-label="Chiudi">✕</button>
-          ${v.thumbnailUrl ? `<div class="vid-detail-img"><img src="${esc(v.thumbnailUrl)}" alt="${esc(v.titolo)}"></div>` : ""}
-          <div class="vid-detail-body" style="flex:1;padding:24px;overflow-y:auto;display:flex;flex-direction:column">
-            <div class="row" style="gap:12px;align-items:center;margin-bottom:14px">
-              <span class="vid-kanji">🎬</span>
-              <div style="min-width:0">
-                <span class="eyebrow violet">${esc(v.categoria || "Video")}</span>
-                <h3 class="vid-detail-title animate-text" style="font-size:1.5rem;margin:0;color:var(--silver-100)">${esc(v.titolo)}</h3>
-              </div>
-              ${v.autore ? `<span class="tag silver" style="font-size:10px">di ${esc(v.autore.nome || v.autore.handle)}</span>` : ""}
-            </div>
-            <p class="vid-detail-desc animate-text" style="color:var(--silver-400);line-height:1.7;font-size:1rem;margin:0 0 16px">${esc(v.descrizione || "Nessuna descrizione.")}</p>
-            
-            <video class="vid-player" controls style="width:100%;border-radius:var(--r-md);background:#000" poster="${esc(v.thumbnailUrl || "")}">
-              <source src="${esc(v.mediaUrl)}" type="${esc(v.mimeType || "video/mp4")}">
-            </video>
-            
-            <div class="vid-detail-meta" style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
-              <span class="vid-meta-item animate-text"><span class="kanji">◷</span> ${esc(dt(v.creatoIl, { year: "numeric" }))}</span>
-              <span class="vid-meta-item animate-text"><span class="kanji">⏱</span> ${formatDuration(v.durata)}</span>
-              <span class="vid-meta-item animate-text"><span class="kanji">⚔</span> ${num(v.likes ?? 0)} like</span>
-              <span class="vid-meta-item animate-text"><span class="kanji">💬</span> ${num(v.commenti?.length ?? 0)} commenti</span>
-            </div>
-            
-            <div class="row vid-actions" style="gap:10px;margin-top:auto">
-              <button class="btn ${v.miaReazione ? "" : "btn-violet"}" data-vlike="${esc(v.id)}" style="flex:1">
-                ${v.miaReazione ? "Hai messo like" : "Like ⚔"}
-              </button>
-              <button class="btn btn-ghost" data-vcomment="${esc(v.id)}">Commenti</button>
-              ${v.autore?.id === (Account?.data?.id) ? `<button class="btn btn-sm btn-danger" data-vdelete="${esc(v.id)}">Elimina</button>` : ""}
-            </div>
-            
-            <div class="vid-comments" style="margin-top:16px;max-height:300px;overflow:auto">
-              <h4 style="margin:0 0 12px;color:var(--silver-100)">Commenti</h4>
-              <div id="vidCommentList">${(v.commenti ?? []).map(c => `
-                <div class="cm-item" style="display:flex;gap:8px;margin-bottom:12px">
-                  <div class="cm-av">${esc((c.autore?.handle || "?")[0])}</div>
-                  <div style="min-width:0">
-                    <b>${esc(c.autore?.nome || c.autore?.handle)}</b>
-                    <p style="color:var(--silver-400);font-size:.88rem;margin:2px 0">${esc(c.corpo)}</p>
-                    <small class="mono" style="color:var(--silver-600)">${dt(c.creatoIl)}</small>
-                  </div>
-                </div>`).join("")}</div>
-              <form id="vidCommentForm" style="margin-top:16px;display:flex;gap:8px">
-                <input class="input violet" id="vidCommentInput" type="text" placeholder="Scrivi un commento…" required style="flex:1">
-                <button type="submit" class="btn btn-violet">Invia</button>
-              </form>
-            </div>
-          </div>
-        </div>`;
-      document.body.appendChild(wrap);
-      wrap.classList.add("is-open");
-      
-      wrap.querySelector("#vidCommentForm")?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const input = wrap.querySelector("#vidCommentInput");
-        const corpo = input.value.trim();
-        if (!corpo) return;
-        try {
-          await API.post(`/api/video/${encodeURIComponent(vid)}/comments`, { corpo });
-          input.value = "";
-          loadVideos();
-          openVideoDetail(vid);
-        } catch (err) {
-          toast("Commento non inviato", err?.message || "Riprova.", "err");
-        }
-      });
-      
-      wrap.addEventListener("click", (e) => {
-        if (e.target.closest("[data-close]")) { wrap.remove(); }
-        if (e.target.closest("[data-vlike]")) {
-          e.preventDefault();
-          // handled by global listener
-        }
-        if (e.target.closest("[data-vdelete]")) {
-          if (confirm("Eliminare questo video?")) {
-            try {
-              await API.del(`/api/video/${encodeURIComponent(vid)}`);
-              toast("Video eliminato", "", "ok", 2000);
-              wrap.remove();
-              loadVideos();
-            } catch (err) {
-              toast("Eliminazione fallita", err?.message || "Riprova.", "err");
-            }
-          }
-        }
-      });
-    } catch (err) {
-      toast("Errore caricamento video", err?.message, "err");
-    }
-  }
-
-  }
-  }
-
-  function bindCreateVideo() {
-    const form = $("#createVideoForm");
-    const fileInput = $("#cv-files");
-    const fileList = $("#cv-fileList");
-    const preview = $("#cv-preview");
-    let _selectedFiles = [];
-
-    if (!form) return;
-
-    function setError(id, msg) {
-      const el = $(`[data-for="${id}"]`);
-      const input = $("#" + id);
-      if (el) el.textContent = msg || "";
-      if (input) input.classList.toggle("err", !!msg);
-      return !msg;
-    }
-
-    function clearError(id) {
-      setError(id, "");
-    }
-
-    fileInput?.addEventListener("change", (e) => {
-      const files = Array.from(e.target.files ?? []);
-      _selectedFiles = files.map((f) => ({
-        file: f,
-        preview: URL.createObjectURL(f),
-        tipo: "video"
-      }));
-      renderFileList();
-      preview.style.display = _selectedFiles.length ? "" : "none";
-    });
-
-    function renderFileList() {
-      if (!fileList) return;
-      fileList.innerHTML = _selectedFiles.map((f, i) => `
-        <div class="bp-file" style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--glass);border-radius:6px">
-          <span style="font-size:1.2rem">🎬</span>
-          <span style="flex:1;font-size:.86rem;color:var(--silver-300)">${esc(f.file.name)}</span>
-          <button type="button" data-rm="${i}" class="bp-btn bp-danger" style="padding:4px 8px;font-size:1.2rem">✕</button>
-        </div>`).join("");
-      $$("[data-rm]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const i = +btn.dataset.rm;
-          URL.revokeObjectURL(_selectedFiles[i].preview);
-          _selectedFiles.splice(i, 1);
-          renderFileList();
-          preview.style.display = _selectedFiles.length ? "" : "none";
-        });
-      });
-    }
-
-    function closeCreateVideo() {
-      const wrap = $("#createVideoModal");
-      if (wrap) wrap.classList.remove("is-open");
-    }
-
-    const submitBtn = $("#cvSubmit");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const titolo = $("#cv-titolo").value.trim();
-      const corpo = $("#cv-corpo").value.trim();
-      const categoria = $("#cv-categoria").value;
-      const pubblico = $("#cv-pubblico").checked;
-      const tags = $("#cv-tags").value.split(",").map(t => t.trim()).filter(Boolean);
-
-      let ok = true;
-      ok = setError("cv-titolo", titolo ? "" : "Titolo obbligatorio") && ok;
-      ok = setError("cv-corpo", corpo ? "" : "Descrizione obbligatoria") && ok;
-      ok = setError("cv-files", _selectedFiles.length > 0 ? "" : "Seleziona almeno un video") && ok;
-      if (!ok) return;
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Pubblicazione…";
-
-      const fd = new FormData();
-      fd.append("titolo", titolo);
-      fd.append("corpo", corpo);
-      fd.append("categoria", categoria);
-      fd.append("visibilita", pubblico ? "public" : "unlisted");
-      fd.append("tags", JSON.stringify(tags));
-      _selectedFiles.forEach((f) => fd.append("files", f.file));
-
-      try {
-        const r = await API.upload("/api/video/upload", fd);
-        if (r?.ok) {
-          toast("Video pubblicato", "Il tuo video è ora visibile al clan.", "ok");
-          const formEl = document.getElementById("createVideoForm");
-          if (formEl) formEl.reset();
-          _selectedFiles = [];
-          const fileListEl = document.getElementById("cv-fileList");
-          if (fileListEl) fileListEl.innerHTML = "";
-          const previewEl = document.getElementById("cv-preview");
-          if (previewEl) previewEl.style.display = "none";
-          closeModal("createVideoModal");
-          loadVideos();
-        } else {
-          toast("Pubblicazione fallita", r?.message || "Riprova.", "err");
-        }
-      } catch (err) {
-        toast("Errore pubblicazione", err?.message, "err");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Pubblica Video";
-      }
-    });
-  }
-
-  function observePosts(container = document) {
-    container.querySelectorAll("[data-post]").forEach((card) => {
-      if (card.dataset.bpBound) return;
-      card.dataset.bpBound = "1";
-    });
-  }
-
   return {
     init: bind,
     onRoute,
     loadEvents,
-    loadLeaderboard,
-    loadRaid,
-    loadComando,
-    loadVideos,
     loadLeaderboard,
     loadRaid,
     loadComando,
@@ -1786,10 +1124,6 @@ const Views = (() => {
     loadReactions,
     toggleReaction,
     roleLabel,
-    countdown,
-    formatDuration,
-    openVideoDetail,
-    bindVideoActions,
-    bindCreateVideo
+    countdown
   };
 })();

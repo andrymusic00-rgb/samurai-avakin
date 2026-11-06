@@ -63,7 +63,7 @@ authRouter.post(
     const confirm = v.confirmPassword(pass, body.confirm_password, { field: "Conferma password" });
     const strength = v.passwordStrength(pass);
     const name = v.str(body.name, { min: 3, max: 24, required: true, field: "Nome" });
-    const cognome = v.str(body.cognome, { min: 3, max: 24, required: true, field: "Cognome" });
+    const tag = v.handle(body.handle);
     const dataNascita = v.str(body.data_nascita, { max: 10, field: "Data di nascita" });
     const età = v.minAge(dataNascita, config.minAge, { field: "Data di nascita" });
     const sesso = v.oneOf(body.sesso, ["maschio", "femmina", "altro", "preferisco_non_dire"], { required: true, field: "Sesso" });
@@ -98,10 +98,8 @@ authRouter.post(
 
     const clashEmail = await one("SELECT id FROM users WHERE lower(email) = $1", [mail]);
     if (clashEmail) throw ApiError.conflict("Esiste già un account con questa email");
-    // Usa nome+cognome come handle univoco (slug)
-    const tag = `${name.toLowerCase().replace(/\s+/g, '-')}-${cognome.toLowerCase().replace(/\s+/g, '-')}`;
     const clashHandle = await one("SELECT id FROM users WHERE lower(handle) = $1", [tag.toLowerCase()]);
-    if (clashHandle) throw ApiError.conflict("Nome e cognome già registrati");
+    if (clashHandle) throw ApiError.conflict("Questo handle è già preso");
 
     const hash = await hashPassword(pass);
     const user = await tx(async (c) => {
@@ -154,9 +152,16 @@ authRouter.post(
       return { ...created, verifyToken };
     });
 
-    // Invia email di verifica in background (NON bloccante)
-    sendVerificationEmail(user.email, user.verifyToken, user.display_name)
-      .catch(err => console.error("[email] errore invio verifica:", err.message));
+    // Invia email di verifica (in produzione vera email, in dev token nella risposta)
+    try {
+      if (!config.isProd) {
+        // Dev: restituisci il token nella risposta per test
+      } else {
+        await sendVerificationEmail(user.email, user.verifyToken, user.display_name);
+      }
+    } catch (err) {
+      console.error("[email] errore invio verifica:", err.message);
+    }
 
     await issueSession(res, user, req);
     await audit(user.id, "auth.register", { handle: user.handle, attitudine: att, emailVerified: false, età }, clientIp(req));
@@ -164,17 +169,16 @@ authRouter.post(
   })
 );
 
-/** Controllo disponibilità cognome ed email (AUX per validazione in tempo reale). */
+/** Controllo disponibilità handle ed email (AUX per validazione in tempo reale). */
 authRouter.get(
   "/check-availability",
   authLimiter,
   asyncHandler(async (req, res) => {
-    const name = v.str(req.query.name, { min: 3, max: 24, required: false, field: "Nome" });
-    const cognome = v.str(req.query.cognome, { min: 3, max: 24, required: false, field: "Cognome" });
+    const handle = v.str(req.query.handle, { min: 3, max: 16, required: false, field: "Handle" });
     const email = v.email(req.query.email, { required: false });
     const out = { ok: true, available: {} };
-    if (name && cognome) {
-      const tag = `${name.toLowerCase().replace(/\s+/g, '-')}-${cognome.toLowerCase().replace(/\s+/g, '-')}`;
+    if (handle) {
+      const tag = v.handle(handle);
       const taken = await one("SELECT id FROM users WHERE lower(handle) = $1", [tag.toLowerCase()]);
       out.available.handle = { value: tag, taken: Boolean(taken) };
     }
@@ -643,19 +647,18 @@ authRouter.post(
 
     const email = String(req.body?.email ?? `dev_${provider}@samurai.test`).toLowerCase();
     const name = String(req.body?.name ?? `${providerLabel(provider)} Test`);
-    const cognome = String(req.body?.cognome ?? "Test");
     const avatar = String(req.body?.avatar ?? "");
 
     let user = await one("SELECT id, email, display_name, handle, role, status, avatar_url FROM users WHERE lower(email) = $1", [email]);
     if (!user) {
-      const tag = `${name.toLowerCase().replace(/\s+/g, '-')}-${cognome.toLowerCase().replace(/\s+/g, '-')}`;
+      const handle = email.split("@")[0] + "_" + randomToken(6);
       const r = await tx(async (c) => {
         const run = (sql, params) => (c.query ? c.query(sql, params) : query(sql, params));
         const ins = await run(
           `INSERT INTO users (email, password_hash, display_name, handle, role, status, level, xp, bio, region, device, email_verified_at)
            VALUES ($1, $2, $3, $4, 'membro', 'attivo', 1, 0, $5, 'Europa', 'iOS', now())
            RETURNING id, email, display_name, handle, role, status, avatar_url`,
-          [email, await hashPassword(randomToken(32)), name, tag, name]
+          [email, await hashPassword(randomToken(32)), name, handle, name]
         );
         const id = ins.rows[0].id;
         await initNewUser(id);

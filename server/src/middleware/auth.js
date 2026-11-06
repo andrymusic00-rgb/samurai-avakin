@@ -24,14 +24,10 @@ export async function loadPrefs(userId) {
 
 export function publicUser(user) {
   if (!user) return null;
-  // Estrae cognome dall'handle (formato: nome-cognome)
-  const handleParts = (user.handle || "").split("-");
-  const cognome = handleParts.length > 1 ? handleParts.slice(1).join("-") : "";
   return {
     id: user.id,
     email: user.email,
     name: user.display_name,
-    cognome: cognome,
     handle: user.handle,
     role: user.role,
     status: user.status,
@@ -92,25 +88,6 @@ export async function attachUser(req, _res, next) {
 
 export function requireAuth(req, _res, next) {
   if (!req.user) return next(ApiError.unauthorized());
-  next();
-}
-
-export function optionalAuth(req, _res, next) {
-  // Attach user if token exists, but don't require it
-  if (req.user) return next();
-  // Try to resolve user from token if not already attached
-  const token = req.cookies?.[config.cookieName];
-  if (!token) return next();
-  try {
-    const payload = verifyAccess(token);
-    if (payload) {
-      findUserById(payload.sub).then(user => {
-        if (user && user.status === "attivo" && user.email_verified_at) {
-          req.user = user;
-        }
-      }).catch(() => {});
-    }
-  } catch {}
   next();
 }
 

@@ -88,7 +88,7 @@ const DATA = {
   values: [
     { kanji: "誠", titolo: "Sincerità", testo: "Se non puoi più vincere, si nasconde e si gioca per il clan. Mai con un clan solo." },
     { kanji: "礼", titolo: "Cortesia", testo: "Si saluta, si ringrazia, si chiede scusa. Anche con chi non si parla più." },
-    { kanji: "技", titolo: "Maestria", testo: "Il talento si allena. Ogni sera, 20 minuti di arena, e il talento diventa stile di vita." },
+    { kanji: "技", titolo: "Maestria", testo: "Il talento si allena. Ogni sera, 20 minuti di arena, e il diventa stile di vita." },
     { kanji: "友", titolo: "Fratellanza", testo: "Il clan non finisce alla schermata di fine partita: la chat è sempre aperta." },
     { kanji: "時", titolo: "Costanza", testo: "Non chiediamo presenza totale, chiediamo fedeltà. Chi c'è, c'è davvero." },
     { kanji: "継", titolo: "Tradizione", testo: "Ogni nuovo membro riceve il nome e la storia di chi è stato prima di lui." },
@@ -139,31 +139,27 @@ const DATA = {
   },
 
   gallery: [
-    // Foto reali del clan (IMG_ files) - 10 foto reali
-    { id: "g-img-1", cat: "clan-life", titolo: "Momento clan #7427", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7427 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-2", cat: "clan-life", titolo: "Momento clan #7428", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7428 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-3", cat: "clan-life", titolo: "Momento clan #7429", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7429 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-4", cat: "clan-life", titolo: "Momento clan #7430", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7430 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-5", cat: "clan-life", titolo: "Momento clan #7431", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7431 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-6", cat: "clan-life", titolo: "Momento clan #7432", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7432 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-7", cat: "clan-life", titolo: "Momento clan #7611", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7611 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-8", cat: "clan-life", titolo: "Momento clan #7611b", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7611 3.JPG", w: 1920, h: 1080 },
-    { id: "g-img-9", cat: "clan-life", titolo: "Momento clan #7612", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7612 2.JPG", w: 1920, h: 1080 },
-    { id: "g-img-10", cat: "clan-life", titolo: "Momento clan #7612b", autore: "Clan", data: "Oggi", src: "/assets/images/gallery/IMG_7612 3.JPG", w: 1920, h: 1080 }
+    { id: "g4", cat: "events", titolo: "Torneo 2v2 — Finale", autore: "Raiden", data: "21 Set 2026", seed: 44, w: 1000, h: 700, comp: "torii" },
+    { id: "g5", cat: "war", titolo: "Settore 4 assediato", autore: "Kazemaru", data: "18 Set 2026", seed: 61, w: 900, h: 900, comp: "moon" },
+    { id: "g6", cat: "outfits", titolo: "Corazza d'argento", autore: "Miyamoto", data: "15 Set 2026", seed: 78, w: 900, h: 1150, comp: "waves" },
+    { id: "g7", cat: "trophies", titolo: "Stemma del clan inciso", autore: "Studio interno", data: "12 Set 2026", seed: 90, w: 1000, h: 1000, comp: "crest" },
+    { id: "g10", cat: "screenshots", titolo: "Schermata del Vault reale", autore: "Miyamoto", data: "02 Set 2026", seed: 131, w: 1000, h: 750, comp: "troppa" },
+    { id: "g11", cat: "war", titolo: "Ultimo colpo del capitano", autore: "Raiden", data: "28 Ago 2026", seed: 145, w: 900, h: 1200, comp: "blade" },
+    { id: "g12", cat: "outfits", titolo: "Mantello del Ronin", autore: "Kaede", data: "24 Ago 2026", seed: 162, w: 900, h: 1000, comp: "waves" },
+    { id: "g13", cat: "events", titolo: "Cerimonia del nuovo Bushi", autore: "Kazemaru", data: "20 Ago 2026", seed: 174, w: 1000, h: 700, comp: "torii" },
+    { id: "g14", cat: "trophies", titolo: "Cento samurai", autore: "Studio interno", data: "14 Ago 2026", seed: 188, w: 900, h: 1100, comp: "crest" }
   ],
 
   galleryCats: [
     { id: "all", label: "Tutte" },
-    { id: "clan-life", label: "Vita del Clan" }
+    { id: "war", label: "Guerre" },
+    { id: "trophies", label: "Trophies" },
+    { id: "outfits", label: "Outfits" },
+    { id: "events", label: "Eventi" },
+    { id: "screenshots", label: "Screenshots" }
   ],
 
   videos: [
-    {
-      id: "v0", cat: "raid", dur: "—", seed: 0, w: 1000, h: 562, comp: "helmet",
-      titolo: "Prima visione — isamu opening",
-      desc: "Il primo video da vedere nella stagione corrente. Filmato originale del clan, riprodotto direttamente dal file.",
-      fonte: { url: "/assets/videos/590424225b594398a70affa018d4e831.MOV" }
-    },
     {
       id: "v1", cat: "raid", dur: "12:48", seed: 12, w: 1000, h: 562, comp: "helmet",
       titolo: "RAID NOTTURNO — Domina il settore 4",
@@ -197,7 +193,7 @@ const DATA = {
     {
       id: "v6", cat: "guida", dur: "06:18", seed: 82, w: 1000, h: 562, comp: "crest",
       titolo: "Le 6 regole del clan, spiegate una per una",
-      desc: "Non sono regole severe. Sono il motivo per cui siamo ancora gli stessi dopo sette anni.",
+      desc: "Non sono regolesevere. Sono il motivo per cui siamo ancora gli stessi dopo sette anni.",
       fonte: null
     },
     {
@@ -338,9 +334,9 @@ const DATA = {
       kanji: "春",
       icon: "🌸",
       desc: "Petali di ciliegio e rinnovamento. I samurai si addestrano nei dojo aperti.",
-      color: "#E9D5FF",
-      gradient: "linear-gradient(135deg, var(--fuji) 0%, var(--murasaki-light) 50%, var(--ayame) 100%)",
-      particle: "#E9D5FF"
+      color: "#C084FC",
+      gradient: "linear-gradient(135deg, var(--fuji) 0%, var(--murasaki-light) 50%, var(--kinari) 100%)",
+      particle: "#C084FC"
     },
     {
       id: "summer",

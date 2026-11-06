@@ -2,19 +2,8 @@ const API = (() => {
   const listeners = { auth: [], error: [] };
   let available = null;
   let refreshing = null;
-  let lastAuthEvent = 0;
-  const AUTH_EVENT_COOLDOWN = 10000;
 
-  const emit = (evt, payload) => {
-    if (evt === 'auth') {
-      const now = Date.now();
-      if (lastAuthEvent && (now - lastAuthEvent) < AUTH_EVENT_COOLDOWN) {
-        return; // throttle auth events
-      }
-      lastAuthEvent = now;
-    }
-    listeners[evt].forEach((fn) => { try { fn(payload); } catch {} });
-  };
+  const emit = (evt, payload) => listeners[evt].forEach((fn) => { try { fn(payload); } catch {} });
 
   class ApiError extends Error {
     constructor(status, code, message, details) {

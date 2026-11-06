@@ -1,8 +1,6 @@
 const Account = (() => {
   const { $, $$, store, toast, openModal, closeModal, confirmBox, animateInside, setAccent } = UI;
   const KEY = "profile";
-  const LOCAL_TEST_MODE_KEY = "samurai_local_test_mode";
-  const LOCAL_VIDEO_KEY = "samurai_local_videos";
 
   const DEFAULTS = {
     name: "Samuraj",
@@ -721,113 +719,6 @@ const Account = (() => {
       : `<div class="empty-state"><span class="kanji">無</span>Nessun account social collegato.</div>`;
   }
 
-  function validateRegField(id) {
-    const el = $(`#${id}`);
-    if (!el) return true;
-    let valid = true, msg = "";
-    const val = el.value.trim();
-    switch (id) {
-      case "en-name": valid = val.length >= 3; msg = "Nome troppo corto (min 3)."; break;
-      case "en-cognome": valid = val.length >= 3; msg = "Cognome troppo corto (min 3)."; break;
-      case "en-email": valid = isEmail(val); msg = "Email non valida."; break;
-      case "en-pass": valid = isPassword(val); msg = "Password: almeno 8 caratteri con lettere e numeri."; break;
-      case "en-dob": valid = !!val; msg = "Data di nascita richiesta."; break;
-      case "en-sesso": valid = !!val; msg = "Sesso richiesto."; break;
-      case "en-bio": valid = val.length <= 140; msg = "Max 140 caratteri."; break;
-    }
-    return fail(id, valid ? "" : msg);
-  }
-
-  function updatePasswordStrength(pw) {
-    const hint = $("#enPassHint");
-    if (!hint) return;
-    let score = 0;
-    if (pw.length >= 8) score++;
-    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^a-zA-Z0-9]/.test(pw)) score++;
-    const labels = ["Molto debole", "Debole", "Media", "Forte", "Molto forte"];
-    const colors = ["var(--aka)", "var(--kogan)", "var(--kin)", "var(--murasaki)", "var(--ao)"];
-    hint.textContent = labels[score] || "";
-    hint.style.color = colors[score] || "";
-  }
-
-  /** Onboarding post-registrazione: guida l'utente attraverso profilo, avatar, collegamento Avakin */
-  async function launchOnboarding() {
-    const steps = [
-      { id: "profilo", label: "Profilo", icon: "◈", desc: "Completa i tuoi dati samurai", panel: "profilo", action: () => UI.setPanel("profilo") },
-      { id: "avatar", label: "Avatar", icon: "侍", desc: "Crea il tuo avatar 3D", action: () => { if (window.AvatarCreator) AvatarCreator.open(); else if (window.avatarV2) avatarV2.init(); } },
-      { id: "avakin", label: "Avakin", icon: "連", desc: "Collega il tuo ID Avakin", panel: "sicurezza", action: () => { UI.setPanel("sicurezza"); setTimeout(() => openModal("linkModal"), 300); } },
-      { id: "preferenze", label: "Preferenze", icon: "✦", desc: "Personalizza l'esperienza", panel: "preferenze", action: () => UI.setPanel("preferenze") }
-    ];
-
-    let currentStep = 0;
-    const completed = new Set();
-
-    function renderStep() {
-      const step = steps[currentStep];
-      const wrap = document.createElement("div");
-      wrap.id = "onboardingOverlay";
-      wrap.style.cssText = "position:fixed;inset:0;z-index:200;background:rgba(11,12,16,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px";
-      wrap.innerHTML = `
-        <div class="onboarding-card glass-morph" style="max-width:480px;width:100%;padding:40px;text-align:center;border-radius:24px;position:relative;overflow:hidden">
-          <div class="onboarding-progress" style="margin-bottom:24px;display:flex;gap:8px;justify-content:center">
-            ${steps.map((s, i) => `
-              <div class="onb-step ${i < currentStep ? "done" : i === currentStep ? "active" : ""}" style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative">
-                ${i < steps.length - 1 ? '<div class="onb-line" style="position:absolute;top:18px;left:50%;width:100%;height:2px;background:var(--glass-violet-brd);z-index:-1"></div>' : ''}
-                <span class="onb-icon" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${i < currentStep ? "linear-gradient(135deg,var(--murasaki),var(--shikon))" : i === currentStep ? "var(--glass-violet-bg)" : "var(--glass-bg)"};color:${i < currentStep ? "#fff" : "var(--silver-500)"};font-size:${i === currentStep ? "1.2rem" : "1rem"};transition:all .3s">${s.icon}</span>
-                <span class="onb-label" style="font-size:10px;letter-spacing:.1em;color:${i <= currentStep ? "var(--silver-100)" : "var(--silver-600)"};text-transform:uppercase">${s.label}</span>
-              </div>
-            `).join("")}
-          </div>
-          <h2 style="font-family:var(--ff-display);font-size:clamp(1.5rem,4vw,2.2rem);color:var(--shiro-kabe);margin-bottom:12px">${step.label}</h2>
-          <p style="color:var(--silver-400);margin-bottom:28px;line-height:1.6">${step.desc}</p>
-          <div class="row" style="gap:12px;justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-violet btn-lg onb-primary" style="min-width:180px">${currentStep === steps.length - 1 ? "Completa" : "Continua"}</button>
-            ${currentStep > 0 ? '<button class="btn btn-glass btn-lg onb-back" style="min-width:120px">Indietro</button>' : ""}
-            ${currentStep < steps.length - 1 ? '<button class="btn btn-ghost btn-lg onb-skip" style="min-width:120px">Salta</button>' : ""}
-          </div>
-          <p class="mono" style="margin-top:20px;font-size:10px;color:var(--silver-600)">Step ${currentStep + 1} di ${steps.length}</p>
-        </div>`;
-      document.body.appendChild(wrap);
-
-      const primary = wrap.querySelector(".onb-primary");
-      const back = wrap.querySelector(".onb-back");
-      const skip = wrap.querySelector(".onb-skip");
-
-      primary.addEventListener("click", async () => {
-        completed.add(steps[currentStep].id);
-        if (step.action) await step.action();
-        if (currentStep < steps.length - 1) {
-          currentStep++;
-          wrap.remove();
-          renderStep();
-        } else {
-          wrap.remove();
-          toast("Onboarding completato!", "Sei pronto per iniziare la tua avventura da samurai.", "ok", 5000);
-          if (window.Views && Views.renderAchievements) {
-            Views.renderAchievements({ gained: ["first_steps"] });
-          }
-        }
-      });
-
-      back?.addEventListener("click", () => {
-        if (currentStep > 0) {
-          currentStep--;
-          wrap.remove();
-          renderStep();
-        }
-      });
-
-      skip?.addEventListener("click", () => {
-        wrap.remove();
-        toast("Onboarding saltato", "Potrai completarlo quando vuoi dalla sezione Account.", "warn", 4000);
-      });
-    }
-
-    renderStep();
-  }
-
   function bindGlobal() {
     $("#btnExport").addEventListener("click", exportData);
     $("#rosterSearch").addEventListener("input", (e) => renderRoster(e.target.value));
@@ -934,56 +825,12 @@ const Account = (() => {
     bindUpload();
     bindNewsletter();
 
-    // Track session expiry toast to avoid spam
-    let sessionExpiryToastShown = 0;
-    const SESSION_EXPIRY_COOLDOWN = 60000; // 60 seconds
-
     API.on("auth", (info) => {
       if (info.authenticated === false) {
-        const now = Date.now();
-        
-        // Don't spam toast in local test mode
-        if (localStorage.getItem(LOCAL_TEST_MODE_KEY) === "true") {
-          if (authed) {
-            setAuthed(false);
-            setMode("Modalità test locale attiva.");
-            announce({ authenticated: false });
-          }
-          return;
-        }
-
-        // Don't spam toast - strict cooldown
-        if (sessionExpiryToastShown && (now - sessionExpiryToastShown) < SESSION_EXPIRY_COOLDOWN) {
-          if (authed) {
-            setAuthed(false);
-            announce({ authenticated: false });
-          }
-          return;
-        }
-
-        // Don't show if modal already open
-        const enterModal = $("#enterModal");
-        if (enterModal && enterModal.classList.contains("is-open")) {
-          if (authed) {
-            setAuthed(false);
-            announce({ authenticated: false });
-          }
-          return;
-        }
-
-        // Only show if actually was authenticated
-        if (!authed && !sessionExpiryToastShown) {
-          // First time seeing unauth, don't spam
-          sessionExpiryToastShown = now;
-          announce({ authenticated: false });
-          return;
-        }
-
-        sessionExpiryToastShown = now;
         setAuthed(false);
         setMode("Sessione scaduta — accedi di nuovo.");
         announce({ authenticated: false });
-        toast("Sessione terminata", "Accedi di nuovo per continuare.", "warn", 4000);
+        toast("Sessione terminata", "Accedi di nuovo per continuare.", "warn", 6000);
       }
     });
   }
@@ -1027,26 +874,6 @@ const Account = (() => {
       $("#enterForm").style.display = "";
     });
 
-    // Live validation for registration fields
-    const regFields = ["en-name", "en-cognome", "en-email", "en-pass", "en-dob", "en-sesso"];
-    regFields.forEach(id => {
-      const el = $(`#${id}`);
-      if (el) {
-        el.addEventListener("blur", () => {
-          if ($("#tabRegister").classList.contains("is-active")) validateRegField(id);
-        });
-        el.addEventListener("input", () => {
-          if ($("#tabRegister").classList.contains("is-active") && el.classList.contains("err")) validateRegField(id);
-        });
-      }
-    });
-
-    // Password strength meter
-    const pw = $("#en-pass");
-    if (pw) {
-      pw.addEventListener("input", () => updatePasswordStrength(pw.value));
-    }
-
     $("#enterForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const registering = $("#tabRegister").classList.contains("is-active");
@@ -1057,18 +884,18 @@ const Account = (() => {
 
       let payload = { email: mail, password: pw };
       if (registering) {
-        // Validate all registration fields
-        regFields.forEach(id => { ok = validateRegField(id) && ok; });
-        if (!ok) return;
-
         const nm = $("#en-name").value.trim();
-        const cognome = $("#en-cognome").value.trim();
+        const hd = $("#en-handle").value.trim();
         const dob = $("#en-dob").value || null;
         const sesso = $("#en-sesso").value;
         const pronome = $("#en-pronome").value.trim() || "lui/lei";
         const tz = $("#en-tz").value || "Europe/Rome";
         const bio = $("#en-bio").value.trim();
         const mainChar = $("#en-mainchar").value || "Senza scudiero";
+        ok = fail("en-name", nm.length >= 3 ? "" : "Nome troppo corto.") && ok;
+        ok = fail("en-handle", isHandle(hd) ? "" : "Handle: solo A-Z, 0-9 e _ (3-16).") && ok;
+        ok = fail("en-dob", dob ? "" : "Data di nascita richiesta.") && ok;
+        ok = fail("en-sesso", sesso ? "" : "Sesso richiesto.") && ok;
 
         // Questionario attitudine
         const att = {};
@@ -1080,7 +907,7 @@ const Account = (() => {
         payload = {
           ...payload,
           name: nm,
-          cognome: cognome,
+          handle: hd,
           region: $("#en-region").value,
           device: $("#en-device").value,
           data_nascita: dob,
@@ -1101,13 +928,12 @@ const Account = (() => {
 
       const btn = $("#enSubmit");
       btn.disabled = true;
-      btn.textContent = registering ? "Creazione account…" : "Accesso…";
       const res = await guard(() => (registering ? API.post("/api/auth/register", payload, { noRetry: true }) : API.post("/api/auth/login", payload, { noRetry: true })));
       btn.disabled = false;
-      btn.textContent = registering ? "Crea il mio account" : "Accedi";
       if (!res) return;
 
       if (registering && res.data?.needsEmailVerification) {
+        // Registrazione effettuata, ma serve verifica email
         const email = res.user.email;
         $("#enterForm").reset();
         showLoginTab();
@@ -1139,9 +965,10 @@ const Account = (() => {
       toast(registering ? "Account creato" : "Benvenuto nella Gate", `${res.user.name} · livello ${res.user.level}`, "ok");
       if (registering) {
         setTimeout(() => {
-          toast("Benvenuto nel clan!", "Completa il tuo profilo e crea il tuo avatar.", "ok", 5000);
-          launchOnboarding();
-        }, 600);
+          toast("Ora crea il tuo avatar Samurai", "Personalizza volto, capelli, elmo, armatura e armi", "ok", 4000);
+          if (window.AvatarCreator) AvatarCreator.open();
+          else if (window.avatarV2) avatarV2.init();
+        }, 800);
       }
       UI.go("account");
     });
@@ -1433,34 +1260,20 @@ const Account = (() => {
         return;
       }
 
-      // Anonymous upload to public API (cross-device persistence)
-      const fd = new FormData();
-      files.forEach((f) => fd.append("files", f));
-      fd.append("type", "photo");
-      fd.append("title", files[0].name.replace(/\.[^/.]+$/, ""));
-      fd.append("category", "clan-life");
-      fd.append("authorName", "Anonimo");
-
-      try {
-        const res = await fetch("/api/public/upload", { method: "POST", body: fd, credentials: "include" });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Upload fallito");
-
-        // Save to localStorage for immediate visibility
-        const prev = store.get("uploads", []);
-        const previews = $$("#uploadPreview img")
-          .map((i) => ({ src: i.dataset.src, name: i.dataset.name || "Foto", bytes: Number(i.dataset.bytes || 0) }))
-          .filter((p) => p.src);
-        store.set("uploads", prev.concat(previews).slice(-12));
-        
-        document.dispatchEvent(new CustomEvent("sam:uploads", { detail: previews }));
-        closeModal("uploadModal");
-        resetUpload();
-        UI.go("gallery");
-        setTimeout(() => toast("Foto pubblicata!", data.content?.message || "Visibile su tutti i dispositivi.", "ok"), 500);
-      } catch (err) {
-        toast("Errore upload", err.message, "err");
+      const prev = store.get("uploads", []);
+      const previews = $$("#uploadPreview img")
+        .map((i) => ({ src: i.dataset.src, name: i.dataset.name || "Foto", bytes: Number(i.dataset.bytes || 0) }))
+        .filter((p) => p.src);
+      if (!previews.length) {
+        toast("Anteprime non pronte", "Attendi il caricamento delle immagini.", "err");
+        return;
       }
+      store.set("uploads", prev.concat(previews).slice(-12));
+      document.dispatchEvent(new CustomEvent("sam:uploads", { detail: previews }));
+      closeModal("uploadModal");
+      resetUpload();
+      UI.go("gallery");
+      setTimeout(() => toast("Foto salvate in locale", `${previews.length} immagini. Avvia il server per salvarle davvero.`, "warn"), 500);
     });
   }
 

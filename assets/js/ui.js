@@ -34,40 +34,6 @@ const UI = (() => {
           g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.4);
           o.connect(g).connect(master); o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.45);
         });
-      } else if (kind === "nav") {
-        // Navigation sound - subtle click
-        const o = c.createOscillator(), g = c.createGain();
-        o.type = "sine"; o.frequency.setValueAtTime(800, now);
-        o.frequency.exponentialRampToValueAtTime(400, now + 0.08);
-        g.gain.setValueAtTime(0.12, now);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        o.connect(g).connect(master); o.start(now); o.stop(now + 0.12);
-      } else if (kind === "modal") {
-        // Modal open/close - gentle chime
-        const o = c.createOscillator(), g = c.createGain();
-        o.type = "sine"; o.frequency.setValueAtTime(660, now);
-        o.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-        g.gain.setValueAtTime(0.08, now);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        o.connect(g).connect(master); o.start(now); o.stop(now + 0.35);
-      } else if (kind === "success") {
-        // Success - ascending arpeggio
-        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
-          const o = c.createOscillator(), g = c.createGain();
-          o.type = "triangle"; o.frequency.value = f;
-          g.gain.setValueAtTime(0, now + i * 0.05);
-          g.gain.linearRampToValueAtTime(0.2, now + i * 0.05 + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.3);
-          o.connect(g).connect(master); o.start(now + i * 0.05); o.stop(now + i * 0.05 + 0.4);
-        });
-      } else if (kind === "error") {
-        // Error - descending tone
-        const o = c.createOscillator(), g = c.createGain();
-        o.type = "sawtooth"; o.frequency.setValueAtTime(300, now);
-        o.frequency.exponentialRampToValueAtTime(150, now + 0.3);
-        g.gain.setValueAtTime(0.15, now);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        o.connect(g).connect(master); o.start(now); o.stop(now + 0.45);
       } else {
         const o = c.createOscillator(), g = c.createGain();
         o.type = "sine"; o.frequency.setValueAtTime(220, now);
@@ -87,7 +53,7 @@ const UI = (() => {
     el.querySelector("b").textContent = title;
     el.querySelector("span").textContent = msg;
     toastWrap().appendChild(el);
-    audio.hit(kind === "ok" ? "success" : kind === "err" ? "error" : "ok");
+    audio.hit("ok");
     setTimeout(() => {
       el.classList.add("is-out");
       setTimeout(() => el.remove(), 400);
@@ -125,7 +91,7 @@ const UI = (() => {
     m.classList.add("is-open");
     document.body.classList.add("is-locked");
     modalStack.push(m);
-    audio.hit("modal");
+    audio.hit("tap");
     m.dataset.prevFocus = document.activeElement?.id || "";
     const f = m.querySelector("input:not([type=file]), textarea, button:not(.modal-x)");
     if (f && window.innerWidth > 900) setTimeout(() => f.focus({ preventScroll: true }), 320);
@@ -271,13 +237,13 @@ const UI = (() => {
   document.documentElement.classList.add("reveal-ready");
 
   function observe(root = document) {
-    $$("[data-reveal]:not(.is-in), .reveal-glass:not(.is-in), .reveal-glass-stagger:not(.is-in)", root).forEach((el) => io.observe(el));
+    $$("[data-reveal]:not(.is-in)", root).forEach((el) => io.observe(el));
     flushReveal(root);
   }
 
   function flushReveal(root = document) {
     const vh = window.innerHeight || 800;
-    $$("[data-reveal]:not(.is-in), .reveal-glass:not(.is-in), .reveal-glass-stagger:not(.is-in)", root).forEach((el) => {
+    $$("[data-reveal]:not(.is-in)", root).forEach((el) => {
       const r = el.getBoundingClientRect();
       if (r.top < vh * 1.05 && r.bottom > -vh * 0.25) {
         el.classList.add("is-in");
@@ -332,7 +298,7 @@ const UI = (() => {
 
   document.addEventListener("click", (e) => {
     const acc = e.target.closest(".acc-tab");
-    if (acc) { setPanel(acc.dataset.apanel); audio.hit("nav"); }
+    if (acc) setPanel(acc.dataset.apanel);
   });
 
   function setPanel(name) {
@@ -349,14 +315,6 @@ const UI = (() => {
     const r = g.getBoundingClientRect();
     g.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
     g.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
-  }, { passive: true });
-
-  document.addEventListener("pointermove", (e) => {
-    document.querySelectorAll("[data-magnetic]").forEach(el => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
-      el.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
-    });
   }, { passive: true });
 
   document.addEventListener("pointerover", (e) => {
@@ -377,13 +335,7 @@ const UI = (() => {
 
   document.addEventListener("click", (e) => {
     const b = e.target.closest(".btn, .chip, .icon-btn, .tab, .vid-play-btn, .modal-x");
-    if (b && !b.disabled) {
-      if (b.classList.contains("btn-primary") || b.classList.contains("btn-violet")) audio.hit("success");
-      else if (b.classList.contains("btn-danger")) audio.hit("error");
-      else if (b.classList.contains("modal-x")) audio.hit("modal");
-      else if (b.classList.contains("chip")) audio.hit("nav");
-      else audio.hit("tap");
-    }
+    if (b && !b.disabled) audio.hit("tap");
   });
 
   window.addEventListener("scroll", () => {
@@ -437,70 +389,14 @@ const UI = (() => {
   }
 
   function initWelcome() {
-    const silent = store.get("welcomeSilent", false);
-    if (silent) return;
-
-    const modal = $("#welcomeModal");
-    const stage1 = $("#welcomeStage1");
-    const stage2 = $("#welcomeStage2");
-    const enterBtn = $("#btnEnterGate");
-    const silentBtn = $("#welcomeSilent");
-
-    // Reset to stage 1
-    if (stage1 && stage2) {
-      stage1.style.display = "flex";
-      stage2.style.display = "none";
-    }
-
-    setTimeout(() => openModal("welcomeModal"), 800);
-
-    // Stage 1 -> Stage 2 transition on logo click or auto after delay
-    let stage1Done = false;
-    const goToStage2 = () => {
-      if (stage1Done) return;
-      stage1Done = true;
-      if (stage1 && stage2) {
-        stage1.style.animation = "stageFadeIn 0.4s var(--ease-in) reverse both";
-        setTimeout(() => {
-          stage1.style.display = "none";
-          stage2.style.display = "flex";
-        }, 400);
-      }
-    };
-
-    // Click on logo to continue
-    if (stage1) {
-      stage1.style.cursor = "pointer";
-      stage1.addEventListener("click", goToStage2);
-    }
-
-    // Auto-advance after 4 seconds
-    const autoAdvance = setTimeout(goToStage2, 4000);
-
-    // Cleanup on modal close
-    const cleanup = () => {
-      clearTimeout(autoAdvance);
-      if (stage1) stage1.removeEventListener("click", goToStage2);
-    };
-
-    // Enter Gate button
-    if (enterBtn) {
-      enterBtn.addEventListener("click", () => {
-        cleanup();
-        closeModal("welcomeModal");
-        toast("Benvenuto alla Gate!", "Il cerchio è completo.", "ok");
-      }, { once: true });
-    }
-
-    // Don't show again
-    if (silentBtn) {
-      silentBtn.addEventListener("click", () => {
-        cleanup();
-        store.set("welcomeSilent", true);
-        closeModal("welcomeModal");
-        toast("Ok, nessun benvenuto la prossima volta", "Il Gate resta comunque aperta.", "ok");
-      }, { once: true });
-    }
+    if (store.get("welcomeDone", false)) return;
+    setTimeout(() => openModal("welcomeModal"), 1200);
+    $("#welcomeSilent").addEventListener("click", () => {
+      store.set("welcomeDone", true);
+      store.set("welcomeSilent", true);
+      closeModal("welcomeModal");
+      toast("Ok, nessun benvenuto la prossima volta", "Il Gate resta comunque aperta.", "ok");
+    });
   }
 
   function setAccent(hex) {
@@ -512,146 +408,6 @@ const UI = (() => {
     if (meta) meta.setAttribute("content", "#03060f");
   }
 
-  /* ------------------------------------------------------------
-     CHI SIAMO — iOS 27 Liquid Bubble Mouse Interaction
-     ------------------------------------------------------------ */
-  let chiSiamoBubbleRAF = null;
-  let chiSiamoMouse = { x: 0.5, y: 0.5 };
-
-  function initChiSiamoBubbles() {
-    const section = $("#view-chi-siamo");
-    if (!section) return;
-
-    const bubbles = $$(".chi-siamo-bubble", section);
-    if (!bubbles.length) return;
-
-    // Track mouse position relative to viewport
-    const onMouseMove = (e) => {
-      chiSiamoMouse.x = e.clientX / window.innerWidth;
-      chiSiamoMouse.y = e.clientY / window.innerHeight;
-    };
-
-    // Animation loop - runs only when section is visible
-    function animateBubbles() {
-      const sectionRect = section.getBoundingClientRect();
-      const isVisible = sectionRect.bottom > 0 && sectionRect.top < window.innerHeight;
-      
-      if (isVisible && document.querySelector(".view.is-active") === section) {
-        bubbles.forEach((bubble, i) => {
-          const speed = 40 + i * 25;
-          const offsetX = (chiSiamoMouse.x - 0.5) * speed;
-          const offsetY = (chiSiamoMouse.y - 0.5) * speed;
-          
-          // Add subtle organic wobble
-          const time = Date.now() * 0.001;
-          const wobbleX = Math.sin(time * 0.8 + i) * 8;
-          const wobbleY = Math.cos(time * 0.6 + i * 1.3) * 6;
-          
-          bubble.style.transform = `translate3d(${offsetX + wobbleX}px, ${offsetY + wobbleY}px, 0)`;
-        });
-      }
-      
-      chiSiamoBubbleRAF = requestAnimationFrame(animateBubbles);
-    }
-
-    // Start animation
-    document.addEventListener("mousemove", onMouseMove, { passive: true });
-    animateBubbles();
-
-    // Cleanup function (optional, for when leaving view)
-    section.dataset.chiSiamoInited = "true";
-    section._chiSiamoCleanup = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      if (chiSiamoBubbleRAF) cancelAnimationFrame(chiSiamoBubbleRAF);
-    };
-  }
-
-  function destroyChiSiamoBubbles() {
-    const section = $("#view-chi-siamo");
-    if (section && section._chiSiamoCleanup) {
-      section._chiSiamoCleanup();
-      section._chiSiamoCleanup = null;
-    }
-  }
-
-  /* ------------------------------------------------------------
-     TOOLBAR — Liquid Glass Mouse-Following Glow
-     ------------------------------------------------------------ */
-  let toolbarGlowRAF = null;
-  let toolbarMouse = { x: 0, y: 0 };
-  let toolbarGlowEl = null;
-
-  function initToolbarGlow() {
-    const topbar = $("#topbar");
-    if (!topbar) return;
-
-    toolbarGlowEl = $("#toolbarMouseGlow");
-    if (!toolbarGlowEl) return;
-
-    const onMouseMove = (e) => {
-      const rect = topbar.getBoundingClientRect();
-      // Only activate when mouse is near/over toolbar
-      const isNear = e.clientY < rect.bottom + 100 && e.clientY > rect.top - 100;
-      
-      if (isNear) {
-        toolbarMouse.x = e.clientX - rect.left;
-        toolbarMouse.y = e.clientY - rect.top;
-        toolbarGlowEl.style.opacity = '0.7';
-      } else {
-        toolbarGlowEl.style.opacity = '0';
-      }
-    };
-
-    function animateGlow() {
-      if (toolbarGlowEl && toolbarGlowEl.style.opacity !== '0') {
-        // Add subtle organic wobble
-        const time = Date.now() * 0.001;
-        const wobbleX = Math.sin(time * 0.7) * 12;
-        const wobbleY = Math.cos(time * 0.5) * 8;
-        
-        toolbarGlowEl.style.transform = `translate(${toolbarMouse.x + wobbleX}px, ${toolbarMouse.y + wobbleY}px)`;
-      }
-      
-      toolbarGlowRAF = requestAnimationFrame(animateGlow);
-    }
-
-    document.addEventListener("mousemove", onMouseMove, { passive: true });
-    animateGlow();
-
-    topbar._toolbarGlowCleanup = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      if (toolbarGlowRAF) cancelAnimationFrame(toolbarGlowRAF);
-      if (toolbarGlowEl) toolbarGlowEl.style.opacity = '0';
-    };
-  }
-
-  function destroyToolbarGlow() {
-    const topbar = $("#topbar");
-    if (topbar && topbar._toolbarGlowCleanup) {
-      topbar._toolbarGlowCleanup();
-      topbar._toolbarGlowCleanup = null;
-    }
-  }
-
-  function showPerfStats() {
-    if (document.getElementById("perfStats")) return;
-    const el = document.createElement("div");
-    el.id = "perfStats";
-    el.style.cssText = "position:fixed;bottom:16px;right:16px;z-index:9999;background:rgba(11,12,16,0.9);border:1px solid var(--glass-violet-brd);border-radius:12px;padding:12px 16px;font-family:var(--ff-mono);font-size:11px;color:var(--shiro-kabe);pointer-events:none;backdrop-filter:blur(10px)";
-    el.innerHTML = `<div>FPS: <span id="perfFps" style="color:var(--murasaki-light)">60</span></div><div>Quality: <span id="perfQual" style="color:var(--fuji)">100%</span></div>`;
-    document.body.appendChild(el);
-    const update = () => {
-      if (window.PERF) {
-        document.getElementById("perfFps").textContent = PERF.fps;
-        document.getElementById("perfQual").textContent = Math.round(PERF.quality * 100) + "%";
-      }
-      requestAnimationFrame(update);
-    };
-    update();
-  }
-
-  if (location.search.includes("perf=1")) showPerfStats();
-
   document.addEventListener("keydown", (e) => {
     if (e.target.matches("input, textarea, select")) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -659,8 +415,7 @@ const UI = (() => {
     if (!n) return;
     if (n.id === "comando" && !canSeeComando()) return;
     go(n.id);
-    audio.hit("nav");
   });
 
-  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, initChiSiamoBubbles, destroyChiSiamoBubbles, initToolbarGlow, destroyToolbarGlow, get sound() { return soundOn; } };
+  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, get sound() { return soundOn; } };
 })();

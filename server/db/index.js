@@ -48,10 +48,10 @@ async function createDriver() {
   let pg;
   try {
     clearPgliteLocks();
-    pg = await PGlite.create({ dataDir: config.pgliteDir, relaxDurability: true });
+    pg = await PGlite.create({ dataDir: config.pgliteDir });
   } catch {
     clearPgliteLocks();
-    pg = await PGlite.create({ dataDir: config.pgliteDir, relaxDurability: true });
+    pg = await PGlite.create({ dataDir: config.pgliteDir });
   }
   return {
     name: "pglite",
