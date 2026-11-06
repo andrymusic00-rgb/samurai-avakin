@@ -251,52 +251,70 @@
   </section>
 
   <section class="view" id="view-chi-siamo" data-view="chi-siamo">
-    <div class="view-pad">
-      <div class="section-head center">
-        <span class="eyebrow violet" data-reveal>Chi Siamo</span>
-        <h1 class="section-title" data-reveal style="--d:80ms">Non siamo un gruppo.<br>Siamo un <span class="violet-text">giuramento</span>.</h1>
-        <p class="section-lead" data-reveal style="--d:160ms">
+    <!-- iOS 27 Liquid Bubble Background -->
+    <div class="chi-siamo-liquid-bg" aria-hidden="true">
+      <div class="chi-siamo-bubble"></div>
+      <div class="chi-siamo-bubble"></div>
+      <div class="chi-siamo-bubble"></div>
+      <div class="chi-siamo-bubble"></div>
+      <div class="chi-siamo-bubble"></div>
+      <div class="chi-siamo-bubble"></div>
+    </div>
+
+    <div class="view-pad" style="position:relative;z-index:2">
+      <!-- Hero Header - Liquid Glass -->
+      <div class="chi-siamo-hero glass-morph" data-reveal style="--d:80ms">
+        <span class="eyebrow violet">Chi Siamo</span>
+        <h1 class="section-title" style="font-size:clamp(2.2rem,4vw,3.5rem);line-height:1.15;margin:12px 0 20px">
+          Non siamo un gruppo.<br>Siamo un <span class="violet-text">giuramento</span>.
+        </h1>
+        <p class="section-lead" style="max-width:700px;margin:0 auto;line-height:1.7;font-size:clamp(1rem,1.5vw,1.15rem)">
           Samurai di Avakin nasce da un'idea semplice: il gioco è più bello quando lo affronti
           con persone di cui ti fidi. Da allora non abbiamo mai rotto la parola.
         </p>
       </div>
 
-      <div class="grid g-4" id="valuesGrid" style="margin-bottom:100px"></div>
+      <!-- 8 Valori - Liquid Glass Grid -->
+      <div class="chi-siamo-values" style="margin-top:60px;margin-bottom:80px">
+        <div class="grid g-4" id="valuesGrid"></div>
+      </div>
+
+      <!-- Timeline + Credo + FAQ -->
+      <section class="view-pad-sm" style="padding-bottom:100px">
+        <div class="grid g-2" style="gap:34px;align-items:start">
+          <div class="glass-violet card card-pad-lg chi-siamo-panel" data-reveal>
+            <span class="eyebrow violet">Cronaca</span>
+            <h2 class="section-title" style="font-size:clamp(1.8rem,3.2vw,2.5rem);margin:16px 0 26px">La nostra <span class="accent-violet">storia</span></h2>
+            <div class="timeline violet" id="timelineList"></div>
+          </div>
+          <div class="stack" style="gap:24px">
+            <div class="glass-blue-violet card card-pad-lg chi-siamo-panel" data-reveal="right">
+              <span class="eyebrow violet">Credo</span>
+              <h3 class="kanji" style="font-size:1.6rem;color:var(--silver-100);margin-bottom:16px">武士道</h3>
+              <p style="margin-bottom:16px">
+                Bushidō: il codice del guerriero. Ne prendiamo solo i lati che contano —
+                onestà, rispetto, coraggio e responsabilità. Il resto è lobby e chat.
+              </p>
+              <ul class="stack" style="gap:10px" id="credoList"></ul>
+            </div>
+            <div class="glass-violet card card-pad-lg chi-siamo-panel" data-reveal="right" style="--d:120ms">
+              <span class="eyebrow violet">Domande frequenti</span>
+              <div id="faqList" style="margin-top:18px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Comando / Leadership -->
+      <section class="view-pad-sm" style="padding-bottom:100px">
+        <div class="section-head center">
+          <span class="eyebrow violet">Comando</span>
+          <h2 class="section-title">I <span class="accent-violet">Capo</span></h2>
+          <p class="section-lead">Chi mantiene lo standard alto, giorno dopo giorno.</p>
+        </div>
+        <div class="grid g-auto-lg" id="leaderGrid"></div>
+      </section>
     </div>
-
-    <section class="view-pad-sm" style="padding-bottom:100px">
-      <div class="grid g-2" style="gap:34px;align-items:start">
-        <div class="glass-violet card card-pad-lg" data-reveal>
-          <span class="eyebrow violet">Cronaca</span>
-          <h2 class="section-title" style="font-size:clamp(1.8rem,3.2vw,2.5rem);margin:16px 0 26px">La nostra <span class="accent-violet">storia</span></h2>
-          <div class="timeline violet" id="timelineList"></div>
-        </div>
-        <div class="stack" style="gap:24px">
-          <div class="glass-blue-violet card card-pad-lg" data-reveal="right">
-            <span class="eyebrow violet">Credo</span>
-            <h3 class="kanji" style="font-size:1.6rem;color:var(--silver-100);margin-bottom:16px">武士道</h3>
-            <p style="margin-bottom:16px">
-              Bushidō: il codice del guerriero. Ne prendiamo solo i lati che contano —
-              onestà, rispetto, coraggio e responsabilità. Il resto è lobby e chat.
-            </p>
-            <ul class="stack" style="gap:10px" id="credoList"></ul>
-          </div>
-          <div class="glass-violet card card-pad-lg" data-reveal="right" style="--d:120ms">
-            <span class="eyebrow violet">Domande frequenti</span>
-            <div id="faqList" style="margin-top:18px"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="view-pad-sm" style="padding-bottom:100px">
-      <div class="section-head center">
-        <span class="eyebrow violet">Comando</span>
-        <h2 class="section-title">I <span class="accent-violet">Capo</span></h2>
-        <p class="section-lead">Chi mantiene lo standard alto, giorno dopo giorno.</p>
-      </div>
-      <div class="grid g-auto-lg" id="leaderGrid"></div>
-    </section>
   </section>
 
   <section class="view" id="view-eventi" data-view="eventi">

@@ -512,6 +512,68 @@ const UI = (() => {
     if (meta) meta.setAttribute("content", "#03060f");
   }
 
+  /* ------------------------------------------------------------
+     CHI SIAMO — iOS 27 Liquid Bubble Mouse Interaction
+     ------------------------------------------------------------ */
+  let chiSiamoBubbleRAF = null;
+  let chiSiamoMouse = { x: 0.5, y: 0.5 };
+
+  function initChiSiamoBubbles() {
+    const section = $("#view-chi-siamo");
+    if (!section) return;
+
+    const bubbles = $$(".chi-siamo-bubble", section);
+    if (!bubbles.length) return;
+
+    // Track mouse position relative to viewport
+    const onMouseMove = (e) => {
+      chiSiamoMouse.x = e.clientX / window.innerWidth;
+      chiSiamoMouse.y = e.clientY / window.innerHeight;
+    };
+
+    // Animation loop - runs only when section is visible
+    function animateBubbles() {
+      const sectionRect = section.getBoundingClientRect();
+      const isVisible = sectionRect.bottom > 0 && sectionRect.top < window.innerHeight;
+      
+      if (isVisible && document.querySelector(".view.is-active") === section) {
+        bubbles.forEach((bubble, i) => {
+          const speed = 40 + i * 25;
+          const offsetX = (chiSiamoMouse.x - 0.5) * speed;
+          const offsetY = (chiSiamoMouse.y - 0.5) * speed;
+          
+          // Add subtle organic wobble
+          const time = Date.now() * 0.001;
+          const wobbleX = Math.sin(time * 0.8 + i) * 8;
+          const wobbleY = Math.cos(time * 0.6 + i * 1.3) * 6;
+          
+          bubble.style.transform = `translate3d(${offsetX + wobbleX}px, ${offsetY + wobbleY}px, 0)`;
+        });
+      }
+      
+      chiSiamoBubbleRAF = requestAnimationFrame(animateBubbles);
+    }
+
+    // Start animation
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
+    animateBubbles();
+
+    // Cleanup function (optional, for when leaving view)
+    section.dataset.chiSiamoInited = "true";
+    section._chiSiamoCleanup = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      if (chiSiamoBubbleRAF) cancelAnimationFrame(chiSiamoBubbleRAF);
+    };
+  }
+
+  function destroyChiSiamoBubbles() {
+    const section = $("#view-chi-siamo");
+    if (section && section._chiSiamoCleanup) {
+      section._chiSiamoCleanup();
+      section._chiSiamoCleanup = null;
+    }
+  }
+
   function showPerfStats() {
     if (document.getElementById("perfStats")) return;
     const el = document.createElement("div");
@@ -541,5 +603,5 @@ const UI = (() => {
     audio.hit("nav");
   });
 
-  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, get sound() { return soundOn; } };
+  return { $, $$, store, toast, openModal, closeModal, confirmBox, observe, animateInside, countAll, setPanel, openPanel, setSound, setAccent, initFaq, initWelcome, typing, go, togglePalette, initChiSiamoBubbles, destroyChiSiamoBubbles, get sound() { return soundOn; } };
 })();

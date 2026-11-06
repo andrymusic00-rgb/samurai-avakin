@@ -746,6 +746,11 @@
         paintGallery();
         applyFilter(gFilter);
       }
+    } else if (view === "chi-siamo") {
+      // Init Chi Siamo liquid bubbles
+      if (typeof UI.initChiSiamoBubbles === "function") {
+        UI.initChiSiamoBubbles();
+      }
     } else {
       const overlay = $("#videoIntroOverlay");
       if (overlay && overlay.classList.contains("is-open")) {
@@ -756,6 +761,10 @@
         overlay.classList.remove("is-open");
         overlay.style.display = "none";
       }
+    }
+    // Cleanup Chi Siamo bubbles when leaving
+    if (lastView === "chi-siamo" && typeof UI.destroyChiSiamoBubbles === "function") {
+      UI.destroyChiSiamoBubbles();
     }
     observe($(`#view-${view}`));
     UI.animateInside($(`#view-${view}`));
