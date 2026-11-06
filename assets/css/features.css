@@ -433,3 +433,45 @@
 .season-card[data-season="autumn"] i{color:var(--hinoki);animation-delay:.6s}
 .season-card[data-season="winter"] i{color:var(--mizugatte);animation-delay:.9s}
 @keyframes seasonPulse{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.2) rotate(8deg)}}
+
+/* ================================================================ WATERMARK / FILIGRANA */
+.watermark-instance {
+  contain: layout style paint;
+  will-change: transform, opacity;
+}
+
+.watermark-instance svg {
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watermark-instance svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .watermark-instance {
+    opacity: 0.015 !important;
+  }
+}
+
+/* Section-specific watermark opacity adjustments */
+[data-view="home"] .watermark-instance { opacity: 0.03; }
+[data-view="chi-siamo"] .watermark-instance { opacity: 0.04; }
+[data-view="eventi"] .watermark-instance { opacity: 0.035; }
+[data-view="gallery"] .watermark-instance { opacity: 0.03; }
+[data-view="video"] .watermark-instance { opacity: 0.025; }
+[data-view="blog"] .watermark-instance { opacity: 0.02; }
+[data-view="classifica"] .watermark-instance { opacity: 0.05; }
+[data-view="comando"] .watermark-instance { opacity: 0.02; }
+[data-view="account"] .watermark-instance { opacity: 0.04; }
+
+/* Watermark blend mode variants */
+.watermark-instance[data-blend="multiply"] { mix-blend-mode: multiply; }
+.watermark-instance[data-blend="screen"] { mix-blend-mode: screen; }
+.watermark-instance[data-blend="overlay"] { mix-blend-mode: overlay; }
+.watermark-instance[data-blend="soft-light"] { mix-blend-mode: soft-light; }
+.watermark-instance[data-blend="color-dodge"] { mix-blend-mode: color-dodge; }
+.watermark-instance[data-blend="color-burn"] { mix-blend-mode: color-burn; }
