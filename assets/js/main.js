@@ -753,32 +753,27 @@
     const fromView = document.querySelector(".view.is-active");
     const toView = document.getElementById(`view-${view}`);
 
-    if (fromView && toView && fromView !== toView && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      fromView.style.transition = "opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out)";
-      fromView.style.opacity = "0";
-      fromView.style.transform = "translateY(-16px) scale(0.99)";
-      await new Promise(r => setTimeout(r, 280));
-      fromView.classList.remove("is-active");
-      fromView.style.transition = "";
-      fromView.style.opacity = "";
-      fromView.style.transform = "";
-    } else if (fromView) {
-      fromView.classList.remove("is-active");
+    if (!toView) {
+      console.warn(`View not found: view-${view}`);
+      return;
     }
 
-    toView.classList.add("is-active");
-    toView.style.opacity = "0";
-    toView.style.transform = "translateY(16px) scale(0.99)";
-    toView.offsetHeight;
-    toView.style.transition = "opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out)";
-    toView.style.opacity = "1";
-    toView.style.transform = "none";
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    setTimeout(() => {
-      toView.style.transition = "";
-      toView.style.opacity = "";
-      toView.style.transform = "";
-    }, 450);
+    if (fromView && fromView !== toView && !prefersReduced) {
+      fromView.classList.add("view-exit");
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    if (fromView) {
+      fromView.classList.remove("is-active", "view-exit");
+    }
+
+    toView.classList.add("is-active", "view-enter");
+    toView.offsetHeight;
+    requestAnimationFrame(() => {
+      toView.classList.remove("view-enter");
+    });
 
     $$(".nav-link").forEach((a) => a.classList.toggle("is-active", a.dataset.nav === view));
     $("#nav").classList.remove("is-open");
@@ -797,13 +792,11 @@
         maybeShowVideoIntro();
       }, 60);
     } else if (view === "gallery") {
-      // Refresh gallery in case new uploads were added while on other views
       if (typeof paintGallery === "function") {
         paintGallery();
         applyFilter(gFilter);
       }
     } else if (view === "chi-siamo") {
-      // Init Chi Siamo liquid bubbles
       if (typeof UI.initChiSiamoBubbles === "function") {
         UI.initChiSiamoBubbles();
       }
@@ -818,7 +811,6 @@
         overlay.style.display = "none";
       }
     }
-    // Cleanup Chi Siamo bubbles when leaving
     if (lastView === "chi-siamo" && typeof UI.destroyChiSiamoBubbles === "function") {
       UI.destroyChiSiamoBubbles();
     }
@@ -827,7 +819,6 @@
     countAll($(`#view-${view}`));
     window.scrollTo(0, 0);
     
-    // Update filigrana for new section
     if (typeof FILIGRANA !== "undefined") {
       FILIGRANA.setSection(view);
     }
