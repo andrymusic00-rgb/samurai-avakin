@@ -233,7 +233,7 @@
   // Fetch public photos for cross-device sync (anonymous uploads)
   async function loadPublicPhotos() {
     try {
-      const res = await fetch("/api/public/content?type=photo&status=approved&limit=50", { credentials: "include" });
+      const res = await fetch("/api/public/content?type=photo&status=approved&limit=50&myIp=true", { credentials: "include" });
       const data = await res.json();
       if (data.ok && Array.isArray(data.items)) {
         gPublicPhotos = data.items;
@@ -325,7 +325,7 @@
   // Fetch public videos for cross-device sync (anonymous uploads)
   async function loadPublicVideos() {
     try {
-      const res = await fetch("/api/public/content?type=video&status=approved&limit=50", { credentials: "include" });
+      const res = await fetch("/api/public/content?type=video&status=approved&limit=50&myIp=true", { credentials: "include" });
       const data = await res.json();
       if (data.ok && Array.isArray(data.items)) {
         publicVideos = data.items;

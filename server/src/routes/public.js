@@ -156,7 +156,7 @@ publicRouter.post(
 );
 
 // ============================================================
-// GET /api/public/content — Lista contenuti approvati
+// GET /api/public/content — Lista contenuti
 // ============================================================
 publicRouter.get(
     "/content",
@@ -176,10 +176,20 @@ publicRouter.get(
                    (SELECT COUNT(*) FROM public_content_comments WHERE content_id = pc.id) as comments_count
             FROM public_content pc
             LEFT JOIN users u ON u.id = pc.user_id
-            WHERE pc.status = $1
+            WHERE 1=1
         `;
-        const params = [status];
-        let p = 2;
+        const params = [];
+        let p = 1;
+        
+        // Se myIp=true, mostra approved + pending per quell'IP
+        // Altrimenti solo lo status richiesto (default approved)
+        if (authorIp) {
+            sql += ` AND (pc.status = 'approved' OR (pc.status = 'pending' AND pc.author_ip_hash = $${p++}))`;
+            params.push(authorIp);
+        } else {
+            sql += ` AND pc.status = $${p++}`;
+            params.push(status);
+        }
         
         if (type) { sql += ` AND pc.type = $${p++}`; params.push(type); }
         if (category) { sql += ` AND pc.category = $${p++}`; params.push(category); }
