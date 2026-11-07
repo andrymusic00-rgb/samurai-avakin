@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Picasso Interactive Canvas Popup</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-overlay: rgba(18, 16, 23, 0.82);
+      --accent-color: #e65c00;
+      --accent-color-2: #f9d423;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Space Grotesk', sans-serif;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.16);
+      --text-main: #ffffff;
+      --text-muted: #c7c3d8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: #0a0a12;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0a0a12;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .intro-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .carousel {
+      position: relative;
+      width: min(85vw, 900px);
+      height: 420px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+    }
+
+    .welcome-text {
+      font-family: var(--font-title);
+      font-size: 2.6rem;
+      line-height: 1.1;
+      margin-top: 2.5rem;
+      color: #fff;
+      text-shadow: 0 0 25px rgba(230, 92, 0, 0.4);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .lang-subtitle {
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      margin-top: 0.5rem;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    .popup-btn {
+      align-self: flex-start;
+      padding: 12px 32px;
+      border: none;
+      background: linear-gradient(45deg, #e65c00, #F9D423);
+      color: #fff;
+      font-family: var(--font-body);
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(230, 92, 0, 0.3);
+      transition: all 0.3s ease;
+      margin-top: 2.5rem;
+    }
+
+    .popup-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(230, 92, 0, 0.5);
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-overlay);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .popup-card {
+      position: relative;
+      width: 90%;
+      max-width: 920px;
+      height: 600px;
+      background: linear-gradient(135deg, rgba(24, 21, 36, 0.92) 0%, rgba(32, 27, 48, 0.92) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      display: flex;
+      overflow: hidden;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.2s;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      transform: scale(1.2) rotate(90deg);
+      color: var(--accent-color);
+    }
+
+    .picasso-canvas-container {
+      position: relative;
+      width: 55%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    #picasso-grid {
+      display: grid;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cubist-tile {
+      position: relative;
+      background-repeat: no-repeat;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease, opacity 0.6s ease, border-radius 0.6s ease;
+      will-change: transform, filter, opacity;
+      border: 0.5px solid rgba(0,0,0,0.3);
+    }
+
+    .cubist-tile.abstract {
+      filter: saturate(180%) contrast(140%) hue-rotate(15deg);
+      opacity: 0.8;
+    }
+
+    .cubist-tile.revealed {
+      transform: translate(0, 0) scale(1) rotate(0deg) !important;
+      filter: saturate(100%) contrast(100%) hue-rotate(0deg) !important;
+      opacity: 1 !important;
+      z-index: 2;
+      border-color: transparent;
+    }
+
+    .popup-content {
+      width: 45%;
+      padding: 40px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      color: #fff;
+      z-index: 5;
+      background: linear-gradient(135deg, rgba(24,21,36,1) 0%, rgba(32,27,48,1) 100%);
+    }
+
+    .popup-tag {
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .popup-title {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      line-height: 1.1;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #fff, #b3a8d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .popup-description {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #a09ab5;
+      margin-bottom: 30px;
+    }
+
+    .popup-btn {
+      align-self: flex-start;
+      padding: 12px 28px;
+      border: none;
+      background: linear-gradient(45deg, #e65c00, #F9D423);
+      color: #fff;
+      font-family: var(--font-body);
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(230, 92, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .popup-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(230, 92, 0, 0.5);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="intro-overlay">
+    <div class="intro-content">
+<div class="carousel" id="gallery-carousel">
+      <img class="carousel-slide active" src="IMG_7427%202.JPG" alt="Foto galleria 1">
+      <img class="carousel-slide" src="IMG_7428%202.JPG" alt="Foto galleria 2">
+      <img class="carousel-slide" src="IMG_7429%202.JPG" alt="Foto galleria 3">
+      <img class="carousel-slide" src="IMG_7430%202.JPG" alt="Foto galleria 4">
+      <img class="carousel-slide" src="IMG_7431%202.JPG" alt="Foto galleria 5">
+      <img class="carousel-slide" src="IMG_7432%202.JPG" alt="Foto galleria 6">
+      <img class="carousel-slide" src="IMG_7611%202.JPG" alt="Foto galleria 7">
+      <img class="carousel-slide" src="IMG_7611%203.JPG" alt="Foto galleria 8">
+      <img class="carousel-slide" src="IMG_7612%202.JPG" alt="Foto galleria 9">
+      <img class="carousel-slide" src="IMG_7612%203.JPG" alt="Foto galleria 10">
+      <img class="carousel-slide" src="i%20samurai%20logo%20.svg" alt="Logo Samurai">
+    </div>
+      <div class="welcome-text" id="welcome-text">Benvenuto</div>
+      <div class="lang-subtitle" id="lang-subtitle">IT</div>
+      <button class="popup-btn" id="enter-btn">Entra nel Galleria</button>
+    </div>
+  </div>
+
+  <div class="popup-overlay" id="main-popup">
+    <div class="popup-card">
+      <button class="close-btn">&times;</button>
+
+      <div class="picasso-canvas-container">
+        <div id="picasso-grid"></div>
+      </div>
+
+      <div class="popup-content">
+        <span class="popup-tag">Esposizione Digitale</span>
+        <h2 class="popup-title">De-costruisci il Cubismo</h2>
+        <p class="popup-description">
+          Muovi il cursore sopra il mosaico geometrico per ricomporre la figura astratta nella sua forma originale.
+        </p>
+        <button class="popup-btn">Esplora la Galleria</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LOCAL_IMAGES = [
+      'IMG_7427%202.JPG',
+      'IMG_7428%202.JPG',
+      'IMG_7429%202.JPG',
+      'IMG_7430%202.JPG',
+      'IMG_7431%202.JPG',
+      'IMG_7432%202.JPG',
+      'IMG_7611%202.JPG',
+      'IMG_7611%203.JPG',
+      'IMG_7612%202.JPG',
+      'IMG_7612%203.JPG',
+      'i%20samurai%20logo%20.svg'
+    ];
+
+    const COLS = 8;
+    const ROWS = 8;
+    let currentImageIndex = 0;
+
+    const gridContainer = document.getElementById('picasso-grid');
+    gridContainer.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+    gridContainer.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+
+    const tiles = [];
+
+    function getCurrentImageUrl() {
+      return LOCAL_IMAGES[currentImageIndex];
+    }
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const tile = document.createElement('div');
+        tile.classList.add('cubist-tile', 'abstract');
+
+        const widthPercent = 100 * COLS;
+        const heightPercent = 100 * ROWS;
+        const posXPercent = (c / (COLS - 1)) * 100;
+        const posYPercent = (r / (ROWS - 1)) * 100;
+
+        tile.style.backgroundImage = `url('${getCurrentImageUrl()}')`;
+        tile.style.backgroundSize = `${widthPercent}% ${heightPercent}%`;
+        tile.style.backgroundPosition = `${posXPercent}% ${posYPercent}%`;
+
+        applyPicassoTransform(tile);
+
+        tile.addEventListener('mouseenter', () => revealTile(tile));
+        tile.addEventListener('touchstart', () => revealTile(tile), {passive: true});
+
+        gridContainer.appendChild(tile);
+        tiles.push(tile);
+      }
+    }
+
+    function applyPicassoTransform(tile) {
+      const rot = (Math.random() - 0.5) * 45;
+      const scale = 0.8 + Math.random() * 0.4;
+      const transX = (Math.random() - 0.5) * 15;
+      const transY = (Math.random() - 0.5) * 15;
+
+      tile.style.transform = `translate(${transX}px, ${transY}px) scale(${scale}) rotate(${rot}deg)`;
+    }
+
+    function revealTile(tile) {
+      tile.classList.remove('abstract');
+      tile.classList.add('revealed');
+
+      clearTimeout(tile.resetTimer);
+      tile.resetTimer = setTimeout(() => {
+        tile.classList.remove('revealed');
+        tile.classList.add('abstract');
+        applyPicassoTransform(tile);
+      }, 3500);
+    }
+
+    // Cycle through images every 8 seconds
+    setInterval(() => {
+      currentImageIndex = (currentImageIndex + 1) % LOCAL_IMAGES.length;
+      const newImageUrl = LOCAL_IMAGES[currentImageIndex];
+      tiles.forEach(tile => {
+        tile.style.backgroundImage = `url('${newImageUrl}')`;
+      });
+    }, 8000);
+
+    const slides = document.querySelectorAll('.carousel-slide');
+    let currentSlide = 0;
+
+    function nextSlide() {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }
+
+    setInterval(nextSlide, 5000);
+
+    const langs = [
+      { text: 'Benvenuto', code: 'IT' },
+      { text: 'Welcome', code: 'EN' },
+      { text: 'Bienvenido', code: 'ES' },
+      { text: 'Bienvenue', code: 'FR' },
+      { text: 'Willkommen', code: 'DE' },
+      { text: '欢迎', code: 'ZH' },
+      { text: 'ようこそ', code: 'JA' },
+      { text: '환영합니다', code: 'KO' },
+      { text: 'أهلاً بك', code: 'AR' },
+      { text: 'Добро пожаловать', code: 'RU' },
+      { text: 'स्वागत है', code: 'HI' },
+      { text: 'Bem-vindo', code: 'PT' },
+      { text: 'Merhaba', code: 'TR' },
+      { text: 'Salam', code: 'FA' },
+      { text: 'Namaste', code: 'SA' }
+    ];
+
+    let langIndex = 0;
+    const welcomeText = document.getElementById('welcome-text');
+    const langSubtitle = document.getElementById('lang-subtitle');
+
+    function changeLanguage() {
+      welcomeText.style.opacity = '0';
+      welcomeText.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        langIndex = (langIndex + 1) % langs.length;
+        welcomeText.textContent = langs[langIndex].text;
+        langSubtitle.textContent = langs[langIndex].code;
+        welcomeText.style.opacity = '1';
+        welcomeText.style.transform = 'translateY(0)';
+      }, 600);
+    }
+
+    setInterval(changeLanguage, 4000);
+
+    const enterBtn = document.getElementById('enter-btn');
+    const introOverlay = document.getElementById('intro-overlay');
+    const mainPopup = document.getElementById('main-popup');
+
+    enterBtn.addEventListener('click', () => {
+      introOverlay.style.opacity = '0';
+      introOverlay.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => {
+        introOverlay.style.display = 'none';
+        mainPopup.style.display = 'flex';
+      }, 500);
+    });
+
+    const closeBtn = document.querySelector('.close-btn');
+    closeBtn.addEventListener('click', () => {
+      const overlay = document.querySelector('.popup-overlay');
+      overlay.style.opacity = '0';
+      overlay.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 500);
+    });
+  </script>
+</body>
+</html>

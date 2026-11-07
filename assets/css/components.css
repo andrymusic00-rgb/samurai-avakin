@@ -1404,3 +1404,21 @@ body.compact .view-pad { padding-top: calc(var(--topbar-h) + 28px); }
 
 /* Modal crea evento */
 #createEventModal .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Modal membro con effetto glitch prisma */
+.glitch-prisma { position: relative; overflow: hidden; }
+.glitch-prisma::before, .glitch-prisma::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0.6;
+  background: linear-gradient(90deg, rgba(37,99,235,0.15), rgba(192,192,192,0.12), rgba(229,228,226,0.18), rgba(168,85,247,0.15), rgba(88,28,135,0.12));
+  animation: glitchShift 2.4s steps(6) infinite;
+}
+.glitch-prisma::after { animation-delay: 1.2s; opacity: 0.4; }
+@keyframes glitchShift {
+  0% { transform: translate(0,0); } 20% { transform: translate(-2px,1px); }
+  40% { transform: translate(2px,-1px); } 60% { transform: translate(-1px,2px); }
+  80% { transform: translate(1px,-2px); } 100% { transform: translate(0,0); }
+}
+.member-modal-img { text-align: center; padding: 16px; }
+.member-modal-name { color: var(--text-primary); text-align: center; }
+.member-modal-role { text-align: center; color: var(--murasaki-light); font-family: var(--ff-mono); font-size: 10px; letter-spacing: .16em; }
+.member-modal-desc { color: var(--text-secondary); text-align: center; margin-top: 8px; }

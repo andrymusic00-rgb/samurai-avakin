@@ -723,10 +723,15 @@ const Account = (() => {
     $("#btnExport").addEventListener("click", exportData);
     $("#rosterSearch").addEventListener("input", (e) => renderRoster(e.target.value));
     $("#accRoster").addEventListener("click", (e) => {
-      const c = e.target.closest("[data-roster]");
-      if (!c) return;
-      const r = (rosterLive || DATA.roster).find((x) => x.nome === c.dataset.roster);
-      if (r) toast(r.nome, `${r.ruolo} · Livello ${r.lvl} · ${r.spada || r.mainChar || ""}`, "ok");
+       const c = e.target.closest("[data-roster]");
+       if (!c) return;
+       const r = (rosterLive || DATA.roster).find((x) => x.nome === c.dataset.roster);
+       if (!r) return;
+       $("#memberModalName").textContent = r.nome;
+       $("#memberModalRole").textContent = `${r.ruolo} · Lv ${r.lvl}`;
+       $("#memberModalDesc").textContent = r.spada || r.mainChar || "";
+       $("#memberModalImg").innerHTML = `<span class="kanji" style="font-size:4rem">${r.kanji || r.nome[0]}</span>`;
+       openModal("memberModal");
     });
     $("#accSessions").addEventListener("click", async (e) => {
       const b = e.target.closest("[data-revoke]");

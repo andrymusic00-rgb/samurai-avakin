@@ -724,6 +724,15 @@
               <input class="input violet" id="rosterSearch" placeholder="Cerca un compagno…" style="max-width:280px">
             </div>
             <div class="roster-grid" id="accRoster"></div>
+            <div class="modal" id="memberModal" style="display:none">
+              <div class="modal-box glitch-prisma">
+                <button class="modal-x" data-close="memberModal">✕</button>
+                <div class="member-modal-img" id="memberModalImg"></div>
+                <h3 class="member-modal-name" id="memberModalName"></h3>
+                <p class="member-modal-role" id="memberModalRole"></p>
+                <p class="member-modal-desc" id="memberModalDesc"></p>
+              </div>
+            </div>
           </section>
 
           <section class="acc-panel glass-violet" data-apanel="badge">
@@ -1570,17 +1579,10 @@
   }
 
   function initCubistGrid() {
-    console.log('initCubistGrid called');
-    if (isInitialized) {
-      console.log('Already initialized, returning');
-      return;
-    }
+    if (isInitialized) return;
     
     gridContainer = document.getElementById('cubistGrid');
     imageIndicator = document.getElementById('geImageIndicator');
-    
-    console.log('gridContainer:', !!gridContainer);
-    console.log('imageIndicator:', !!imageIndicator);
     
     if (!gridContainer) return;
 
@@ -1644,15 +1646,13 @@
   const nextBtn = document.getElementById('geNextImage');
   const openGalleryBtn = document.getElementById('geOpenGallery');
 
-  function openModal() {
-    console.log('openModal called');
+function openModal() {
     modal.style.display = 'flex';
     document.body.classList.add('is-locked');
-    requestAnimationFrame(() => {
-      console.log('requestAnimationFrame callback');
+    setTimeout(() => {
       modal.classList.add('is-open');
       initCubistGrid();
-    });
+    }, 50);
   }
 
   function closeModal() {
