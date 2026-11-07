@@ -641,7 +641,29 @@
   async function renderVideos() {
     await loadCreativeVideos();
     await loadUserVideos();
-    await loadVideoPosts();
+    videoPosts = await loadVideoPosts();
+    // Integra video creativi server come post visibili (senza duplicare post locali)
+    const known = new Set(videoPosts.map((p) => p.id || p.videoId));
+    creativeVideos.forEach((cv) => {
+      const id = "cvp-" + cv.id;
+      if (known.has(id)) return;
+      videoPosts.push({
+        id,
+        videoId: cv.id,
+        titolo: cv.titolo,
+        desc: cv.desc || "",
+        cat: "creativo",
+        autore: cv.autore?.nome || cv.autore?.handle || "Clan",
+        creatoIl: cv.creatoIl || new Date().toISOString(),
+        thumb: null,
+        videoUrl: cv.fonte?.url || null,
+        visualizzazioni: 0,
+        like: cv.likes || 0,
+        miaReazione: false,
+        reazioni: makeReactions(),
+        commenti: []
+      });
+    });
     const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
 
     $("#vidFeatured").innerHTML = `
@@ -683,12 +705,11 @@
          </section>`
       : "";
 
-    const postHtml = videoPosts.length
-      ? `<section class="vid-section" style="margin-top:44px">
-           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Post del clan</span>
+    const postHtml = `<section class="vid-section" id="videoPostsSection" style="margin-top:44px">
+           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Post video del clan</span>
+           <p class="mono" style="font-size:.8rem;color:var(--silver-500);margin:0 0 12px">Pubblica un tuo video come post: apparirà qui con like, reazioni e commenti.</p>
            <div class="video-grid" id="videoGridPosts"></div>
-         </section>`
-      : "";
+         </section>`;
 
     const videoGrid = $("#videoGrid");
     if (videoGrid) videoGrid.innerHTML = rest.map((v, i) => `
@@ -770,12 +791,15 @@
       return;
     }
 
+    const vp = videoPosts.find((x) => x.id === id);
+    if (vp) { openVideoPost(vp); return; }
+
     const uv = userVideos.find((x) => x.id === id);
     if (uv) {
       $("#vmTitle").textContent = uv.titolo;
       $("#vmDesc").textContent = uv.desc || "Condiviso da te";
-      $("#vmCat").textContent = uv.cat.toUpperCase();
-      $("#vmDur").textContent = uv.dur;
+      $("#vmCat").textContent = (uv.cat || "video").toUpperCase();
+      $("#vmDur").textContent = uv.dur || "--:--";
       const wrap = $("#playerWrap");
       wrap.innerHTML = `
         <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
@@ -877,10 +901,12 @@
         return;
       }
       const vchip = e.target.closest("#videoFilters .chip");
-      if (vchip) {
+      if (vchip && !vchip.closest("#btnVideoCatCreativi,#btnVideoCatMiei,#btnVideoCatPost") && vchip.id !== "btnVideoCatCreativi" && vchip.id !== "btnVideoCatMiei" && vchip.id !== "btnVideoCatPost") {
         $$("#videoFilters .chip").forEach((c) => c.classList.toggle("is-active", c === vchip));
-        const cat = vchip.dataset.vcat;
-        $$("#videoGrid .vid-card").forEach((c) => c.classList.toggle("is-hidden", cat !== "all" && c.dataset.vcat !== cat));
+        const cat = vchip.dataset.vcat || "all";
+        $$("#videoGrid > .vid-card[data-vcat]").forEach((c) => c.classList.toggle("is-hidden", cat !== "all" && c.dataset.vcat !== cat));
+        const postSec = document.getElementById("videoPostsSection");
+        if (postSec) postSec.style.display = (cat === "all") ? "" : "none";
         return;
       }
 
@@ -917,23 +943,10 @@
       if (pc) {
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         pc.classList.add("is-active");
-        const grid = $("#videoGrid");
-        grid.innerHTML = videoPosts.length
-          ? videoPosts.map((p, i) => `
-            <article class="vid-card vid-card-mio" data-vid="${p.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-              <div class="vid-thumb vid-thumb-mio" style="aspect-ratio:16/9;background:#01030a">
-                <img src="${p.thumb || "/assets/icons/icon-512.png"}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover"><span class="vid-play-badge">▶</span>
-              </div>
-              <div class="vid-meta">
-                <b>${esc(p.titolo)}</b>
-                <small style="color:var(--silver-500)">${esc(p.desc.slice(0, 72))}…</small>
-                <div class="row" style="gap:6px;margin-top:6px">
-                  <span class="tag silver">${(p.cat || "video").toUpperCase()}</span>
-                  <span class="tag silver">${p.like} ⚔</span>
-                </div>
-              </div>
-            </article>`).join("")
-          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">📜</span><h3>Nessun post video ancora</h3><p>Carica un video e pubblicalo come post del clan.</p></div>`;
+        renderVideoPosts();
+        const postSec = document.getElementById("videoPostsSection");
+        if (postSec) { postSec.style.display = ""; postSec.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        const vg = $("#videoGrid"); if (vg) $$("#videoGrid > .vid-card[data-vcat]").forEach((c) => c.classList.add("is-hidden"));
         return;
       }
 
@@ -1077,7 +1090,8 @@
     renderHome();
     renderAbout();
     renderGallery();
-    renderVideos().catch((err) => console.warn("[Samurai] renderVideos:", err));    renderSeasonSelector("#seasonSelector");
+    renderVideos().catch((err) => console.warn("[Samurai] renderVideos:", err));
+    renderSeasonSelector("#seasonSelector");
     UI.initFaq();
     UI.typing();
     Views.init();
