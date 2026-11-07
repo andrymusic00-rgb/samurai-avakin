@@ -1087,22 +1087,27 @@ body.season-spring .hero-title .l3 {
   filter: drop-shadow(0 1px 8px rgba(22, 32, 58, 0.12));
 }
 
-/* "SAMURAI / di Avakin" (scritta scavata hero + brand): blu glaciale chiaro + grigio, più visibile */
+/* "SAMURAI / di Avakin" scavato: blu glaciale chiaro + grigio, leggibile in alto e coerente nel brand */
+body.season-spring .samurai-engraved,
 body.season-spring .hero-title .silver-text,
 body.season-spring .hero-title .l2.silver-text,
-body.season-spring .topbar .brand-text b {
-  background: linear-gradient(180deg, #eaf6fb 0%, #b8d4e3 38%, #8faec2 68%, #cfdce6 100%) !important;
+body.season-spring .topbar .brand-text b,
+body.season-spring .footer .brand-text b,
+body.season-spring .site-footer .brand-text b {
+  background: linear-gradient(180deg, #f2fbff 0%, #c8e3f0 30%, #9fc0d3 58%, #7f9fb3 82%, #d8e8f1 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
-  -webkit-text-stroke: 0.4px rgba(143, 174, 194, 0.22);
+  -webkit-text-stroke: 0.45px rgba(127, 159, 179, 0.26);
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.22),
-    0 2px 10px rgba(22, 32, 58, 0.16),
-    0 0 18px rgba(184, 212, 227, 0.22) !important;
-  filter: drop-shadow(0 1px 6px rgba(143, 174, 194, 0.16));
+    0 1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 12px rgba(22, 32, 58, 0.14),
+    0 0 18px rgba(200, 227, 240, 0.24) !important;
+  filter: drop-shadow(0 1px 7px rgba(159, 192, 211, 0.18));
 }
-body.season-spring .topbar .brand-text span {
-  color: #b8d4e3 !important;
-  text-shadow: 0 1px 8px rgba(22, 32, 58, 0.14) !important;
+body.season-spring .topbar .brand-text span,
+body.season-spring .footer .brand-text span,
+body.season-spring .site-footer .brand-text span {
+  color: #a9c7d8 !important;
+  text-shadow: 0 1px 8px rgba(22, 32, 58, 0.12) !important;
 }
