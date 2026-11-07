@@ -757,7 +757,10 @@ const Account = (() => {
       const b = e.target.closest("[data-action]");
       if (!b) return;
       const a = b.dataset.action;
-      if (a === "apply") openModal("applyModal");
+      if (a === "apply") {
+        window.open("https://docs.google.com/forms/d/e/1FAIpQLSca-zTqYpOtbJV1oPlxfyatOACahHUHcy_Ltjns6jKtdqAoeQ/viewform?usp=publish-editor", "_blank", "noopener,noreferrer");
+        if (typeof toast === "function") toast("Candidatura", "Modulo di reclutamento aperto in una nuova scheda.", "ok");
+      }
       if (a === "login") { showLoginTab(); openModal("enterModal"); }
       if (a === "register") { showRegisterTab(); openModal("enterModal"); }
       if (a === "forgot") { $("#enterForm").style.display = "none"; $("#resetForm").style.display = ""; }
