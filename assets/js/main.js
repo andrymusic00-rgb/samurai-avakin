@@ -233,9 +233,15 @@
     const all = gAll();
     const grid = $("#galleryGrid");
     if (!grid) return;
+    if (!all.length) {
+      grid.innerHTML = `<div class="gallery-empty">Nessuna immagine disponibile</div>`;
+      applyFilter(gFilter);
+      revealScope(grid);
+      return;
+    }
     grid.innerHTML = all.map((g) => `
       <figure class="gal-item" data-cat="${g.cat}" data-id="${g.id}" tabindex="0" role="button" aria-label="${esc(g.titolo)}">
-        <img loading="lazy" src="${g.src}" alt="${esc(g.titolo)}" width="${g.w}" height="${g.h}" onerror="this.src='/assets/icons/icon-512.png';this.onerror=null;">
+        <img loading="lazy" decoding="async" src="${g.src}" alt="${esc(g.titolo)}" width="${g.w}" height="${g.h}" onerror="this.onerror=null;this.src='/assets/icons/icon-512.png';">
         <span class="gal-zoom" aria-hidden="true">⤢</span>
         <figcaption class="gal-overlay">
           <small>${String(g.cat).toUpperCase()}</small>
@@ -1089,6 +1095,7 @@
 
     document.addEventListener("keydown", (e) => {
       if (!$("#lightbox").classList.contains("is-open")) return;
+      if (e.key === "Escape") { UI.closeModal("lightbox"); return; }
       if (e.key === "ArrowLeft") step(-1);
       if (e.key === "ArrowRight") step(1);
     });
