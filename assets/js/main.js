@@ -255,6 +255,113 @@
     }
   }
 
+  /* ── Video caricati dall'utente (IndexedDB locale) ── */
+  let userVideos = [];
+
+  function videoDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open("SamuraiVideoDB", 2);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("videos")) db.createObjectStore("videos", { keyPath: "id" });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function loadUserVideos() {
+    try {
+      const db = await videoDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(["videos"], "readonly");
+        const store = tx.objectStore("videos");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async function saveUserVideo(video) {
+    const db = await videoDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(["videos"], "readwrite");
+      const store = tx.objectStore("videos");
+      const req = store.put(video);
+      req.onsuccess = () => resolve(video);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function generateThumb(file) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const el = document.createElement("video");
+      el.preload = "metadata";
+      el.src = url;
+      el.onloadedmetadata = () => { el.currentTime = Math.min(1, el.duration * 0.15); };
+      el.onseeked = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 180;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(el, 0, 0, 320, 180);
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
+        URL.revokeObjectURL(url);
+      };
+      el.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    });
+  }
+
+  function openVideoUpload() {
+    const modal = $("#videoUploadModal");
+    if (!modal) return;
+    resetUploadForm();
+    modal.classList.add("is-open");
+    $("#vuFile").focus();
+  }
+
+  function resetUploadForm() {
+    $("#vuFile").value = "";
+    $("#vuTitolo").value = "";
+    $("#vuCategoria").value = "";
+    $("#vuDesc").value = "";
+    $("#vuPreview").style.display = "none";
+    $("#vuVideoPreview").src = "";
+    $("#vuStatus").textContent = "";
+    $("#vuCarica").disabled = false;
+    $("#vuDropzone").style.borderColor = "var(--silver-600)";
+    $("#vuDropzone").style.background = "#0b0f1a";
+  }
+
+  function renderVideoGridOnly(list, gridId, emptyText) {
+    const grid = $("#" + gridId);
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>${emptyText}</h3></div>`;
+      return;
+    }
+    grid.innerHTML = list.map((v, i) => {
+      const mio = v.id.startsWith("uv-");
+      return `
+        <article class="vid-card${mio ? " vid-card-mio" : " vid-card-creativo"}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+          <div class="vid-thumb${mio ? " vid-thumb-mio" : " vid-thumb-creativo"}" style="aspect-ratio:16/9;background:${mio ? "#01030a" : "transparent"}">
+            ${mio ? `<img src="${v.thumb || "/assets/icons/icon-512.png"}" alt="${esc(v.titolo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover"><span class="vid-play-badge">▶</span>` : `<span class="vid-play-badge">▶</span><span class="vid-placeholder">${v.autore?.nome || v.autore?.handle}</span>`}
+          </div>
+          <div class="vid-meta">
+            <b>${esc(v.titolo)}</b>
+            <small style="color:var(--silver-500)">${esc(v.desc.slice(0, 72))}…</small>
+            <div class="row" style="gap:6px;margin-top:6px">
+              <span class="tag silver">${(v.cat || "video").toUpperCase()}</span>
+              ${mio ? `<span class="tag silver">Tuo</span>` : `<span class="tag silver">${num(v.likes ?? 0)} ⚔</span>`}
+            </div>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
   function openLightbox(id) {
     lbList = gAll().filter((g) => gFilter === "all" || g.cat === gFilter || (gFilter === "personali" && g.cat === "personali"));
     lbIdx = Math.max(0, lbList.findIndex((g) => g.id === id));
@@ -281,6 +388,7 @@
 
   async function renderVideos() {
     await loadCreativeVideos();
+    await loadUserVideos();
     const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
 
     $("#vidFeatured").innerHTML = `
@@ -304,12 +412,20 @@
     $("#videoFilters").innerHTML = DATA.videoCats.map((c, i) =>
       `<button class="chip${i === 0 ? " is-active" : ""}" data-vcat="${c.id}">${c.label}</button>`).join("") +
       `<button class="chip btn-ghost" id="btnVideoCatCreativi">Creatività</button>` +
+      `<button class="chip btn-ghost" id="btnVideoCatMiei">I miei video</button>` +
       `<button class="btn btn-violet btn-sm" id="btnCaricaVideo" style="margin-left:auto">+ Carica il tuo video</button>`;
 
     const creativiHtml = creativeVideos.length
       ? `<section class="vid-section" style="margin-top:44px">
            <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Video del clan</span>
            <div class="video-grid" id="videoGridCreativi"></div>
+         </section>`
+      : "";
+
+    const mieiHtml = userVideos.length
+      ? `<section class="vid-section" style="margin-top:44px">
+           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">I tuoi video</span>
+           <div class="video-grid" id="videoGridMiei"></div>
          </section>`
       : "";
 
@@ -324,7 +440,7 @@
           <small>${esc(v.desc.slice(0, 72))}…</small>
           <span class="tag" style="align-self:flex-start;margin-top:4px">${v.cat.toUpperCase()}</span>
         </div>
-      </article>`).join("") + creativiHtml;
+      </article>`).join("") + creativiHtml + mieiHtml;
 
     if (creativeVideos.length) {
       const cg = $("#videoGridCreativi");
@@ -344,6 +460,25 @@
           </div>
         </article>`).join("");
     }
+
+    if (userVideos.length) {
+      const mg = $("#videoGridMiei");
+      mg.innerHTML = userVideos.map((v, i) => `
+        <article class="vid-card vid-card-mio" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+          <div class="vid-thumb vid-thumb-mio" style="aspect-ratio:16/9;background:#01030a">
+            <img src="${v.thumb || "/assets/icons/icon-512.png"}" alt="${esc(v.titolo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+            <span class="vid-play-badge">▶</span>
+          </div>
+          <div class="vid-meta">
+            <b>${esc(v.titolo)}</b>
+            <small style="color:var(--silver-500)">${esc(v.desc.slice(0, 72))}…</small>
+            <div class="row" style="gap:6px;margin-top:6px">
+              <span class="tag silver">${v.cat.toUpperCase()}</span>
+              <span class="tag silver">Tuo</span>
+            </div>
+          </div>
+        </article>`).join("");
+    }
   }
 
   function playVideo(id) {
@@ -359,6 +494,24 @@
         <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
           <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
             <source src="${esc(cv.fonte?.url || "")}" type="video/mp4">
+            Il tuo browser non supporta la riproduzione video. Scarica il file per vederlo.
+          </video>
+        </div>`;
+      openModal("videoModal");
+      return;
+    }
+
+    const uv = userVideos.find((x) => x.id === id);
+    if (uv) {
+      $("#vmTitle").textContent = uv.titolo;
+      $("#vmDesc").textContent = uv.desc || "Condiviso da te";
+      $("#vmCat").textContent = uv.cat.toUpperCase();
+      $("#vmDur").textContent = uv.dur;
+      const wrap = $("#playerWrap");
+      wrap.innerHTML = `
+        <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center">
+          <video controls style="max-width:100%;max-height:80vh;border-radius:12px;background:#01030a">
+            <source src="${esc(uv.fonte?.url || "")}" type="video/mp4">
             Il tuo browser non supporta la riproduzione video. Scarica il file per vederlo.
           </video>
         </div>`;
@@ -464,14 +617,7 @@
       const carica = e.target.closest("#btnCaricaVideo");
       if (carica) {
         if (!Account.authed) { toast("Accedi prima", "Servono credenziali per caricare un video.", "warn"); openModal("enterModal"); return; }
-        // Apri il creatore post con tipo video preselezionato
-        const modal = $("#createPostModal");
-        const tipo = $("#cp-tipo");
-        if (modal && tipo) {
-          tipo.value = "video";
-          modal.classList.add("is-open");
-          $("#cp-titolo").focus();
-        }
+        openVideoUpload();
         return;
       }
 
@@ -479,24 +625,53 @@
       if (cvcat) {
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         cvcat.classList.add("is-active");
-        const grid = $("#videoGrid");
-        grid.innerHTML = creativeVideos.length
-          ? creativeVideos.map((v, i) => `
-            <article class="vid-card vid-card-creativo" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
-              <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
-                <span class="vid-play-badge">▶</span>
-                <span class="vid-placeholder">${v.autore?.nome || v.autore?.handle}</span>
-              </div>
-              <div class="vid-meta">
-                <b>${esc(v.titolo)}</b>
-                <small style="color:var(--silver-500)">${esc(v.autore?.handle)} · Lv ${v.autore?.level ?? 1}</small>
-                <div class="row" style="gap:6px;margin-top:6px">
-                  <span class="tag silver">${num(v.likes)} ⚔</span>
-                  <span class="tag silver">${num(v.commenti)} 💬</span>
-                </div>
-              </div>
-            </article>`).join("")
-          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>Nessun video caricato ancora</h3><p>Sii il primo a condividere un video del tuo percorso samurai.</p></div>`;
+        renderVideoGridOnly(creativeVideos, "videoGrid", "Nessun video del clan caricato ancora.");
+        return;
+      }
+
+      const mvcat = e.target.closest("#btnVideoCatMiei");
+      if (mvcat) {
+        $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
+        mvcat.classList.add("is-active");
+        renderVideoGridOnly(userVideos, "videoGrid", "Non hai ancora caricato video. Usa «+ Carica il tuo video».");
+        return;
+      }
+
+      const vuDz = e.target.closest("#vuDropzone");
+      if (vuDz) { $("#vuFile").click(); return; }
+
+      const vuCarica = e.target.closest("#vuCarica");
+      if (vuCarica) {
+        const file = $("#vuFile").files[0];
+        const titolo = $("#vuTitolo").value.trim();
+        const cat = $("#vuCategoria").value.trim() || "video";
+        const desc = $("#vuDesc").value.trim();
+        if (!file) { $("#vuStatus").textContent = "Seleziona prima un file video."; return; }
+        if (!titolo) { $("#vuStatus").textContent = "Inserisci un titolo."; return; }
+        $("#vuCarica").disabled = true;
+        $("#vuStatus").textContent = "Generante anteprima e salvataggio…";
+        generateThumb(file).then((thumb) => {
+          const videoUrl = URL.createObjectURL(file);
+          const video = {
+            id: "uv-" + Date.now(),
+            titolo,
+            desc,
+            cat,
+            dur: "--:--",
+            thumb,
+            fonte: { url: videoUrl },
+            autore: Account?.handle || "Tu",
+            creatoIl: new Date().toISOString()
+          };
+          return saveUserVideo(video);
+        }).then((video) => {
+          userVideos.push(video);
+          $("#vuStatus").textContent = "Video caricato!";
+          setTimeout(() => { closeModal("videoUploadModal"); resetUploadForm(); renderVideos(); }, 700);
+        }).catch((err) => {
+          $("#vuStatus").textContent = "Errore: " + err.message;
+          $("#vuCarica").disabled = false;
+        });
         return;
       }
 
@@ -554,6 +729,17 @@
         a.click();
       }
       toast("Immagine scaricata", g.titolo, "ok");
+    });
+
+    $("#vuFile").addEventListener("change", async () => {
+      const file = $("#vuFile").files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      $("#vuVideoPreview").src = url;
+      $("#vuPreview").style.display = "block";
+      $("#vuDropzone").style.borderColor = "var(--accent-violet, #5aa8ff)";
+      $("#vuDropzone").style.background = "#121828";
+      if (!$("#vuTitolo").value.trim()) $("#vuTitolo").value = file.name.replace(/\.[^/.]+$/, "");
     });
 
     $("#btnEnter").addEventListener("click", () => openModal("enterModal"));

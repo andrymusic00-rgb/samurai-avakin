@@ -1122,6 +1122,38 @@
   </div>
 </div>
 
+<div class="modal violet" id="videoUploadModal" role="dialog" aria-modal="true" aria-labelledby="vuTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass violet" style="width:min(94vw,720px);max-height:92vh;overflow:auto;display:flex;flex-direction:column">
+    <button class="modal-x" data-close aria-label="Chiudi">✕</button>
+    <div class="modal-head" style="padding:20px 24px;border-bottom:1px solid var(--silver-800)">
+      <h2 id="vuTitle" style="margin:0;font-size:1.5rem;color:var(--silver-100)">Carica il tuo video</h2>
+      <p style="color:var(--silver-500);font-size:.9rem;margin-top:6px">Seleziona un file MP4/MOV e completa i dati.</p>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div id="vuDropzone" style="border:2px dashed var(--silver-600);border-radius:16px;background:#0b0f1a;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;text-align:center;transition:border-color .2s,background .2s" role="button" tabindex="0" aria-label="Scegli file video">
+        <div style="font-size:2.6rem">🎬</div>
+        <div style="color:var(--silver-300);font-weight:600">Trascina qui il video o clicca per selezionare</div>
+        <div style="color:var(--silver-600);font-size:.85rem">MP4 · MOV · fino a 100 MB</div>
+        <input type="file" id="vuFile" accept="video/mp4,video/quicktime,video/*" style="display:none">
+      </div>
+      <div id="vuPreview" style="display:none;border-radius:12px;overflow:hidden;background:#01030a;border:1px solid var(--silver-700)">
+        <video id="vuVideoPreview" controls playsinline style="width:100%;max-height:320px;background:#01030a;display:block"></video>
+      </div>
+      <div class="row" style="gap:12px">
+        <input type="text" id="vuTitolo" placeholder="Titolo del video" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100)">
+        <input type="text" id="vuCategoria" placeholder="Categoria (raid, guida, evento...)" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100)">
+      </div>
+      <textarea id="vuDesc" placeholder="Racconta cosa succede in questo video…" rows="3" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);resize:vertical"></textarea>
+      <div class="row" style="justify-content:flex-end;gap:10px;margin-top:8px">
+        <button class="btn btn-ghost" data-close style="padding:10px 20px;border-radius:10px">Annulla</button>
+        <button class="btn btn-violet" id="vuCarica" style="padding:10px 26px;border-radius:10px">Carica video</button>
+      </div>
+      <div id="vuStatus" style="font-size:.85rem;color:var(--silver-500);min-height:1.2rem"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal violet" id="avatarCreatorModal" role="dialog" aria-modal="true" aria-labelledby="acTitle">
   <div class="modal-backdrop" data-close></div>
   <div class="modal-box glass violet w-xl" style="padding:24px 24px 18px;max-height:92vh;overflow:auto">
