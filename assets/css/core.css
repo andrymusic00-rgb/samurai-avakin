@@ -467,8 +467,27 @@ html.reveal-ready [data-reveal].is-in {
   --border-wood: var(--kigumi);
 }
 
-/* Testo luminoso sfumato (non bianco) per massima leggibilità su sfondo scuro */
-.testo-luminoso {
+/* ── Tonalità testi: blu elettronico, argento, platino, viola, viola scuro ── */
+.testo-prisma {
+  display: inline-block;
+  background: linear-gradient(135deg, #2563EB 0%, #C0C0C0 25%, #E5E4E2 50%, #A855F7 75%, #581C87 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: filter 0.3s ease, background-position 0.6s ease;
+}
+.testo-prisma:hover {
+  background-position: 100% 50%;
+  transform: skewX(-4deg) scale(1.02);
+  filter: drop-shadow(0 0 10px rgba(229, 228, 226, 0.7));
+}
+body.season-spring .testo-prisma {
+  background: linear-gradient(135deg, #1D4ED8 0%, #808080 25%, #B0B0B0 50%, #7E22CE 75%, #3B0764 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
   background: var(--text-luminoso);
   background-size: 200% 200%;
   -webkit-background-clip: text;
