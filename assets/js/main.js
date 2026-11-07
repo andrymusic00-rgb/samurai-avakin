@@ -302,8 +302,9 @@
 
   async function loadUserVideos() {
     try {
+      if (!('indexedDB' in window)) return [];
       const db = await videoDb();
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const tx = db.transaction(["videos"], "readonly");
         const store = tx.objectStore("videos");
         const req = store.getAll();
@@ -363,12 +364,13 @@
 
   async function loadVideoPosts() {
     try {
+      if (!('indexedDB' in window)) return [];
       const db = await videoPostDb();
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const tx = db.transaction(["videoposts"], "readonly");
         const store = tx.objectStore("videoposts");
         const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
+        req.onsuccess = () => resolve((req.result || []).sort((a,b)=>String(b.creatoIl||'').localeCompare(String(a.creatoIl||''))));
         req.onerror = () => reject(req.error);
       });
     } catch {
@@ -377,14 +379,19 @@
   }
 
   async function saveVideoPost(post) {
-    const db = await videoPostDb();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(["videoposts"], "readwrite");
-      const store = tx.objectStore("videoposts");
-      const req = store.put(post);
-      req.onsuccess = () => resolve(post);
-      req.onerror = () => reject(req.error);
-    });
+    try {
+      const db = await videoPostDb();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(["videoposts"], "readwrite");
+        const store = tx.objectStore("videoposts");
+        const req = store.put(post);
+        req.onsuccess = () => resolve(post);
+        req.onerror = () => reject(req.error);
+      });
+    } catch {
+      // fallback memoria/sessione: post resta visibile in UI
+      return post;
+    }
   }
 
   function makeReactions() {
@@ -465,7 +472,7 @@
     const post = videoPosts.find((p) => p.id === postId);
     if (!post) return;
     post.visualizzazioni = (post.visualizzazioni || 0) + 1;
-    await saveVideoPost(post);
+    try { await saveVideoPost(post); } catch {}
   }
 
   function renderVideoPosts() {
@@ -764,7 +771,9 @@
          </section>`;
 
     const videoGrid = $("#videoGrid");
-    if (videoGrid) videoGrid.innerHTML = rest.map((v, i) => `
+    if (videoGrid) {
+      videoGrid.classList.add('video-grid');
+      videoGrid.innerHTML = rest.map((v, i) => `
       <article class="vid-card" data-vcat="${v.cat}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
         <div class="vid-thumb">
           <img src="${v.thumb}" alt="${esc(v.titolo)}" loading="lazy">
@@ -776,7 +785,7 @@
           <span class="tag" style="align-self:flex-start;margin-top:4px">${v.cat.toUpperCase()}</span>
         </div>
       </article>`).join("") + creativiHtml + mieiHtml + postHtml;
-
+    }
     renderVideoPosts();
 
     if (creativeVideos.length) {
@@ -984,7 +993,7 @@
       if (cvcat) {
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         cvcat.classList.add("is-active");
-        renderVideoGridOnly(creativeVideos, "videoGrid", "Nessun video del clan caricato ancora.");
+        renderVideos().then(() => document.getElementById("videoGridCreativi")?.scrollIntoView({behavior:"smooth",block:"start"})).catch(()=>{});
         return;
       }
 
@@ -992,7 +1001,7 @@
       if (mvcat) {
         $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
         mvcat.classList.add("is-active");
-        renderVideoGridOnly(userVideos, "videoGrid", "Non hai ancora caricato video. Usa «+ Carica il tuo video».");
+        renderVideos().then(() => document.getElementById("videoGridMiei")?.scrollIntoView({behavior:"smooth",block:"start"})).catch(()=>{});
         return;
       }
 
