@@ -133,52 +133,7 @@
         <span style="color:var(--silver-300);font-size:.92rem">${c}</span>
       </li>`).join("");
 
-    const leadersHtml = Object.entries(DATA.leaders).map(([category, leaders]) => {
-      const categoryLabels = {
-        leader: "Leader",
-        helperSupport: "Helper & Support",
-        collaboratori: "Collaboratori"
-      };
-      const categoryIcons = {
-        leader: "⚔",
-        helperSupport: "⛨",
-        collaboratori: "✦"
-      };
-      return `
-        <div class="leader-category" data-reveal>
-          <div class="leader-category-head">
-            <span class="leader-category-icon">${categoryIcons[category] || "◆"}</span>
-            <h3 class="leader-category-title">${categoryLabels[category] || category}</h3>
-          </div>
-          <div class="grid g-auto-lg leader-category-grid">
-            ${leaders.map((l, i) => `
-               <article class="leader glass" data-leader="${esc(l.nome)}" data-reveal style="--d:${i * 70}ms">                <div class="leader-av">${l.kanji}</div>
-                <b>${l.nome}</b>
-                <small>${l.ruolo}</small>
-                <span class="tag silver" style="margin-top:4px">${l.da}</span>
-              </article>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }).join("");
-
-     $("#leaderGrid").innerHTML = leadersHtml;
-     $("#leaderGrid").addEventListener("click", (e) => {
-       const c = e.target.closest("[data-leader]");
-       if (!c) return;
-       const name = c.dataset.leader;
-       let l = null;
-       Object.values(DATA.leaders).forEach((arr) => { const f = arr.find((x) => x.nome === name); if (f) l = f; });
-       if (!l) return;
-       const m = document.getElementById("memberModal");
-       if (!m) return;
-       document.getElementById("memberModalName").textContent = l.nome;
-       document.getElementById("memberModalRole").textContent = `${l.ruolo}`;
-       document.getElementById("memberModalDesc").textContent = l.da || "";
-       document.getElementById("memberModalImg").innerHTML = `<span class="kanji" style="font-size:4rem">${l.kanji}</span>`;
-       m.style.display = "flex";
-     });
+    // leaderGrid e' ora statico (Capostipiti). Nessun overwrite dinamico.
    }
 
   let gItems = [], gFilter = "all", gRemote = [];
@@ -1207,3 +1162,20 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+
+window.openLeaderModal = function (name) {
+  const m = document.getElementById("leaderModal");
+  if (m) {
+    const n = document.getElementById("modalName");
+    if (n) n.textContent = name;
+    m.classList.add("is-open");
+    document.body.classList.add("is-locked");
+  }
+};
+window.closeLeaderModal = function (e) {
+  const m = document.getElementById("leaderModal");
+  if (!m) return;
+  if (e && e.target && e.target !== m && e !== true) return;
+  m.classList.remove("is-open");
+  document.body.classList.remove("is-locked");
+};
