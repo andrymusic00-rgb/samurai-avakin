@@ -4,6 +4,7 @@
 
   const pic = (item) => {
     if (item.src) return item.src;
+    if (item.fonte?.url) return item.thumb || "/assets/icons/icon-512.png";
     const key = `${item.seed}-${item.w}-${item.h}-${item.comp}`;
     if (!artCache.has(key)) artCache.set(key, ART.make(item));
     return artCache.get(key);
@@ -207,7 +208,7 @@
     const all = gAll();
     $("#galleryGrid").innerHTML = all.map((g) => `
       <figure class="gal-item" data-cat="${g.cat}" data-id="${g.id}" tabindex="0" role="button" aria-label="${esc(g.titolo)}">
-        <img loading="lazy" src="${g.src}" alt="${esc(g.titolo)}" width="${g.w}" height="${g.h}">
+        <img loading="lazy" src="${g.src}" alt="${esc(g.titolo)}" width="${g.w}" height="${g.h}" onerror="this.src='/assets/icons/icon-512.png';this.onerror=null;">
         <span class="gal-zoom" aria-hidden="true">⤢</span>
         <figcaption class="gal-overlay">
           <small>${String(g.cat).toUpperCase()}</small>
