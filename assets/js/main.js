@@ -394,19 +394,21 @@
   async function createVideoPost(video) {
     const post = {
       id: "vp-" + Date.now(),
+      serverId: video.serverId || null,
       videoId: video.id,
       titolo: video.titolo,
       desc: video.desc,
       cat: video.cat,
       autore: video.autore || "Tu",
       creatoIl: video.creatoIl || new Date().toISOString(),
-      thumb: video.thumb,
-      videoUrl: video.fonte?.url || null,
+      thumb: video.thumb || null,
+      videoUrl: video.videoUrl || video.fonte?.url || null,
       visualizzazioni: 0,
-      like: 0,
+      like: video.like || 0,
+      mioLike: !!video.mioLike,
       miaReazione: false,
       reazioni: makeReactions(),
-      commenti: []
+      commenti: Array.isArray(video.commenti) ? video.commenti : []
     };
     await saveVideoPost(post);
     videoPosts.unshift(post);
@@ -416,26 +418,44 @@
   async function toggleLike(postId) {
     const post = videoPosts.find((p) => p.id === postId);
     if (!post) return;
-    post.like = post.like + 1;
-    await saveVideoPost(post);
+    if (post.serverId) {
+      try {
+        const r = await API.post(`/api/creative/${post.serverId}/like`);
+        post.like = Math.max(0, (post.like || 0) + (r.like ? 1 : -1));
+        post.mioLike = !!r.like;
+      } catch (err) { if (window.UI?.toast) UI.toast("Azione non disponibile", err.message || "Accedi per mettere like ai post del clan.", "warn"); }
+    } else {
+      post.like = (post.like || 0) + 1;
+      try { await saveVideoPost(post); } catch {}
+    }
     renderVideoPosts();
   }
 
   async function toggleReaction(postId, emoji) {
     const post = videoPosts.find((p) => p.id === postId);
     if (!post) return;
+    post.reazioni = post.reazioni || makeReactions();
     post.miaReazione = !post.miaReazione;
     if (post.miaReazione) post.reazioni[emoji] = (post.reazioni[emoji] || 0) + 1;
     else if ((post.reazioni[emoji] || 0) > 0) post.reazioni[emoji] -= 1;
-    await saveVideoPost(post);
+    if (!post.serverId) { try { await saveVideoPost(post); } catch {} }
     renderVideoPosts();
   }
 
   async function addComment(postId, testo) {
     const post = videoPosts.find((p) => p.id === postId);
     if (!post || !testo.trim()) return;
-    post.commenti.push({ autore: "Tu", testo: testo.trim(), data: new Date().toISOString() });
-    await saveVideoPost(post);
+    if (post.serverId) {
+      try {
+        const r = await API.post(`/api/creative/${post.serverId}/comments`, { corpo: testo.trim() });
+        post.commenti = post.commenti || [];
+        post.commenti.push({ autore: (Account && Account.handle) || "Tu", testo: testo.trim(), data: r.commento?.creatoIl || new Date().toISOString() });
+      } catch (err) { if (window.UI?.toast) UI.toast("Commento non inviato", err.message || "Accedi per commentare i post del clan.", "warn"); }
+    } else {
+      post.commenti = post.commenti || [];
+      post.commenti.push({ autore: "Tu", testo: testo.trim(), data: new Date().toISOString() });
+      try { await saveVideoPost(post); } catch {}
+    }
     renderVideoPosts();
   }
 
@@ -450,41 +470,37 @@
     const grid = $("#videoGridPosts");
     if (!grid) return;
     if (!videoPosts.length) {
-      grid.innerHTML = `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">📜</span><h3>Nessun post video ancora</h3><p>Carica un video e pubblicalo come post del clan.</p></div>`;
+      grid.innerHTML = `<div class="empty-state glass-violet" style="text-align:center;padding:28px 20px;border-radius:16px"><span style="font-size:2rem">📜</span><h3 style="margin:8px 0 6px">Nessun post video ancora</h3><p style="margin:0;color:var(--silver-500)">Accedi e usa <b>+ Carica il tuo video</b> per pubblicare un post. I video creativi del clan e i tuoi post locali appariranno qui.</p></div>`;
+      revealScope(grid);
       return;
     }
     grid.innerHTML = videoPosts.map((p, i) => {
       const totaleReazioni = Object.values(p.reazioni || {}).reduce((a, b) => a + b, 0);
+      const isServer = !!p.serverId || String(p.id).startsWith("cvp-");
       return `
-        <article class="vp-card" data-vpid="${p.id}" data-reveal style="--d:${i * 50}ms" tabindex="0">
+        <article class="vp-card" data-vpid="${esc(p.id)}" data-reveal style="--d:${i * 50}ms" tabindex="0">
           <div class="vp-thumb" style="aspect-ratio:16/9;background:#01030a;position:relative;overflow:hidden;border-radius:12px">
-            ${p.videoUrl ? `<video src="${esc(p.videoUrl)}" muted playsinline class="vp-preview" style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<img src="${esc(p.thumb || "/assets/icons/icon-512.png")}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover;display:block">`}
+            ${p.videoUrl ? `<video src="${esc(p.videoUrl)}" muted playsinline preload="metadata" class="vp-preview" style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<img src="${esc(p.thumb || "/assets/icons/icon-512.png")}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover;display:block">`}
             <div class="vp-seal" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#5aa8ff;border:1px solid rgba(90,168,255,.45);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.25rem">侍</div>
-            <div class="vp-play" style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s">
-              <div style="background:var(--accent-violet,#5aa8ff);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#01030a;box-shadow:0 0 20px rgba(90,168,255,.5)">▶</div>
-            </div>
+            <div class="vp-play" style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s"><div style="background:var(--accent-violet,#5aa8ff);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#01030a;box-shadow:0 0 20px rgba(90,168,255,.5)">▶</div></div>
+            ${isServer ? `<span class="tag silver" style="position:absolute;top:10px;right:10px;font-size:.68rem">Clan</span>` : ``}
           </div>
           <div class="vp-body" style="padding:12px 10px 8px">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
-              <span class="tag silver" style="font-size:.75rem">${(p.cat || "video").toUpperCase()}</span>
-              <span class="mono" style="font-size:.7rem;color:var(--silver-600)">${p.visualizzazioni} visualizz.</span>
+              <span class="tag silver" style="font-size:.75rem">${esc((p.cat || "video").toUpperCase())}</span>
+              <span class="mono" style="font-size:.7rem;color:var(--silver-600)">${num(p.visualizzazioni || 0)} visualizz.</span>
             </div>
             <h4 style="margin:0 0 6px;color:var(--silver-100);font-size:1rem">${esc(p.titolo)}</h4>
             <p style="color:var(--silver-400);font-size:.82rem;margin:0 0 8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.desc || "")}</p>
             <div class="vp-actions" style="display:flex;gap:10px;align-items:center">
-              <button class="vp-btn" data-action="vplike" data-vpid="${p.id}" title="Like" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>⚔</span><span style="font-size:.75rem">${p.like}</span></button>
-              <button class="vp-btn" data-action="vpreact" data-vpid="${p.id}" title="Reazione" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>🔥</span><span style="font-size:.75rem">${totaleReazioni}</span></button>
-              <button class="vp-btn" data-action="vpcomment" data-vpid="${p.id}" title="Commenti" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>💬</span><span style="font-size:.75rem">${(p.commenti || []).length}</span></button>
-            </div>
-            <div class="vp-reazioni" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-              ${Object.entries(p.reazioni || {}).map(([emoji, conta]) => conta > 0 ? `<span class="vp-reaction" title="${emoji}">${emoji} <span style="font-size:.7rem">${conta}</span></span>` : "").join("")}
+              <button class="vp-btn" data-action="vplike" data-vpid="${esc(p.id)}" title="Like" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>⚔</span><span style="font-size:.75rem">${num(p.like || 0)}</span></button>
+              <button class="vp-btn" data-action="vpreact" data-vpid="${esc(p.id)}" title="Reazione" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>🔥</span><span style="font-size:.75rem">${num(totaleReazioni)}</span></button>
+              <button class="vp-btn" data-action="vpcomment" data-vpid="${esc(p.id)}" title="Commenti" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>💬</span><span style="font-size:.75rem">${num((p.commenti || []).length)}</span></button>
             </div>
             <div class="vp-commenti" style="margin-top:6px;display:none;flex-direction:column;gap:4px">
-              <input type="text" id="vpcomment-input-${p.id}" placeholder="Scrivi un commento…" style="width:100%;padding:6px 10px;border-radius:8px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);font-size:.8rem">
-              <button class="vp-btn vp-send" data-action="vpsend" data-vpid="${p.id}" style="width:100%;padding:6px;background:var(--accent-violet,#5aa8ff);color:#01030a;border:none;border-radius:8px;font-weight:700;font-size:.8rem">Invia</button>
-              <div class="vp-lista-commenti" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
-                ${(p.commenti || []).slice(-3).map((c) => `<div style="font-size:.78rem;color:var(--silver-300);padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore)}:</b> ${esc(c.testo)}</div>`).join("")}
-              </div>
+              <input type="text" placeholder="Scrivi un commento…" style="width:100%;padding:6px 10px;border-radius:8px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);font-size:.8rem" data-vpcomment-input="${esc(p.id)}">
+              <button class="vp-btn vp-send" data-action="vpsend" data-vpid="${esc(p.id)}" style="width:100%;padding:6px;background:var(--accent-violet,#5aa8ff);color:#01030a;border:none;border-radius:8px;font-weight:700;font-size:.8rem">Invia</button>
+              <div class="vp-lista-commenti" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">${(p.commenti || []).slice(-3).map((c) => `<div style="font-size:.78rem;color:var(--silver-300);padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore || "Utente")}:</b> ${esc(c.testo || c.corpo || "")}</div>`).join("")}</div>
             </div>
           </div>
         </article>`;
@@ -496,74 +512,88 @@
 
   function bindVideoPostActions() {
     document.querySelectorAll(".vp-btn[data-action=vplike]").forEach((b) => {
-      b.onclick = (e) => { e.stopPropagation(); toggleLike(b.dataset.vpid); };
+      b.onclick = (e) => { e.stopPropagation(); toggleLike(b.dataset.vpid).catch(()=>{}); };
     });
     document.querySelectorAll(".vp-btn[data-action=vpreact]").forEach((b) => {
-      b.onclick = (e) => { e.stopPropagation(); const p = videoPosts.find((x) => x.id === b.dataset.vpid); if (p) toggleReaction(b.dataset.vpid, Object.keys(p.reazioni || {})[0] || "🔥"); };
+      b.onclick = (e) => { e.stopPropagation(); const p = videoPosts.find((x) => x.id === b.dataset.vpid); if (p) toggleReaction(b.dataset.vpid, Object.keys(p.reazioni || {})[0] || "🔥").catch(()=>{}); };
     });
     document.querySelectorAll(".vp-btn[data-action=vpcomment]").forEach((b) => {
-      b.onclick = (e) => { e.stopPropagation(); const box = document.getElementById("vpcomment-input-" + b.dataset.vpid); const area = box.parentElement.querySelector(".vp-commenti"); if (area) area.style.display = area.style.display === "flex" ? "none" : "flex"; };
+      b.onclick = (e) => {
+        e.stopPropagation();
+        const card = b.closest(".vp-card");
+        const area = card && card.querySelector(".vp-commenti");
+        if (area) area.style.display = area.style.display === "flex" ? "none" : "flex";
+      };
     });
     document.querySelectorAll(".vp-btn.vp-send").forEach((b) => {
-      b.onclick = (e) => { e.stopPropagation(); const pid = b.dataset.vpid; const input = document.getElementById("vpcomment-input-" + pid); if (input && input.value.trim()) { addComment(pid, input.value); input.value = ""; } };
+      b.onclick = async (e) => {
+        e.stopPropagation();
+        const pid = b.dataset.vpid;
+        const card = b.closest(".vp-card");
+        const input = card && card.querySelector("[data-vpcomment-input]");
+        if (input && input.value.trim()) { await addComment(pid, input.value); input.value = ""; }
+      };
     });
     document.querySelectorAll(".vp-card").forEach((card) => {
       card.onclick = (e) => {
-        if (e.target.closest(".vp-btn")) return;
+        if (e.target.closest(".vp-btn, input, button, textarea")) return;
         const pid = card.dataset.vpid;
         const post = videoPosts.find((p) => p.id === pid);
         if (!post) return;
-        incrementViews(pid);
+        incrementViews(pid).catch(()=>{});
         openVideoPost(post);
       };
     });
   }
 
   function openVideoPost(post) {
-    $("#vmTitle").textContent = post.titolo;
-    $("#vmDesc").textContent = post.desc || "Condiviso da " + post.autore;
-    $("#vmCat").textContent = (post.cat || "VIDEO").toUpperCase();
+    const current = videoPosts.find((p) => p.id === post.id) || post;
+    $("#vmTitle").textContent = current.titolo || "Post video";
+    $("#vmDesc").textContent = (current.desc || "Condiviso da " + (current.autore || "Clan")) + (current.serverId ? " · post condiviso del clan" : "");
+    $("#vmCat").textContent = (current.cat || "VIDEO").toUpperCase();
     $("#vmDur").textContent = "--:--";
     const wrap = $("#playerWrap");
+    const src = current.videoUrl ? esc(current.videoUrl) : "";
+    const safeId = esc(current.id);
     wrap.innerHTML = `
-      <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center;position:relative">
-        <video controls style="max-width:100%;max-height:70vh;border-radius:12px;background:#01030a">
-          <source src="${esc(post.videoUrl || "")}" type="video/mp4">
-          Il tuo browser non supporta la riproduzione video.
-        </video>
-        ${post.videoUrl ? `` : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--silver-500);font-size:.9rem">Video non disponibile</div>`}
+      <div class="vid-player-creativo" style="width:100%;min-height:240px;background:#060812;display:flex;align-items:center;justify-content:center;position:relative;border-radius:12px;overflow:hidden">
+        ${src ? `<video controls playsinline style="width:100%;max-height:70vh;border-radius:12px;background:#01030a"><source src="${src}">Il tuo browser non supporta la riproduzione video.</video>`
+             : `<div style="padding:24px;text-align:center;color:var(--silver-400)"><div style="font-size:2rem;margin-bottom:8px">🎬</div><p style="margin:0">Video non disponibile in questo ambiente. Se è un post locale, il file potrebbe essere stato caricato in una sessione precedente; ricaricalo per rigenerare l'anteprima locale. Se è un post del clan, il media potrebbe non essere ancora ospitato in modo persistente.</p></div>`}
       </div>
-      <div style="margin-top:16px;display:flex;gap:10px">
-        <button class="btn btn-violet" onclick="toggleLikeVP('${post.id}')" style="flex:1;padding:10px;border-radius:10px">⚔ Mi piace <span id="vpmlike-${post.id}">${post.like}</span></button>
-        <button class="btn btn-ghost" onclick="toggleReactionVP('${post.id}')" style="flex:1;padding:10px;border-radius:10px">🔥 Reagisci</button>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-violet" data-vpmodal-like="${safeId}" style="flex:1;min-width:140px;padding:10px;border-radius:10px">⚔ Mi piace <span>${num(current.like || 0)}</span></button>
+        <button class="btn btn-ghost" data-vpmodal-react="${safeId}" style="flex:1;min-width:140px;padding:10px;border-radius:10px">🔥 Reagisci</button>
       </div>
-      <div style="margin-top:12px">
-        <strong style="color:var(--silver-100)">Reazioni:</strong>
-        <div id="vpmreazioni-${post.id}" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
-      </div>
+      <div style="margin-top:12px"><strong style="color:var(--silver-100)">Reazioni:</strong><div data-vpmodal-reactions="${safeId}" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div></div>
       <div style="margin-top:12px">
         <strong style="color:var(--silver-100)">Commenti</strong>
-        <input type="text" id="vpmcomment-${post.id}" placeholder="Scrivi un commento…" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);margin-top:6px">
-        <button class="btn btn-violet btn-sm" onclick="sendCommentVP('${post.id}')" style="margin-top:6px;padding:6px 16px;border-radius:10px">Invia</button>
-        <div id="vpmlista-${post.id}" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
+        <input type="text" data-vpmodal-comment="${safeId}" placeholder="Scrivi un commento…" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);margin-top:6px">
+        <button class="btn btn-violet btn-sm" data-vpmodal-send="${safeId}" style="margin-top:6px;padding:6px 16px;border-radius:10px">Invia</button>
+        <div data-vpmodal-list="${safeId}" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
       </div>`;
-    renderPostMeta(post.id);
+    const likeBtn = wrap.querySelector("[data-vpmodal-like]");
+    if (likeBtn) likeBtn.onclick = async () => { await toggleLike(current.id); openVideoPost(videoPosts.find((p)=>p.id===current.id)||current); };
+    const reactBtn = wrap.querySelector("[data-vpmodal-react]");
+    if (reactBtn) reactBtn.onclick = async () => { const p = videoPosts.find((x)=>x.id===current.id); if (p) await toggleReaction(current.id, Object.keys(p.reazioni||{})[0]||"🔥"); openVideoPost(videoPosts.find((p)=>p.id===current.id)||current); };
+    const sendBtn = wrap.querySelector("[data-vpmodal-send]");
+    const input = wrap.querySelector("[data-vpmodal-comment]");
+    if (sendBtn) sendBtn.onclick = async () => { if (input && input.value.trim()) { await addComment(current.id, input.value); openVideoPost(videoPosts.find((p)=>p.id===current.id)||current); } };
+    renderPostMeta(current.id);
     openModal("videoModal");
   }
-
-  window.toggleLikeVP = async (pid) => { await toggleLike(pid); renderPostMeta(pid); };
-  window.toggleReactionVP = async (pid) => { const p = videoPosts.find((x) => x.id === pid); if (p) { await toggleReaction(pid, Object.keys(p.reazioni || {})[0] || "🔥"); renderPostMeta(pid); } };
-  window.sendCommentVP = async (pid) => { const input = document.getElementById("vpmcomment-" + pid); if (input && input.value.trim()) { await addComment(pid, input.value); input.value = ""; renderPostMeta(pid); } };
+  window.toggleLikeVP = async (pid) => { await toggleLike(pid).catch(()=>{}); renderPostMeta(pid).catch(()=>{}); renderVideoPosts(); };
+  window.toggleReactionVP = async (pid) => { const p = videoPosts.find((x) => x.id === pid); if (p) { await toggleReaction(pid, Object.keys(p.reazioni || {})[0] || "🔥").catch(()=>{}); renderPostMeta(pid).catch(()=>{}); renderVideoPosts(); } };
+  window.sendCommentVP = async (pid) => { const input = document.querySelector(`[data-vpmodal-comment="${CSS.escape(String(pid))}"]`); if (input && input.value.trim()) { await addComment(pid, input.value).catch(()=>{}); input.value = ""; renderPostMeta(pid).catch(()=>{}); renderVideoPosts(); } };
 
   async function renderPostMeta(pid) {
     const post = videoPosts.find((p) => p.id === pid);
     if (!post) return;
-    const likeBtn = document.getElementById("vpmlike-" + pid);
-    if (likeBtn) likeBtn.innerHTML = "⚔ Mi piace <span>" + post.like + "</span>";
-    const reazioniEl = document.getElementById("vpmreazioni-" + pid);
-    if (reazioniEl) reazioniEl.innerHTML = Object.entries(post.reazioni || {}).map(([emoji, conta]) => conta > 0 ? `<span style="font-size:1.1rem">${emoji} <span style="font-size:.75rem;color:var(--silver-500)">${conta}</span></span>` : "").join("");
-    const listaEl = document.getElementById("vpmlista-" + pid);
-    if (listaEl) listaEl.innerHTML = (post.commenti || []).slice(-5).map((c) => `<div style="font-size:.82rem;color:var(--silver-300);padding:4px 10px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore)}:</b> ${esc(c.testo)}</div>`).join("");
+    const wrap = $("#playerWrap") || document;
+    const sel = (attr) => wrap.querySelector(`[${attr}="${CSS.escape(String(pid))}"]`);
+    const reazioniEl = sel("data-vpmodal-reactions");
+    if (reazioniEl) reazioniEl.innerHTML = Object.entries(post.reazioni || {}).map(([emoji, conta]) => conta > 0 ? `<span style="font-size:1.1rem">${esc(emoji)} <span style="font-size:.75rem;color:var(--silver-500)">${num(conta)}</span></span>` : "").join("") || `<span style="color:var(--silver-500);font-size:.85rem">Nessuna reazione</span>`;
+    const listaEl = sel("data-vpmodal-list");
+    if (listaEl) listaEl.innerHTML = (post.commenti || []).slice(-8).map((c) => `<div style="font-size:.82rem;color:var(--silver-300);padding:4px 10px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore || "Utente")}:</b> ${esc(c.testo || c.corpo || "")}</div>`).join("") || `<div style="color:var(--silver-500);font-size:.85rem">Nessun commento</div>`;
   }
 
   function openVideoUpload() {
@@ -962,31 +992,41 @@
         if (!file) { $("#vuStatus").textContent = "Seleziona prima un file video."; return; }
         if (!titolo) { $("#vuStatus").textContent = "Inserisci un titolo."; return; }
         $("#vuCarica").disabled = true;
-        $("#vuStatus").textContent = "Generante anteprima e salvataggio…";
+        $("#vuStatus").textContent = "Generazione anteprima…";
         generateThumb(file).then((thumb) => {
           const videoUrl = URL.createObjectURL(file);
-          const video = {
-            id: "uv-" + Date.now(),
-            titolo,
-            desc,
-            cat,
-            dur: "--:--",
-            thumb,
-            fonte: { url: videoUrl },
-            autore: Account?.handle || "Tu",
-            creatoIl: new Date().toISOString()
-          };
+          const video = { id: "uv-" + Date.now(), titolo, desc, cat, dur: "--:--", thumb, fonte: { url: videoUrl }, autore: (typeof Account !== "undefined" && Account?.handle) || "Tu", creatoIl: new Date().toISOString() };
           return saveUserVideo(video);
-        }).then((video) => {
+        }).then(async (video) => {
           userVideos.push(video);
-          $("#vuStatus").textContent = "Pubblicando come post…";
-          return createVideoPost(video);
-        }).then((post) => {
+          let post;
+          // Prova pubblicazione condivisa su server (persistente tra utenti) se autenticato
+          if (window.API && typeof Account !== "undefined" && Account?.authed) {
+            try {
+              $("#vuStatus").textContent = "Pubblicazione post condiviso…";
+              const fd = new FormData();
+              fd.append("titolo", video.titolo);
+              fd.append("corpo", video.desc || "");
+              fd.append("tipo", "video");
+              fd.append("pubblico", "true");
+              fd.append("tags", JSON.stringify(["video", video.cat || "clan"]));
+              fd.append("files", file, file.name || "video.mp4");
+              const res = await API.upload("/api/creative", fd);
+              post = await createVideoPost({ ...video, serverId: res.postId, videoUrl: (res.media && res.media[0] && res.media[0].url) || video.fonte?.url || null });
+              $("#vuStatus").textContent = "Video pubblicato come post condiviso!";
+            } catch (err) {
+              console.warn("[Samurai] upload creativo fallito, uso post locale", err);
+              $("#vuStatus").textContent = "Pubblicato localmente (server non disponibile o accesso richiesto).";
+              post = await createVideoPost(video);
+            }
+          } else {
+            $("#vuStatus").textContent = "Pubblicato come post locale (accedi per condividerlo con il clan).";
+            post = await createVideoPost(video);
+          }
           videoPosts.unshift(post);
-          $("#vuStatus").textContent = "Video pubblicato come post!";
-          setTimeout(() => { closeModal("videoUploadModal"); resetUploadForm(); renderVideos(); }, 700);
+          setTimeout(() => { closeModal("videoUploadModal"); resetUploadForm(); renderVideos().catch(()=>{}); }, 700);
         }).catch((err) => {
-          $("#vuStatus").textContent = "Errore: " + err.message;
+          $("#vuStatus").textContent = "Errore: " + (err && err.message ? err.message : "upload non riuscito");
           $("#vuCarica").disabled = false;
         });
         return;
