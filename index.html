@@ -46,7 +46,7 @@
   "name": "Samurai di Avakin",
   "alternateName": "Samurai di Avakin Life",
   "url": "/",
-  "logo": "/assets/icons/icon-512.png",
+  "logo": "/assets/icons/i-samurai-logo.svg",
   "foundingDate": "2019",
   "slogan": "Oath.sworn — No betrayal",
   "description": "Clan di Avakin Life fondato nel 2019, basato su onestà, rispetto e lealtà.",
@@ -65,6 +65,8 @@
   .vp-reaction { background: rgba(255,255,255,.05); border: 1px solid var(--silver-700); color: var(--silver-300); padding: 2px 8px; border-radius: 20px; font-size: .85rem; }
   .empty-state { color: var(--silver-500); }
   .vid-player-creativo video::-webkit-media-controls { filter: invert(1); }
+  .brand-mark img { filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+  .welcome-logo { filter: drop-shadow(0 4px 16px rgba(0,0,0,.55)); border-radius: 14px; background: transparent; }
 </style>
 </head>
 <body>
@@ -84,8 +86,8 @@
 
 <header class="topbar glass is-compact violet" id="topbar">
   <a class="brand" href="#/home" data-nav="home" aria-label="Samurai di Avakin — home">
-    <span class="brand-mark violet" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M4 17.5 17 4.5l2.5 2.5L6.5 20H4v-2.5Z" fill="#c3e0ff" opacity=".95"/><path d="M15 7 17.5 9.5" stroke="#2f83ef" stroke-width="1.4"/><circle cx="18.4" cy="5.6" r="1.4" fill="#f4f8ff"/></svg>
+    <span class="brand-mark violet" aria-label="Samurai di Avakin logo">
+      <img src="/assets/icons/i-samurai-logo.svg" alt="Samurai di Avakin" width="34" height="34" style="display:block;width:34px;height:34px" aria-hidden="true">
     </span>
     <span class="brand-text">
       <b>SAMURAI</b>
@@ -737,7 +739,7 @@
 <div class="modal violet" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
   <div class="modal-backdrop" data-close></div>
   <div class="modal-box glass violet welcome-box">
-    <div class="welcome-mon kanji">侍</div>
+    <img src="/assets/icons/i-samurai-logo.svg" alt="Samurai di Avakin" class="welcome-logo" width="96" height="96" style="display:block;margin:0 auto 14px;width:96px;height:96px" aria-hidden="true">
     <span class="eyebrow violet" style="justify-content:center">Benvenuto</span>
     <h2 class="welcome-title violet-text" id="welcomeTitle">Il cerchio ti stava aspettando</h2>
     <p class="welcome-lead">
