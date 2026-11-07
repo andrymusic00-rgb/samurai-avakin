@@ -1086,3 +1086,23 @@ body.season-spring .hero-title .l3 {
   color: transparent !important;
   filter: drop-shadow(0 1px 8px rgba(22, 32, 58, 0.12));
 }
+
+/* "SAMURAI / di Avakin" (scritta scavata hero + brand): blu glaciale chiaro + grigio, più visibile */
+body.season-spring .hero-title .silver-text,
+body.season-spring .hero-title .l2.silver-text,
+body.season-spring .topbar .brand-text b {
+  background: linear-gradient(180deg, #eaf6fb 0%, #b8d4e3 38%, #8faec2 68%, #cfdce6 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-stroke: 0.4px rgba(143, 174, 194, 0.22);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 10px rgba(22, 32, 58, 0.16),
+    0 0 18px rgba(184, 212, 227, 0.22) !important;
+  filter: drop-shadow(0 1px 6px rgba(143, 174, 194, 0.16));
+}
+body.season-spring .topbar .brand-text span {
+  color: #b8d4e3 !important;
+  text-shadow: 0 1px 8px rgba(22, 32, 58, 0.14) !important;
+}
