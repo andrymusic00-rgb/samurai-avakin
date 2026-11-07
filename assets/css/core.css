@@ -1039,9 +1039,6 @@ body.season-spring {
 }
 body.season-spring .topbar .brand-text b,
 body.season-spring .topbar .brand-text span,
-body.season-spring .topbar .nav-link,
-body.season-spring .topbar .nav-link.violet,
-body.season-spring .topbar .nav-link.blue-violet,
 body.season-spring .topbar .icon-btn,
 body.season-spring .topbar button.icon-btn,
 body.season-spring #btnPalette,
@@ -1051,10 +1048,24 @@ body.season-spring #btnMenu {
   color: var(--spring-glacial) !important;
   text-shadow: 0 1px 10px rgba(22, 32, 58, 0.18), 0 0 12px rgba(215, 234, 243, 0.18) !important;
 }
+body.season-spring .topbar .nav-link,
+body.season-spring .topbar .nav-link.violet,
+body.season-spring .topbar .nav-link.blue-violet,
+body.season-spring #nav .nav-link,
+body.season-spring #nav .nav-link:link,
+body.season-spring #nav .nav-link:visited {
+  color: #00aaff !important;
+  text-shadow: 0 0 10px rgba(0, 170, 255, 0.42), 0 0 18px rgba(0, 170, 255, 0.18) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 body.season-spring .topbar .nav-link:hover,
 body.season-spring .topbar .nav-link.is-active,
+body.season-spring #nav .nav-link:hover,
+body.season-spring #nav .nav-link.is-active,
 body.season-spring .topbar .icon-btn:hover {
-  color: #eef8fc !important;
+  color: #33cfff !important;
+  text-shadow: 0 0 12px rgba(51, 207, 255, 0.55), 0 0 22px rgba(0, 170, 255, 0.22) !important;
 }
 body.season-spring .hero-copy .eyebrow,
 body.season-spring .hero-copy .eyebrow.violet,
