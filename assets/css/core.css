@@ -470,23 +470,30 @@ html.reveal-ready [data-reveal].is-in {
 /* ── Tonalità testi: blu elettronico, argento, platino, viola, viola scuro ── */
 .testo-prisma {
   display: inline-block;
-  background: linear-gradient(135deg, #2563EB 0%, #C0C0C0 25%, #E5E4E2 50%, #A855F7 75%, #581C87 100%);
-  background-size: 300% 300%;
+  background: linear-gradient(135deg, #2563EB 0%, #C0C0C0 16%, #E5E4E2 32%, #A855F7 52%, #E5E4E2 68%, #C0C0C0 84%, #2563EB 100%);
+  background-size: 400% 400%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: filter 0.3s ease, background-position 0.6s ease;
+  transition: filter 0.4s ease, background-position 0.8s ease, transform 0.3s ease;
+  animation: prismaShift 8s ease infinite;
 }
 .testo-prisma:hover {
   background-position: 100% 50%;
-  transform: skewX(-4deg) scale(1.02);
-  filter: drop-shadow(0 0 10px rgba(229, 228, 226, 0.7));
+  transform: skewX(-4deg) scale(1.03);
+  filter: drop-shadow(0 0 12px rgba(229, 228, 226, 0.8)) drop-shadow(0 0 6px rgba(37, 99, 235, 0.5));
+}
+@keyframes prismaShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 body.season-spring .testo-prisma {
-  background: linear-gradient(135deg, #1D4ED8 0%, #808080 25%, #B0B0B0 50%, #7E22CE 75%, #3B0764 100%);
+  background: linear-gradient(135deg, #1D4ED8 0%, #808080 20%, #B0B0B0 40%, #7E22CE 60%, #B0B0B0 80%, #808080 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: none;
 }
   background: var(--text-luminoso);
   background-size: 200% 200%;
