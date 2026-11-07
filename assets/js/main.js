@@ -141,7 +141,7 @@
           </div>
           <div class="grid g-auto-lg leader-category-grid">
             ${leaders.map((l, i) => `
-              <article class="leader glass" data-reveal style="--d:${i * 70}ms">
+               <article class="leader glass" data-leader="${escapeHtml(l.nome)}" data-reveal style="--d:${i * 70}ms">
                 <div class="leader-av">${l.kanji}</div>
                 <b>${l.nome}</b>
                 <small>${l.ruolo}</small>
@@ -153,8 +153,23 @@
       `;
     }).join("");
 
-    $("#leaderGrid").innerHTML = leadersHtml;
-  }
+     $("#leaderGrid").innerHTML = leadersHtml;
+     $("#leaderGrid").addEventListener("click", (e) => {
+       const c = e.target.closest("[data-leader]");
+       if (!c) return;
+       const name = c.dataset.leader;
+       let l = null;
+       Object.values(DATA.leaders).forEach((arr) => { const f = arr.find((x) => x.nome === name); if (f) l = f; });
+       if (!l) return;
+       const m = document.getElementById("memberModal");
+       if (!m) return;
+       document.getElementById("memberModalName").textContent = l.nome;
+       document.getElementById("memberModalRole").textContent = `${l.ruolo}`;
+       document.getElementById("memberModalDesc").textContent = l.da || "";
+       document.getElementById("memberModalImg").innerHTML = `<span class="kanji" style="font-size:4rem">${l.kanji}</span>`;
+       m.style.display = "flex";
+     });
+   }
 
   let gItems = [], gFilter = "all", gRemote = [];
 
