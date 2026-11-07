@@ -495,13 +495,6 @@ body.season-spring .testo-prisma {
   color: transparent;
   animation: none;
 }
-  background: var(--text-luminoso);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: testoLuminoso 6s linear infinite;
-}
 
 @keyframes testoLuminoso {
   0% { background-position: 0% 50%; }
@@ -529,6 +522,7 @@ body.season-spring .stat-label,
 body.season-spring .leader b,
 body.season-spring .leader small,
 body.season-spring .faq-a p,
+body.season-spring .faq-q,
 body.season-spring .news-body p,
 body.season-spring .footer-col a,
 body.season-spring .footer-bottom,
@@ -536,7 +530,24 @@ body.season-spring .stat-num .suffix,
 body.season-spring .acc-handle,
 body.season-spring .acc-name,
 body.season-spring .roster-card b,
-body.season-spring .sess-info b {
+body.season-spring .sess-info b,
+body.season-spring .tl-item h4,
+body.season-spring .tl-item p,
+body.season-spring .tl-item time,
+body.season-spring .timeline .tl-item h4,
+body.season-spring .timeline .tl-item p,
+body.season-spring .timeline .tl-item time,
+body.season-spring .timeline.violet .tl-item time,
+body.season-spring .timeline.blue-violet .tl-item time,
+body.season-spring .leader-category-title,
+body.season-spring .leader-category-icon,
+body.season-spring .tag,
+body.season-spring .rank-info b,
+body.season-spring .rank-info small,
+body.season-spring .view-lead,
+body.season-spring .meta,
+body.season-spring .hint,
+body.season-spring .card-icon {
   color: var(--sumi) !important;
 }
 body.season-spring {
@@ -555,6 +566,33 @@ body.season-spring .testo-luminoso {
   background-clip: text !important;
   color: transparent !important;
   animation: none !important;
+}
+/* Chi-siamo/credo: inline light colors su sfondo chiaro */
+body.season-spring #credoList span,
+body.season-spring #credoList li span {
+  color: #1e2a44 !important;
+}
+body.season-spring #credoList li span:first-child {
+  color: #1D4ED8 !important;
+}
+/* Superfici glass: più chiare in primavera per contrasto */
+body.season-spring .glass,
+body.season-spring .glass-violet,
+body.season-spring .glass-blue-violet {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(244, 242, 236, 0.72) 46%, rgba(255, 255, 255, 0.62) 100%) !important;
+  border-color: rgba(30, 42, 68, 0.16) !important;
+  box-shadow: 0 8px 28px rgba(30, 42, 68, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+body.season-spring .leader-category-head {
+  border-bottom-color: rgba(30, 42, 68, 0.14) !important;
+}
+body.season-spring .faq-item {
+  border-bottom-color: rgba(30, 42, 68, 0.12) !important;
+}
+body.season-spring .faq-q:hover,
+body.season-spring .faq-item.violet .faq-q:hover,
+body.season-spring .faq-item.blue-violet .faq-q:hover {
+  color: #1D4ED8 !important;
 }
 
 /* Estate/Autunno/Inverno: sfondo scuro → testi luminosi (già default) */
