@@ -511,8 +511,6 @@ body.season-spring .kanji,
 body.season-spring .mono,
 body.season-spring .hero-sub,
 body.season-spring .type-line,
-body.season-spring .nav-link,
-body.season-spring .icon-btn,
 body.season-spring .card h3,
 body.season-spring .card p,
 body.season-spring .pillar h3,
@@ -630,7 +628,9 @@ body.season-spring .topbar {
   box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7), 0 0 24px -16px rgba(138, 43, 226, 0.35) !important;
 }
 body.season-spring .nav-link.is-active,
-body.season-spring .nav-link:hover {
+body.season-spring .nav-link:hover,
+body.season-spring #nav .nav-link.is-active,
+body.season-spring #nav .nav-link:hover {
   color: var(--spring-cyan) !important;
   text-shadow: 0 0 12px rgba(0, 210, 255, 0.45);
 }
@@ -810,8 +810,6 @@ body.season-spring .acc-handle,
 body.season-spring .acc-name,
 body.season-spring .roster-card b,
 body.season-spring .sess-info b,
-body.season-spring .nav-link,
-body.season-spring .icon-btn,
 body.season-spring .faq-q {
   color: #16203a !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
@@ -967,9 +965,12 @@ body.season-spring .topbar {
   box-shadow: 0 10px 26px -18px rgba(22, 32, 58, 0.16) !important;
 }
 body.season-spring .nav-link.is-active,
-body.season-spring .nav-link:hover {
-  color: var(--spring-fuchsia) !important;
-  text-shadow: 0 0 10px rgba(217, 70, 239, 0.16);
+body.season-spring .nav-link:hover,
+body.season-spring #nav .nav-link.is-active,
+body.season-spring #nav .nav-link:hover {
+  color: #33cfff !important;
+  text-shadow: 0 0 12px rgba(51, 207, 255, 0.55), 0 0 22px rgba(0, 170, 255, 0.22) !important;
+  background: rgba(0, 170, 255, 0.08) !important;
 }
 body.season-spring .brand-mark,
 body.season-spring .hero-mon,
@@ -1121,4 +1122,25 @@ body.season-spring .footer .brand-text span,
 body.season-spring .site-footer .brand-text span {
   color: #a9c7d8 !important;
   text-shadow: 0 1px 8px rgba(22, 32, 58, 0.12) !important;
+}
+
+/* Barra navigazione: blu elettrico acceso per tutte le voci, massima priorità in primavera */
+body.season-spring .topbar #nav.nav .nav-link,
+body.season-spring .topbar #nav.nav .nav-link.violet,
+body.season-spring .topbar #nav.nav .nav-link.blue-violet,
+body.season-spring #nav a.nav-link {
+  color: #00aaff !important;
+  text-shadow: 0 0 10px rgba(0, 170, 255, 0.48), 0 0 20px rgba(0, 170, 255, 0.18) !important;
+}
+body.season-spring .topbar #nav.nav .nav-link:hover,
+body.season-spring .topbar #nav.nav .nav-link.is-active,
+body.season-spring #nav a.nav-link:hover,
+body.season-spring #nav a.nav-link.is-active {
+  color: #4dd8ff !important;
+  background: rgba(0, 170, 255, 0.1) !important;
+}
+body.season-spring .topbar #nav.nav .nav-link::after,
+body.season-spring #nav a.nav-link::after {
+  background: #00aaff !important;
+  box-shadow: 0 0 10px 2px rgba(0, 170, 255, 0.55) !important;
 }
