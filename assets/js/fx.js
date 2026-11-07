@@ -48,11 +48,12 @@ const FX = (() => {
   function newPetal(init) {
     const season = document.querySelector(".season-theme.active")?.dataset.season || "spring";
     const seasonColors = {
-      spring: ["#C084FC", "#D8B4FE", "#E9D5FF", "#A8835C"],
+      spring: ["#FFFFFF", "#F4F2EC", "#E5E4E2", "#C0C0C0", "#5AA8FF", "#2563EB", "#D946EF", "#A855F7"],
       summer: ["#F59E0B", "#D97706", "#EAE5D9"],
       autumn: ["#A8835C", "#D4B28C", "#DC2626", "#B91C1C"],
       winter: ["#CBE4F9", "#93C5FD", "#3B82F6", "#E9D5FF"]
     };
+
     const colors = seasonColors[season] || seasonColors.spring;
     return {
       x: rand(0, W),

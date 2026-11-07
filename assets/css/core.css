@@ -781,3 +781,252 @@ body.season-spring::after {
   mix-blend-mode: screen;
   opacity: 0.7;
 }
+
+/* ══ Primavera luminosa: vecchio tema valorizzato (bianco/platino/argento + blu metallico + viola/fucsia) ══ */
+body.season-spring {
+  color: #1a2138;
+  --spring-white: #ffffff;
+  --spring-pearl: #f8f7f3;
+  --spring-platinum: #e5e4e2;
+  --spring-silver: #c0c0c0;
+  --spring-steel: #8a96b0;
+  --spring-blue-metal: #2563eb;
+  --spring-blue-steel: #4f7cff;
+  --spring-violet: #8b5cf6;
+  --spring-fuchsia: #d946ef;
+  --spring-magenta: #c026d3;
+}
+/* Testi: scuri/leggibili su base chiara, con accenti metallici/viola-fucsia */
+body.season-spring .section-title,
+body.season-spring .hero-title,
+body.season-spring .hero-title .l2,
+body.season-spring .card h3,
+body.season-spring .pillar h3,
+body.season-spring .leader b,
+body.season-spring .tl-item h4,
+body.season-spring .leader-category-title,
+body.season-spring .rank-info b,
+body.season-spring .acc-handle,
+body.season-spring .acc-name,
+body.season-spring .roster-card b,
+body.season-spring .sess-info b,
+body.season-spring .nav-link,
+body.season-spring .icon-btn,
+body.season-spring .faq-q {
+  color: #16203a !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+body.season-spring .section-lead,
+body.season-spring .hero-sub,
+body.season-spring .type-line,
+body.season-spring .card p,
+body.season-spring .pillar p,
+body.season-spring .pillar .pillar-foot,
+body.season-spring .stat-label,
+body.season-spring .leader small,
+body.season-spring .faq-a p,
+body.season-spring .news-body p,
+body.season-spring .footer-col a,
+body.season-spring .footer-bottom,
+body.season-spring .rank-info small,
+body.season-spring .tl-item p,
+body.season-spring .view-lead,
+body.season-spring .meta,
+body.season-spring .hint,
+body.season-spring .marquee-item {
+  color: #334155 !important;
+  text-shadow: none;
+}
+body.season-spring .eyebrow,
+body.season-spring .kanji,
+body.season-spring .mono,
+body.season-spring .tl-item time,
+body.season-spring .timeline .tl-item time,
+body.season-spring .timeline.violet .tl-item time,
+body.season-spring .timeline.blue-violet .tl-item time,
+body.season-spring .leader-category-icon,
+body.season-spring .card-icon {
+  color: var(--spring-blue-metal) !important;
+  text-shadow: 0 0 12px rgba(79, 124, 255, 0.18);
+}
+body.season-spring .hero-sub b,
+body.season-spring .section-title span.accent-violet,
+body.season-spring .violet-text,
+body.season-spring .accent-violet,
+body.season-spring #credoList li span:first-child {
+  color: var(--spring-fuchsia) !important;
+  text-shadow: 0 0 14px rgba(217, 70, 239, 0.22);
+}
+body.season-spring .silver-text {
+  background: linear-gradient(100deg, #ffffff 0%, var(--spring-platinum) 24%, var(--spring-silver) 48%, #ffffff 72%, #d7deea 100%) !important;
+  background-size: 220% 220% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: silverSheen 5s linear infinite !important;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75)) drop-shadow(0 0 12px rgba(79, 124, 255, 0.12));
+}
+body.season-spring .section-title {
+  background: linear-gradient(135deg, #16203a 0%, var(--spring-blue-metal) 34%, var(--spring-violet) 62%, var(--spring-fuchsia) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: testoLuminoso 6s linear infinite !important;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45));
+}
+body.season-spring .hero-title .l3 {
+  color: var(--spring-blue-metal) !important;
+  text-shadow: 0 0 14px rgba(37, 99, 235, 0.2), 0 0 22px rgba(217, 70, 239, 0.12) !important;
+}
+body.season-spring .testo-luminoso,
+body.season-spring .testo-prisma {
+  filter: drop-shadow(0 0 8px rgba(79, 124, 255, 0.14));
+}
+body.season-spring #credoList span,
+body.season-spring #credoList li span {
+  color: #334155 !important;
+}
+/* Superfici: base chiara originale + accenti blu metallico/viola/fucsia */
+body.season-spring .glass,
+body.season-spring .glass-violet,
+body.season-spring .glass-blue-violet,
+body.season-spring .card,
+body.season-spring .pillar,
+body.season-spring .leader,
+body.season-spring .stat,
+body.season-spring .news-item,
+body.season-spring .tl-item,
+body.season-spring .vid-card,
+body.season-spring .thumb,
+body.season-spring .season-card,
+body.season-spring .modal-box,
+body.season-spring .toast,
+body.season-spring .event-card,
+body.season-spring .vp-card {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.86) 0%, rgba(244, 242, 236, 0.78) 44%, rgba(238, 242, 255, 0.72) 100%) !important;
+  border-color: rgba(79, 124, 255, 0.2) !important;
+  box-shadow: 0 12px 34px -16px rgba(22, 32, 58, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.7) inset, 0 0 24px -14px rgba(217, 70, 239, 0.18) !important;
+}
+body.season-spring .glass:hover,
+body.season-spring .glass-violet:hover,
+body.season-spring .glass-blue-violet:hover,
+body.season-spring .card:hover {
+  border-color: rgba(217, 70, 239, 0.28) !important;
+  box-shadow: 0 18px 42px -16px rgba(22, 32, 58, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.75) inset, 0 0 30px -12px rgba(79, 124, 255, 0.22) !important;
+}
+body.season-spring .border-glow::before {
+  opacity: 0.45;
+  background: linear-gradient(135deg, var(--spring-blue-metal), var(--spring-silver), var(--spring-violet), var(--spring-fuchsia), var(--spring-platinum)) !important;
+}
+body.season-spring .border-glow:hover::before { opacity: 0.9; }
+body.season-spring .tag,
+body.season-spring .tag.violet {
+  color: #1e3a8a !important;
+  border-color: rgba(79, 124, 255, 0.28) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(229, 228, 226, 0.5), rgba(217, 70, 239, 0.08)) !important;
+  box-shadow: 0 0 16px -10px rgba(217, 70, 239, 0.28);
+}
+body.season-spring .pulse-dot {
+  background: var(--spring-fuchsia) !important;
+  box-shadow: 0 0 10px rgba(217, 70, 239, 0.65) !important;
+}
+body.season-spring .btn-primary,
+body.season-spring .btn-violet {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--spring-blue-metal), var(--spring-violet), var(--spring-fuchsia)) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 12px 28px -14px rgba(37, 99, 235, 0.45), 0 0 18px -10px rgba(217, 70, 239, 0.45) !important;
+}
+body.season-spring .btn-glass {
+  color: #16203a !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(229, 228, 226, 0.62), rgba(238, 242, 255, 0.72)) !important;
+  border-color: rgba(192, 192, 192, 0.55) !important;
+  box-shadow: 0 10px 22px -14px rgba(22, 32, 58, 0.18);
+}
+body.season-spring .fx-stage {
+  background:
+    radial-gradient(120% 85% at 16% 8%, rgba(255, 255, 255, 0.78) 0%, rgba(244, 242, 236, 0.2) 42%, transparent 72%),
+    radial-gradient(95% 70% at 84% 14%, rgba(79, 124, 255, 0.18) 0%, transparent 62%),
+    radial-gradient(90% 70% at 74% 84%, rgba(217, 70, 239, 0.14) 0%, transparent 62%),
+    linear-gradient(180deg, rgba(248, 247, 243, 0.9) 0%, rgba(244, 242, 236, 0.88) 42%, rgba(239, 244, 255, 0.9) 100%) !important;
+  filter: saturate(1.02);
+}
+body.season-spring .fx-grid-lines {
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217, 70, 239, 0.035) 1px, transparent 1px) !important;
+  opacity: 0.55 !important;
+}
+body.season-spring .fx-vignette {
+  background: radial-gradient(115% 85% at 50% 36%, transparent 52%, rgba(22, 32, 58, 0.14) 100%) !important;
+}
+body.season-spring .topbar.glass,
+body.season-spring .topbar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(244, 242, 236, 0.62)) !important;
+  border-bottom-color: rgba(79, 124, 255, 0.16) !important;
+  box-shadow: 0 10px 26px -18px rgba(22, 32, 58, 0.16) !important;
+}
+body.season-spring .nav-link.is-active,
+body.season-spring .nav-link:hover {
+  color: var(--spring-fuchsia) !important;
+  text-shadow: 0 0 10px rgba(217, 70, 239, 0.16);
+}
+body.season-spring .brand-mark,
+body.season-spring .hero-mon,
+body.season-spring .hero-float {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(229, 228, 226, 0.72), rgba(238, 242, 255, 0.78)) !important;
+  border-color: rgba(192, 192, 192, 0.58) !important;
+  color: #16203a !important;
+  box-shadow: 0 14px 30px -18px rgba(22, 32, 58, 0.22), 0 0 22px -14px rgba(79, 124, 255, 0.2) !important;
+}
+body.season-spring .hero-mon .kanji { color: var(--spring-blue-metal) !important; text-shadow: 0 0 16px rgba(217, 70, 239, 0.14) !important; }
+body.season-spring .hero-mon::after { border-color: rgba(79, 124, 255, 0.28) !important; box-shadow: none !important; }
+body.season-spring .hero-visual .ring,
+body.season-spring .hero-visual.violet .ring,
+body.season-spring .hero-visual.blue-violet .ring { border-color: rgba(37, 99, 235, 0.16) !important; }
+body.season-spring .hero-visual .ring:nth-child(3) { border-color: rgba(217, 70, 239, 0.18) !important; }
+body.season-spring .hero-float i,
+body.season-spring .hero-float.violet i,
+body.season-spring .hero-float.blue-violet i {
+  background: linear-gradient(135deg, var(--spring-blue-metal), var(--spring-fuchsia)) !important;
+  box-shadow: 0 0 10px rgba(217, 70, 239, 0.35) !important;
+}
+body.season-spring .eyebrow {
+  border-color: rgba(79, 124, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 0 14px -10px rgba(217, 70, 239, 0.18);
+}
+body.season-spring .timeline::before,
+body.season-spring .timeline.violet::before,
+body.season-spring .timeline.blue-violet::before {
+  background: linear-gradient(var(--spring-blue-metal), rgba(217, 70, 239, 0.18)) !important;
+}
+body.season-spring .tl-item::before,
+body.season-spring .timeline.violet .tl-item::before,
+body.season-spring .timeline.blue-violet .tl-item::before {
+  background: linear-gradient(135deg, var(--spring-blue-metal), var(--spring-fuchsia)) !important;
+  box-shadow: 0 0 0 5px rgba(79, 124, 255, 0.12), 0 0 14px rgba(217, 70, 239, 0.22) !important;
+}
+body.season-spring .scroll-cue .line {
+  background: linear-gradient(180deg, var(--spring-blue-metal), rgba(217, 70, 239, 0.0)) !important;
+}
+body.season-spring .leader-category-head { border-bottom-color: rgba(79, 124, 255, 0.16) !important; }
+body.season-spring .faq-item { border-bottom-color: rgba(79, 124, 255, 0.14) !important; }
+body.season-spring .faq-q:hover,
+body.season-spring .faq-item.violet .faq-q:hover,
+body.season-spring .faq-item.blue-violet .faq-q:hover { color: var(--spring-fuchsia) !important; }
+body.season-spring .footer, body.season-spring footer { border-top-color: rgba(79, 124, 255, 0.14) !important; }
+/* Overlay leggerissimo: preserva luminosità e aggiunge riflesso metallico/viola-fucsia */
+body.season-spring::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(80% 50% at 15% 10%, rgba(255, 255, 255, 0.12), transparent 70%),
+    radial-gradient(70% 45% at 85% 20%, rgba(79, 124, 255, 0.06), transparent 70%),
+    radial-gradient(70% 45% at 75% 85%, rgba(217, 70, 239, 0.05), transparent 72%);
+  mix-blend-mode: normal;
+  opacity: 1;
+}
