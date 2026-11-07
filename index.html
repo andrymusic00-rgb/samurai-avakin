@@ -67,6 +67,69 @@
   .vid-player-creativo video::-webkit-media-controls { filter: invert(1); }
   .brand-mark img { filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
   .welcome-logo { filter: drop-shadow(0 4px 16px rgba(0,0,0,.55)); border-radius: 14px; background: transparent; }
+
+  /* Cubist Grid Styles */
+  .cubist-tile {
+    position: relative;
+    background-repeat: no-repeat;
+    background-size: 800% 800%;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.7s ease, opacity 0.7s ease, border-radius 0.7s ease;
+    will-change: transform, filter, opacity;
+    border: 0.5px solid rgba(143,198,255,0.08);
+    cursor: crosshair;
+  }
+
+  .cubist-tile.abstract {
+    filter: saturate(160%) contrast(130%) hue-rotate(8deg) brightness(0.95);
+    opacity: 0.75;
+  }
+
+  .cubist-tile.revealed {
+    transform: translate(0, 0) scale(1) rotate(0deg) !important;
+    filter: saturate(100%) contrast(100%) hue-rotate(0deg) brightness(1) !important;
+    opacity: 1 !important;
+    z-index: 2;
+    border-color: transparent;
+    box-shadow: 0 0 30px -5px rgba(143,198,255,0.3), inset 0 0 60px rgba(255,255,255,0.02);
+  }
+
+  .cubist-tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(192,132,252,0.02) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .cubist-tile.revealed::after {
+    opacity: 1;
+  }
+
+  @keyframes glitchScan {
+    0%, 100% { transform: translateY(0); opacity: 0.1; }
+    50% { transform: translateY(-100%); opacity: 0.15; }
+  }
+
+  @keyframes pearlShimmer {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.005); }
+  }
+
+  .pearl-overlay::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: conic-gradient(from 0deg at 50% 50%, 
+      transparent 0deg, 
+      rgba(192,132,252,0.015) 90deg, 
+      transparent 180deg, 
+      rgba(90,168,255,0.015) 270deg, 
+      transparent 360deg);
+    animation: pearlShimmer 12s ease-in-out infinite;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -308,8 +371,14 @@
             Filtra per categoria e apri la luce piena.
           </p>
         </div>
-        <div class="row">
-          <button class="btn btn-violet" data-action="upload">+ Carica una tua foto</button>
+        <div class="row" style="gap:12px;align-items:center">
+          <button class="btn btn-violet" data-action="gallery-experience" data-reveal style="--d:200ms">
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:1.1rem">◈</span>
+              Esperienza Cubista
+            </span>
+          </button>
+          <button class="btn btn-violet" data-action="upload" data-reveal style="--d:220ms">+ Carica una tua foto</button>
         </div>
       </div>
 
@@ -1286,6 +1355,63 @@
   </div>
 </div>
 
+<!-- Modal: Gallery Experience - Cubist Grid -->
+<div class="modal violet" id="galleryExperienceModal" role="dialog" aria-modal="true" aria-labelledby="geTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box glass-violet" style="width:min(95vw, 1100px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column">
+    <button class="modal-x" data-close aria-label="Chiudi" style="z-index:10">✕</button>
+    
+    <div class="modal-head" style="padding:20px 24px;border-bottom:1px solid var(--glass-violet-brd);position:relative;z-index:5">
+      <span class="eyebrow violet">Esperienza Galleria</span>
+      <h3 id="geTitle" style="font-family:var(--ff-display);font-size:1.5rem;color:var(--silver-100)">De-costruisci il Cubismo</h3>
+      <p style="color:var(--silver-400);font-size:.9rem;margin-top:6px">Muovi il cursore sui tasselli geometrici per ricomporre l'immagine. Le foto del clan si susseguono ogni 8 secondi.</p>
+    </div>
+
+    <div class="gallery-experience-stage" style="flex:1;position:relative;overflow:hidden;background:#03060f">
+      <div id="cubistGrid" style="display:grid;width:100%;height:100%"></div>
+      
+      <!-- Pearl/Glitch overlay -->
+      <div class="pearl-overlay" aria-hidden="true" style="
+        position:absolute;inset:0;pointer-events:none;z-index:3;
+        background: 
+          radial-gradient(ellipse at 20% 30%, rgba(192,132,252,0.04) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(90,168,255,0.03) 0%, transparent 50%),
+          linear-gradient(135deg, rgba(255,255,255,0.008) 0%, transparent 30%, rgba(216,180,254,0.008) 100%);
+        mix-blend-mode: screen;
+        opacity: 0.6;
+      "></div>
+      
+      <!-- Subtle scanline glitch -->
+      <div class="glitch-scanlines" aria-hidden="true" style="
+        position:absolute;inset:0;pointer-events:none;z-index:4;
+        background: repeating-linear-gradient(180deg, transparent 0 3px, rgba(0,0,0,0.02) 3px 4px);
+        opacity: 0.15;
+        animation: glitchScan 8s linear infinite;
+      "></div>
+      
+      <!-- Image indicator -->
+      <div id="geImageIndicator" class="mono" style="
+        position:absolute;bottom:20px;left:20px;z-index:5;
+        font-size:10px;color:var(--violet-300);letter-spacing:.24em;
+        background:rgba(3,6,15,0.7);padding:8px 14px;border-radius:var(--r-sm);
+        border:1px solid var(--glass-violet-brd);
+        backdrop-filter:blur(12px);
+      ">Caricamento…</div>
+    </div>
+
+    <div class="modal-foot" style="padding:16px 24px;border-top:1px solid var(--glass-violet-brd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:relative;z-index:5">
+      <div class="row" style="gap:8px">
+        <button class="btn btn-sm btn-ghost" id="gePrevImage" aria-label="Immagine precedente">‹ Precedente</button>
+        <button class="btn btn-sm btn-ghost" id="geNextImage" aria-label="Immagine successiva">Successiva ›</button>
+      </div>
+      <div class="row" style="gap:8px">
+        <button class="btn btn-sm" id="geOpenGallery" data-action="nav" data-view="gallery">Apri Gallery completa</button>
+        <button class="btn btn-violet btn-sm" data-close>Chiudi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal violet" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
   <div class="modal-backdrop" data-close></div>
   <div class="modal-box glass violet w-sm" style="text-align:center">
@@ -1340,6 +1466,241 @@
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     });
   }
+</script>
+
+<!-- Gallery Experience Cubist Grid Script -->
+<script>
+(function() {
+  'use strict';
+
+  const LOCAL_IMAGES = [
+    'IMG_7427%202.JPG',
+    'IMG_7428%202.JPG',
+    'IMG_7429%202.JPG',
+    'IMG_7430%202.JPG',
+    'IMG_7431%202.JPG',
+    'IMG_7432%202.JPG',
+    'IMG_7611%202.JPG',
+    'IMG_7611%203.JPG',
+    'IMG_7612%202.JPG',
+    'IMG_7612%203.JPG',
+    'i%20samurai%20logo%20.svg'
+  ];
+
+  const COLS = 8;
+  const ROWS = 8;
+  let currentImageIndex = 0;
+  let tiles = [];
+  let gridContainer = null;
+  let imageIndicator = null;
+  let autoCycleTimer = null;
+  let isInitialized = false;
+
+  function getCurrentImageUrl() {
+    return LOCAL_IMAGES[currentImageIndex];
+  }
+
+  function getImageName(index) {
+    const names = [
+      'IMG_7427', 'IMG_7428', 'IMG_7429', 'IMG_7430', 'IMG_7431', 'IMG_7432',
+      'IMG_7611 (2)', 'IMG_7611 (3)', 'IMG_7612 (2)', 'IMG_7612 (3)', 'Logo Samurai'
+    ];
+    return names[index] || `Immagine ${index + 1}`;
+  }
+
+  function applyPicassoTransform(tile) {
+    const rot = (Math.random() - 0.5) * 35;
+    const scale = 0.82 + Math.random() * 0.35;
+    const transX = (Math.random() - 0.5) * 12;
+    const transY = (Math.random() - 0.5) * 12;
+
+    tile.style.transform = `translate(${transX}px, ${transY}px) scale(${scale}) rotate(${rot}deg)`;
+  }
+
+  function revealTile(tile) {
+    if (tile.classList.contains('revealed')) return;
+    
+    tile.classList.remove('abstract');
+    tile.classList.add('revealed');
+
+    clearTimeout(tile.resetTimer);
+    tile.resetTimer = setTimeout(() => {
+      if (!tile.isConnected) return;
+      tile.classList.remove('revealed');
+      tile.classList.add('abstract');
+      applyPicassoTransform(tile);
+    }, 4000);
+  }
+
+  function updateImageIndicator() {
+    if (imageIndicator) {
+      imageIndicator.textContent = `${getImageName(currentImageIndex)} • ${currentImageIndex + 1}/${LOCAL_IMAGES.length}`;
+    }
+  }
+
+  function setImage(index) {
+    currentImageIndex = (index + LOCAL_IMAGES.length) % LOCAL_IMAGES.length;
+    const newImageUrl = getCurrentImageUrl();
+    
+    tiles.forEach(tile => {
+      tile.style.backgroundImage = `url('${newImageUrl}')`;
+    });
+    
+    updateImageIndicator();
+  }
+
+  function nextImage() {
+    setImage(currentImageIndex + 1);
+  }
+
+  function prevImage() {
+    setImage(currentImageIndex - 1);
+  }
+
+  function startAutoCycle() {
+    stopAutoCycle();
+    autoCycleTimer = setInterval(nextImage, 8000);
+  }
+
+  function stopAutoCycle() {
+    if (autoCycleTimer) {
+      clearInterval(autoCycleTimer);
+      autoCycleTimer = null;
+    }
+  }
+
+  function initCubistGrid() {
+    console.log('initCubistGrid called');
+    if (isInitialized) {
+      console.log('Already initialized, returning');
+      return;
+    }
+    
+    gridContainer = document.getElementById('cubistGrid');
+    imageIndicator = document.getElementById('geImageIndicator');
+    
+    console.log('gridContainer:', !!gridContainer);
+    console.log('imageIndicator:', !!imageIndicator);
+    
+    if (!gridContainer) return;
+
+    gridContainer.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+    gridContainer.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+
+    tiles = [];
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const tile = document.createElement('div');
+        tile.classList.add('cubist-tile', 'abstract');
+
+        const widthPercent = 100 * COLS;
+        const heightPercent = 100 * ROWS;
+        const posXPercent = COLS > 1 ? (c / (COLS - 1)) * 100 : 50;
+        const posYPercent = ROWS > 1 ? (r / (ROWS - 1)) * 100 : 50;
+
+        tile.style.backgroundImage = `url('${getCurrentImageUrl()}')`;
+        tile.style.backgroundSize = `${widthPercent}% ${heightPercent}%`;
+        tile.style.backgroundPosition = `${posXPercent}% ${posYPercent}%`;
+
+        applyPicassoTransform(tile);
+
+        tile.addEventListener('mouseenter', () => revealTile(tile));
+        tile.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          revealTile(tile);
+        }, { passive: false });
+
+        gridContainer.appendChild(tile);
+        tiles.push(tile);
+      }
+    }
+
+    updateImageIndicator();
+    startAutoCycle();
+    isInitialized = true;
+  }
+
+  function cleanupCubistGrid() {
+    stopAutoCycle();
+    tiles.forEach(tile => {
+      clearTimeout(tile.resetTimer);
+    });
+    tiles = [];
+    if (gridContainer) {
+      gridContainer.innerHTML = '';
+    }
+    isInitialized = false;
+  }
+
+  // Modal open/close handlers
+  const modal = document.getElementById('galleryExperienceModal');
+  if (!modal) return;
+
+  const openTriggers = document.querySelectorAll('[data-action="gallery-experience"]');
+  const closeBtn = modal.querySelector('[data-close]');
+  const backdrop = modal.querySelector('.modal-backdrop');
+  const prevBtn = document.getElementById('gePrevImage');
+  const nextBtn = document.getElementById('geNextImage');
+  const openGalleryBtn = document.getElementById('geOpenGallery');
+
+  function openModal() {
+    console.log('openModal called');
+    modal.style.display = 'flex';
+    document.body.classList.add('is-locked');
+    requestAnimationFrame(() => {
+      console.log('requestAnimationFrame callback');
+      modal.classList.add('is-open');
+      initCubistGrid();
+    });
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    document.body.classList.remove('is-locked');
+    cleanupCubistGrid();
+    setTimeout(() => {
+      if (!modal.classList.contains('is-open')) {
+        modal.style.display = 'none';
+      }
+    }, 300);
+  }
+
+  openTriggers.forEach(btn => {
+    btn.addEventListener('click', openModal);
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+  if (prevBtn) prevBtn.addEventListener('click', prevImage);
+  if (nextBtn) nextBtn.addEventListener('click', nextImage);
+  if (openGalleryBtn) {
+    openGalleryBtn.addEventListener('click', () => {
+      closeModal();
+      // Trigger navigation to gallery view
+      const galleryNav = document.querySelector('[data-nav="gallery"]');
+      if (galleryNav) galleryNav.click();
+    });
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'ArrowLeft') prevImage();
+    if (e.key === 'ArrowRight') nextImage();
+  });
+
+  // Pause auto-cycle on hover
+  const stage = modal.querySelector('.gallery-experience-stage');
+  if (stage) {
+    stage.addEventListener('mouseenter', stopAutoCycle);
+    stage.addEventListener('mouseleave', startAutoCycle);
+  }
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', cleanupCubistGrid);
+})();
 </script>
 </body>
 </html>
