@@ -1422,3 +1422,33 @@ body.compact .view-pad { padding-top: calc(var(--topbar-h) + 28px); }
 .member-modal-name { color: var(--text-primary); text-align: center; }
 .member-modal-role { text-align: center; color: var(--murasaki-light); font-family: var(--ff-mono); font-size: 10px; letter-spacing: .16em; }
 .member-modal-desc { color: var(--text-secondary); text-align: center; margin-top: 8px; }
+
+/* Video posts carousel (mov/mp4 upload posts) */
+#videoPostsSection .video-carousel-shell { position: relative; }
+#videoGridPosts.video-carousel {
+  display: flex !important;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 4px 2px 14px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+#videoGridPosts.video-carousel::-webkit-scrollbar { height: 8px; }
+#videoGridPosts.video-carousel::-webkit-scrollbar-thumb { background: rgba(90,168,255,.28); border-radius: 999px; }
+#videoGridPosts.video-carousel .vp-card {
+  flex: 0 0 min(360px, calc(100vw - 64px));
+  min-width: min(360px, calc(100vw - 64px));
+  scroll-snap-align: start;
+}
+#videoGridPosts.video-carousel .vp-card:hover .vp-play { opacity: 1 !important; }
+.vp-btn {
+  background: rgba(255,255,255,.04);
+  color: var(--silver-200, #cfd7ea);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.vp-btn:hover { border-color: rgba(90,168,255,.35); color: var(--silver-100, #fff); }

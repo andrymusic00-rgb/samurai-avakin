@@ -265,18 +265,20 @@
 
   async function loadCreativeVideos() {
     try {
-      const r = await API.get("/api/creative?tipo=video&limit=24");
+      if (!(window.API && typeof API.get === 'function')) { creativeVideos = []; return; }
+      const r = await API.get("/api/creative?tipo=video&limit=24", { noRetry: true });
       creativeVideos = (r.post ?? []).map((p) => ({
         id: "cv-" + p.id,
+        serverId: p.id,
         titolo: p.titolo,
-        desc: p.corpo,
+        desc: p.corpo || "",
         dur: "—",
         cat: "creativo",
-        fonte: { url: p.mediaUrl },
-        autore: p.autore,
+        fonte: { url: p.mediaUrl || (Array.isArray(p.media)&&p.media[0]?.url) || null },
+        autore: p.autore || { nome: "Clan", handle: "clan" },
         creatoIl: p.creatoIl,
-        likes: p.likes,
-        commenti: p.commenti
+        likes: p.likes || 0,
+        commenti: p.commenti || 0
       }));
     } catch {
       creativeVideos = [];
@@ -470,27 +472,34 @@
     const grid = $("#videoGridPosts");
     if (!grid) return;
     if (!videoPosts.length) {
-      grid.innerHTML = `<div class="empty-state glass-violet" style="text-align:center;padding:28px 20px;border-radius:16px"><span style="font-size:2rem">📜</span><h3 style="margin:8px 0 6px">Nessun post video ancora</h3><p style="margin:0;color:var(--silver-500)">Accedi e usa <b>+ Carica il tuo video</b> per pubblicare un post. I video creativi del clan e i tuoi post locali appariranno qui.</p></div>`;
+      grid.classList.remove('video-carousel');
+      grid.classList.add('video-grid');
+      grid.innerHTML = `<div class="empty-state glass-violet" style="text-align:center;padding:28px 20px;border-radius:16px;min-width:min(100%,520px)"><span style="font-size:2rem">📜</span><h3 style="margin:8px 0 6px">Nessun post video ancora</h3><p style="margin:0;color:var(--silver-500)">Usa <b>+ Carica il tuo video</b> e seleziona un file <b>.mp4</b> o <b>.mov</b>. I post pubblicati e i video creativi del clan appariranno qui.</p></div>`;
       revealScope(grid);
       return;
     }
+    grid.classList.add('video-carousel');
+    grid.classList.remove('video-grid');
     grid.innerHTML = videoPosts.map((p, i) => {
       const totaleReazioni = Object.values(p.reazioni || {}).reduce((a, b) => a + b, 0);
       const isServer = !!p.serverId || String(p.id).startsWith("cvp-");
+      const thumb = p.thumb ? esc(p.thumb) : '/assets/icons/icon-512.png';
+      const hasPlayable = !!p.videoUrl;
       return `
-        <article class="vp-card" data-vpid="${esc(p.id)}" data-reveal style="--d:${i * 50}ms" tabindex="0">
+        <article class="vp-card" data-vpid="${esc(p.id)}" data-reveal style="--d:${Math.min(i*40,240)}ms;scroll-snap-align:start" tabindex="0">
           <div class="vp-thumb" style="aspect-ratio:16/9;background:#01030a;position:relative;overflow:hidden;border-radius:12px">
-            ${p.videoUrl ? `<video src="${esc(p.videoUrl)}" muted playsinline preload="metadata" class="vp-preview" style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<img src="${esc(p.thumb || "/assets/icons/icon-512.png")}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover;display:block">`}
+            ${hasPlayable ? `<video src="${esc(p.videoUrl)}" muted playsinline preload="metadata" class="vp-preview" style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<img src="${thumb}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover;display:block;opacity:${p.thumb?1:.35}">`}
             <div class="vp-seal" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#5aa8ff;border:1px solid rgba(90,168,255,.45);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.25rem">侍</div>
-            <div class="vp-play" style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s"><div style="background:var(--accent-violet,#5aa8ff);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#01030a;box-shadow:0 0 20px rgba(90,168,255,.5)">▶</div></div>
-            ${isServer ? `<span class="tag silver" style="position:absolute;top:10px;right:10px;font-size:.68rem">Clan</span>` : ``}
+            <div class="vp-play" style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.42));display:flex;align-items:center;justify-content:center"><div style="background:var(--accent-violet,#5aa8ff);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#01030a;box-shadow:0 0 20px rgba(90,168,255,.5)">▶</div></div>
+            ${isServer ? `<span class="tag silver" style="position:absolute;top:10px;right:10px;font-size:.68rem">Clan</span>` : `<span class="tag silver" style="position:absolute;top:10px;right:10px;font-size:.68rem">Locale</span>`}
+            ${!hasPlayable ? `<span class="tag" style="position:absolute;bottom:10px;left:10px;font-size:.68rem;background:rgba(255,170,0,.18);border-color:rgba(255,170,0,.35);color:#ffd27a">Anteprima non disponibile</span>` : ``}
           </div>
           <div class="vp-body" style="padding:12px 10px 8px">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
               <span class="tag silver" style="font-size:.75rem">${esc((p.cat || "video").toUpperCase())}</span>
               <span class="mono" style="font-size:.7rem;color:var(--silver-600)">${num(p.visualizzazioni || 0)} visualizz.</span>
             </div>
-            <h4 style="margin:0 0 6px;color:var(--silver-100);font-size:1rem">${esc(p.titolo)}</h4>
+            <h4 style="margin:0 0 6px;color:var(--silver-100);font-size:1rem">${esc(p.titolo || 'Post video')}</h4>
             <p style="color:var(--silver-400);font-size:.82rem;margin:0 0 8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.desc || "")}</p>
             <div class="vp-actions" style="display:flex;gap:10px;align-items:center">
               <button class="vp-btn" data-action="vplike" data-vpid="${esc(p.id)}" title="Like" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>⚔</span><span style="font-size:.75rem">${num(p.like || 0)}</span></button>
@@ -679,6 +688,7 @@
       if (known.has(id)) return;
       videoPosts.push({
         id,
+        serverId: cv.serverId || null,
         videoId: cv.id,
         titolo: cv.titolo,
         desc: cv.desc || "",
@@ -689,6 +699,7 @@
         videoUrl: cv.fonte?.url || null,
         visualizzazioni: 0,
         like: cv.likes || 0,
+        mioLike: false,
         miaReazione: false,
         reazioni: makeReactions(),
         commenti: []
@@ -736,9 +747,20 @@
       : "";
 
     const postHtml = `<section class="vid-section" id="videoPostsSection" style="margin-top:44px">
-           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Post video del clan</span>
-           <p class="mono" style="font-size:.8rem;color:var(--silver-500);margin:0 0 12px">Pubblica un tuo video come post: apparirà qui con like, reazioni e commenti.</p>
-           <div class="video-grid" id="videoGridPosts"></div>
+           <div class="row" style="justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+             <div>
+               <span class="eyebrow violet" style="display:block;margin-bottom:8px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Post video del clan</span>
+               <p class="mono" style="font-size:.8rem;color:var(--silver-500);margin:0">Carica file <b>.mp4</b> / <b>.mov</b> (QuickTime) e pubblica un post con like, reazioni e commenti.</p>
+             </div>
+             <div class="row" style="gap:8px">
+               <button class="btn btn-ghost btn-sm" type="button" data-vcarousel="prev" aria-label="Post precedente">‹</button>
+               <button class="btn btn-ghost btn-sm" type="button" data-vcarousel="next" aria-label="Post successivo">›</button>
+             </div>
+           </div>
+           <div id="videoStatus" class="mono" style="font-size:.78rem;color:var(--silver-600);margin-bottom:10px"></div>
+           <div class="video-carousel-shell" style="position:relative">
+             <div class="video-carousel video-grid" id="videoGridPosts" aria-live="polite"></div>
+           </div>
          </section>`;
 
     const videoGrid = $("#videoGrid");
@@ -755,9 +777,7 @@
         </div>
       </article>`).join("") + creativiHtml + mieiHtml + postHtml;
 
-    if (videoPosts.length) {
-      renderVideoPosts();
-    }
+    renderVideoPosts();
 
     if (creativeVideos.length) {
       const cg = $("#videoGridCreativi");
@@ -797,6 +817,11 @@
           </div>
         </article>`).join("");
       if (mg) revealScope(mg);
+    }
+    const vstatus = document.getElementById('videoStatus');
+    if (vstatus) {
+      const parts = [`${(DATA.videos||[]).length} guide/catalogo`, `${creativeVideos.length} creativi server`, `${userVideos.length} tuoi file`, `${videoPosts.length} post`];
+      vstatus.textContent = parts.join(' · ');
     }
     if (videoGrid) revealScope(videoGrid);
   }
@@ -948,7 +973,9 @@
 
       const carica = e.target.closest("#btnCaricaVideo");
       if (carica) {
-        if (!Account.authed) { toast("Accedi prima", "Servono credenziali per caricare un video.", "warn"); openModal("enterModal"); return; }
+        if (!(typeof Account !== 'undefined' && Account?.authed)) {
+          toast("Caricamento locale", "Puoi caricare un video e creare un post locale. Accedi per pubblicarlo anche sul server del clan.", "warn");
+        }
         openVideoUpload();
         return;
       }
@@ -983,6 +1010,13 @@
       const vuDz = e.target.closest("#vuDropzone");
       if (vuDz) { $("#vuFile").click(); return; }
 
+      const vcar = e.target.closest('[data-vcarousel]');
+      if (vcar) {
+        const track = document.getElementById('videoGridPosts');
+        if (track) track.scrollBy({ left: (vcar.dataset.vcarousel === 'next' ? 1 : -1) * Math.max(320, track.clientWidth * 0.85), behavior: 'smooth' });
+        return;
+      }
+
       const vuCarica = e.target.closest("#vuCarica");
       if (vuCarica) {
         const file = $("#vuFile").files[0];
@@ -990,6 +1024,11 @@
         const cat = $("#vuCategoria").value.trim() || "video";
         const desc = $("#vuDesc").value.trim();
         if (!file) { $("#vuStatus").textContent = "Seleziona prima un file video."; return; }
+        const ext = (file.name || '').toLowerCase();
+        if (!/(\.mp4|\.mov|\.m4v|\.webm|\.quicktime)$/i.test(ext) && !/^video\//.test(file.type || '')) {
+          $("#vuStatus").textContent = "Formato non supportato. Usa file video .mp4 o .mov (QuickTime).";
+          return;
+        }
         if (!titolo) { $("#vuStatus").textContent = "Inserisci un titolo."; return; }
         $("#vuCarica").disabled = true;
         $("#vuStatus").textContent = "Generazione anteprima…";
