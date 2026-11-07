@@ -316,6 +316,227 @@
     });
   }
 
+  /* ── Samurai Video Post (stile gallery, ma per video) ── */
+  let videoPosts = [];
+
+  function videoPostDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open("SamuraiVideoDB", 2);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("videoposts")) db.createObjectStore("videoposts", { keyPath: "id" });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function loadVideoPosts() {
+    try {
+      const db = await videoPostDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(["videoposts"], "readonly");
+        const store = tx.objectStore("videoposts");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async function saveVideoPost(post) {
+    const db = await videoPostDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(["videoposts"], "readwrite");
+      const store = tx.objectStore("videoposts");
+      const req = store.put(post);
+      req.onsuccess = () => resolve(post);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function makeReactions() {
+    const r = {};
+    (DATA.reactionDefs || []).forEach((d) => { r[d.emoji] = 0; });
+    return r;
+  }
+
+  async function createVideoPost(video) {
+    const post = {
+      id: "vp-" + Date.now(),
+      videoId: video.id,
+      titolo: video.titolo,
+      desc: video.desc,
+      cat: video.cat,
+      autore: video.autore || "Tu",
+      creatoIl: video.creatoIl || new Date().toISOString(),
+      thumb: video.thumb,
+      videoUrl: video.fonte?.url || null,
+      visualizzazioni: 0,
+      like: 0,
+      miaReazione: false,
+      reazioni: makeReactions(),
+      commenti: []
+    };
+    await saveVideoPost(post);
+    videoPosts.unshift(post);
+    return post;
+  }
+
+  async function toggleLike(postId) {
+    const post = videoPosts.find((p) => p.id === postId);
+    if (!post) return;
+    post.like = post.like + 1;
+    await saveVideoPost(post);
+    renderVideoPosts();
+  }
+
+  async function toggleReaction(postId, emoji) {
+    const post = videoPosts.find((p) => p.id === postId);
+    if (!post) return;
+    post.miaReazione = !post.miaReazione;
+    if (post.miaReazione) post.reazioni[emoji] = (post.reazioni[emoji] || 0) + 1;
+    else if ((post.reazioni[emoji] || 0) > 0) post.reazioni[emoji] -= 1;
+    await saveVideoPost(post);
+    renderVideoPosts();
+  }
+
+  async function addComment(postId, testo) {
+    const post = videoPosts.find((p) => p.id === postId);
+    if (!post || !testo.trim()) return;
+    post.commenti.push({ autore: "Tu", testo: testo.trim(), data: new Date().toISOString() });
+    await saveVideoPost(post);
+    renderVideoPosts();
+  }
+
+  async function incrementViews(postId) {
+    const post = videoPosts.find((p) => p.id === postId);
+    if (!post) return;
+    post.visualizzazioni = (post.visualizzazioni || 0) + 1;
+    await saveVideoPost(post);
+  }
+
+  function renderVideoPosts() {
+    const grid = $("#videoGridPosts");
+    if (!grid) return;
+    if (!videoPosts.length) {
+      grid.innerHTML = `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">📜</span><h3>Nessun post video ancora</h3><p>Carica un video e pubblicalo come post del clan.</p></div>`;
+      return;
+    }
+    grid.innerHTML = videoPosts.map((p, i) => {
+      const totaleReazioni = Object.values(p.reazioni || {}).reduce((a, b) => a + b, 0);
+      return `
+        <article class="vp-card" data-vpid="${p.id}" data-reveal style="--d:${i * 50}ms" tabindex="0">
+          <div class="vp-thumb" style="aspect-ratio:16/9;background:#01030a;position:relative;overflow:hidden;border-radius:12px">
+            ${p.videoUrl ? `<video src="${esc(p.videoUrl)}" muted playsinline class="vp-preview" style="width:100%;height:100%;object-fit:cover;display:block"></video>` : `<img src="${esc(p.thumb || "/assets/icons/icon-512.png")}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover;display:block">`}
+            <div class="vp-seal" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#5aa8ff;border:1px solid rgba(90,168,255,.45);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.25rem">侍</div>
+            <div class="vp-play" style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s">
+              <div style="background:var(--accent-violet,#5aa8ff);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#01030a;box-shadow:0 0 20px rgba(90,168,255,.5)">▶</div>
+            </div>
+          </div>
+          <div class="vp-body" style="padding:12px 10px 8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="tag silver" style="font-size:.75rem">${(p.cat || "video").toUpperCase()}</span>
+              <span class="mono" style="font-size:.7rem;color:var(--silver-600)">${p.visualizzazioni} visualizz.</span>
+            </div>
+            <h4 style="margin:0 0 6px;color:var(--silver-100);font-size:1rem">${esc(p.titolo)}</h4>
+            <p style="color:var(--silver-400);font-size:.82rem;margin:0 0 8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.desc || "")}</p>
+            <div class="vp-actions" style="display:flex;gap:10px;align-items:center">
+              <button class="vp-btn" data-action="vplike" data-vpid="${p.id}" title="Like" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>⚔</span><span style="font-size:.75rem">${p.like}</span></button>
+              <button class="vp-btn" data-action="vpreact" data-vpid="${p.id}" title="Reazione" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>🔥</span><span style="font-size:.75rem">${totaleReazioni}</span></button>
+              <button class="vp-btn" data-action="vpcomment" data-vpid="${p.id}" title="Commenti" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center"><span>💬</span><span style="font-size:.75rem">${(p.commenti || []).length}</span></button>
+            </div>
+            <div class="vp-reazioni" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+              ${Object.entries(p.reazioni || {}).map(([emoji, conta]) => conta > 0 ? `<span class="vp-reaction" title="${emoji}">${emoji} <span style="font-size:.7rem">${conta}</span></span>` : "").join("")}
+            </div>
+            <div class="vp-commenti" style="margin-top:6px;display:none;flex-direction:column;gap:4px">
+              <input type="text" id="vpcomment-input-${p.id}" placeholder="Scrivi un commento…" style="width:100%;padding:6px 10px;border-radius:8px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);font-size:.8rem">
+              <button class="vp-btn vp-send" data-action="vpsend" data-vpid="${p.id}" style="width:100%;padding:6px;background:var(--accent-violet,#5aa8ff);color:#01030a;border:none;border-radius:8px;font-weight:700;font-size:.8rem">Invia</button>
+              <div class="vp-lista-commenti" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
+                ${(p.commenti || []).slice(-3).map((c) => `<div style="font-size:.78rem;color:var(--silver-300);padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore)}:</b> ${esc(c.testo)}</div>`).join("")}
+              </div>
+            </div>
+          </div>
+        </article>`;
+    }).join("");
+    grid.querySelectorAll(".vp-preview").forEach((v) => { v.muted = true; v.loop = true; v.play().catch(() => {}); });
+    bindVideoPostActions();
+  }
+
+  function bindVideoPostActions() {
+    document.querySelectorAll(".vp-btn[data-action=vplike]").forEach((b) => {
+      b.onclick = (e) => { e.stopPropagation(); toggleLike(b.dataset.vpid); };
+    });
+    document.querySelectorAll(".vp-btn[data-action=vpreact]").forEach((b) => {
+      b.onclick = (e) => { e.stopPropagation(); const p = videoPosts.find((x) => x.id === b.dataset.vpid); if (p) toggleReaction(b.dataset.vpid, Object.keys(p.reazioni || {})[0] || "🔥"); };
+    });
+    document.querySelectorAll(".vp-btn[data-action=vpcomment]").forEach((b) => {
+      b.onclick = (e) => { e.stopPropagation(); const box = document.getElementById("vpcomment-input-" + b.dataset.vpid); const area = box.parentElement.querySelector(".vp-commenti"); if (area) area.style.display = area.style.display === "flex" ? "none" : "flex"; };
+    });
+    document.querySelectorAll(".vp-btn.vp-send").forEach((b) => {
+      b.onclick = (e) => { e.stopPropagation(); const pid = b.dataset.vpid; const input = document.getElementById("vpcomment-input-" + pid); if (input && input.value.trim()) { addComment(pid, input.value); input.value = ""; } };
+    });
+    document.querySelectorAll(".vp-card").forEach((card) => {
+      card.onclick = (e) => {
+        if (e.target.closest(".vp-btn")) return;
+        const pid = card.dataset.vpid;
+        const post = videoPosts.find((p) => p.id === pid);
+        if (!post) return;
+        incrementViews(pid);
+        openVideoPost(post);
+      };
+    });
+  }
+
+  function openVideoPost(post) {
+    $("#vmTitle").textContent = post.titolo;
+    $("#vmDesc").textContent = post.desc || "Condiviso da " + post.autore;
+    $("#vmCat").textContent = (post.cat || "VIDEO").toUpperCase();
+    $("#vmDur").textContent = "--:--";
+    const wrap = $("#playerWrap");
+    wrap.innerHTML = `
+      <div class="vid-player-creativo" style="width:100%;height:100%;background:#060812;display:flex;align-items:center;justify-content:center;position:relative">
+        <video controls style="max-width:100%;max-height:70vh;border-radius:12px;background:#01030a">
+          <source src="${esc(post.videoUrl || "")}" type="video/mp4">
+          Il tuo browser non supporta la riproduzione video.
+        </video>
+        ${post.videoUrl ? `` : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--silver-500);font-size:.9rem">Video non disponibile</div>`}
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn btn-violet" onclick="toggleLikeVP('${post.id}')" style="flex:1;padding:10px;border-radius:10px">⚔ Mi piace <span id="vpmlike-${post.id}">${post.like}</span></button>
+        <button class="btn btn-ghost" onclick="toggleReactionVP('${post.id}')" style="flex:1;padding:10px;border-radius:10px">🔥 Reagisci</button>
+      </div>
+      <div style="margin-top:12px">
+        <strong style="color:var(--silver-100)">Reazioni:</strong>
+        <div id="vpmreazioni-${post.id}" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <div style="margin-top:12px">
+        <strong style="color:var(--silver-100)">Commenti</strong>
+        <input type="text" id="vpmcomment-${post.id}" placeholder="Scrivi un commento…" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--silver-700);background:#0b0f1a;color:var(--silver-100);margin-top:6px">
+        <button class="btn btn-violet btn-sm" onclick="sendCommentVP('${post.id}')" style="margin-top:6px;padding:6px 16px;border-radius:10px">Invia</button>
+        <div id="vpmlista-${post.id}" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
+      </div>`;
+    renderPostMeta(post.id);
+    openModal("videoModal");
+  }
+
+  window.toggleLikeVP = async (pid) => { await toggleLike(pid); renderPostMeta(pid); };
+  window.toggleReactionVP = async (pid) => { const p = videoPosts.find((x) => x.id === pid); if (p) { await toggleReaction(pid, Object.keys(p.reazioni || {})[0] || "🔥"); renderPostMeta(pid); } };
+  window.sendCommentVP = async (pid) => { const input = document.getElementById("vpmcomment-" + pid); if (input && input.value.trim()) { await addComment(pid, input.value); input.value = ""; renderPostMeta(pid); } };
+
+  async function renderPostMeta(pid) {
+    const post = videoPosts.find((p) => p.id === pid);
+    if (!post) return;
+    const likeBtn = document.getElementById("vpmlike-" + pid);
+    if (likeBtn) likeBtn.innerHTML = "⚔ Mi piace <span>" + post.like + "</span>";
+    const reazioniEl = document.getElementById("vpmreazioni-" + pid);
+    if (reazioniEl) reazioniEl.innerHTML = Object.entries(post.reazioni || {}).map(([emoji, conta]) => conta > 0 ? `<span style="font-size:1.1rem">${emoji} <span style="font-size:.75rem;color:var(--silver-500)">${conta}</span></span>` : "").join("");
+    const listaEl = document.getElementById("vpmlista-" + pid);
+    if (listaEl) listaEl.innerHTML = (post.commenti || []).slice(-5).map((c) => `<div style="font-size:.82rem;color:var(--silver-300);padding:4px 10px;background:rgba(255,255,255,.04);border-radius:6px"><b style="color:var(--silver-100)">${esc(c.autore)}:</b> ${esc(c.testo)}</div>`).join("");
+  }
+
   function openVideoUpload() {
     const modal = $("#videoUploadModal");
     if (!modal) return;
@@ -389,6 +610,7 @@
   async function renderVideos() {
     await loadCreativeVideos();
     await loadUserVideos();
+    await loadVideoPosts();
     const [feat, ...rest] = DATA.videos.map((v) => ({ ...v, thumb: pic(v) }));
 
     $("#vidFeatured").innerHTML = `
@@ -413,6 +635,7 @@
       `<button class="chip${i === 0 ? " is-active" : ""}" data-vcat="${c.id}">${c.label}</button>`).join("") +
       `<button class="chip btn-ghost" id="btnVideoCatCreativi">Creatività</button>` +
       `<button class="chip btn-ghost" id="btnVideoCatMiei">I miei video</button>` +
+      `<button class="chip btn-ghost" id="btnVideoCatPost">Post</button>` +
       `<button class="btn btn-violet btn-sm" id="btnCaricaVideo" style="margin-left:auto">+ Carica il tuo video</button>`;
 
     const creativiHtml = creativeVideos.length
@@ -429,6 +652,13 @@
          </section>`
       : "";
 
+    const postHtml = videoPosts.length
+      ? `<section class="vid-section" style="margin-top:44px">
+           <span class="eyebrow violet" style="display:block;margin-bottom:10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase">Post del clan</span>
+           <div class="video-grid" id="videoGridPosts"></div>
+         </section>`
+      : "";
+
     $("#videoGrid").innerHTML = rest.map((v, i) => `
       <article class="vid-card" data-vcat="${v.cat}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
         <div class="vid-thumb">
@@ -440,7 +670,11 @@
           <small>${esc(v.desc.slice(0, 72))}…</small>
           <span class="tag" style="align-self:flex-start;margin-top:4px">${v.cat.toUpperCase()}</span>
         </div>
-      </article>`).join("") + creativiHtml + mieiHtml;
+      </article>`).join("") + creativiHtml + mieiHtml + postHtml;
+
+    if (videoPosts.length) {
+      renderVideoPosts();
+    }
 
     if (creativeVideos.length) {
       const cg = $("#videoGridCreativi");
@@ -637,6 +871,30 @@
         return;
       }
 
+      const pc = e.target.closest("#btnVideoCatPost");
+      if (pc) {
+        $$("#videoFilters .chip").forEach((c) => c.classList.remove("is-active"));
+        pc.classList.add("is-active");
+        const grid = $("#videoGrid");
+        grid.innerHTML = videoPosts.length
+          ? videoPosts.map((p, i) => `
+            <article class="vid-card vid-card-mio" data-vid="${p.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
+              <div class="vid-thumb vid-thumb-mio" style="aspect-ratio:16/9;background:#01030a">
+                <img src="${p.thumb || "/assets/icons/icon-512.png"}" alt="${esc(p.titolo)}" style="width:100%;height:100%;object-fit:cover"><span class="vid-play-badge">▶</span>
+              </div>
+              <div class="vid-meta">
+                <b>${esc(p.titolo)}</b>
+                <small style="color:var(--silver-500)">${esc(p.desc.slice(0, 72))}…</small>
+                <div class="row" style="gap:6px;margin-top:6px">
+                  <span class="tag silver">${(p.cat || "video").toUpperCase()}</span>
+                  <span class="tag silver">${p.like} ⚔</span>
+                </div>
+              </div>
+            </article>`).join("")
+          : `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">📜</span><h3>Nessun post video ancora</h3><p>Carica un video e pubblicalo come post del clan.</p></div>`;
+        return;
+      }
+
       const vuDz = e.target.closest("#vuDropzone");
       if (vuDz) { $("#vuFile").click(); return; }
 
@@ -666,7 +924,11 @@
           return saveUserVideo(video);
         }).then((video) => {
           userVideos.push(video);
-          $("#vuStatus").textContent = "Video caricato!";
+          $("#vuStatus").textContent = "Pubblicando come post…";
+          return createVideoPost(video);
+        }).then((post) => {
+          videoPosts.unshift(post);
+          $("#vuStatus").textContent = "Video pubblicato come post!";
           setTimeout(() => { closeModal("videoUploadModal"); resetUploadForm(); renderVideos(); }, 700);
         }).catch((err) => {
           $("#vuStatus").textContent = "Errore: " + err.message;

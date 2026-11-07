@@ -53,6 +53,19 @@
   "sameAs": []
 }
 </script>
+<style>
+  .vp-card { background: #0b0f1a; border: 1px solid var(--silver-700); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform .2s, border-color .2s; cursor: pointer; }
+  .vp-card:hover { transform: translateY(-4px); border-color: var(--accent-violet, #5aa8ff); }
+  .vp-btn { background: rgba(255,255,255,.06); border: 1px solid var(--silver-700); color: var(--silver-300); border-radius: 10px; cursor: pointer; font-size: .8rem; transition: all .2s; }
+  .vp-btn:hover { background: var(--accent-violet, #5aa8ff); color: #01030a; border-color: var(--accent-violet, #5aa8ff); }
+  .vp-preview { object-fit: cover; }
+  .vp-card:hover .vp-play { opacity: 1 !important; }
+  .vp-seal { box-shadow: 0 0 12px rgba(90,168,255,.35); }
+  .vp-reazioni { gap: 5px; }
+  .vp-reaction { background: rgba(255,255,255,.05); border: 1px solid var(--silver-700); color: var(--silver-300); padding: 2px 8px; border-radius: 20px; font-size: .85rem; }
+  .empty-state { color: var(--silver-500); }
+  .vid-player-creativo video::-webkit-media-controls { filter: invert(1); }
+</style>
 </head>
 <body>
 
