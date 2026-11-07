@@ -717,6 +717,17 @@ body.season-spring .hero-title .l3::after {
   94% { clip-path: inset(10% 0 68% 0); opacity: 0.2; }
   96% { clip-path: inset(40% 0 36% 0); opacity: 0.16; }
 }
+
+/* Fallback sicurezza: contenuto visibile anche se observer/reveal non scatta dopo cambio scheda */
+.view.is-active [data-reveal]:not(.is-in),
+.acc-panel.is-active [data-reveal]:not(.is-in),
+.modal.is-open [data-reveal]:not(.is-in) {
+  animation: samuraiRevealFallback 0.01s linear 1.2s forwards;
+}
+@keyframes samuraiRevealFallback {
+  to { opacity: 1; transform: none; }
+}
+
 /* Componenti comuni: card, pillar, leader, timeline, faq, news, rank, gallery/video shells */
 body.season-spring .card,
 body.season-spring .pillar,

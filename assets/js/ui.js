@@ -228,27 +228,47 @@ const UI = (() => {
   const io = new IntersectionObserver((entries) => {
     for (const en of entries) {
       if (!en.isIntersecting) continue;
-      en.target.classList.add("is-in");
-      animateInside(en.target);
-      io.unobserve(en.target);
+      const el = en.target;
+      if (el.offsetParent === null && !el.closest(".view.is-active, .acc-panel.is-active, .modal.is-open, .lightbox.is-open")) continue;
+      el.classList.add("is-in");
+      animateInside(el);
+      io.unobserve(el);
     }
-  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+  }, { threshold: 0.06, rootMargin: "0px 0px -4% 0px" });
 
   document.documentElement.classList.add("reveal-ready");
 
+  function visibleReveal(el) {
+    if (!el || el.classList.contains("is-in")) return false;
+    const hidden = el.closest(".view:not(.is-active), .acc-panel:not(.is-active), [hidden], .modal:not(.is-open), .lightbox:not(.is-open)");
+    if (hidden) return false;
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) return false;
+    const vh = window.innerHeight || 800;
+    const vw = window.innerWidth || 1200;
+    return r.bottom > -vh * 0.2 && r.top < vh * 1.1 && r.right > -vw * 0.1 && r.left < vw * 1.1;
+  }
+
   function observe(root = document) {
-    $$("[data-reveal]:not(.is-in)", root).forEach((el) => io.observe(el));
-    flushReveal(root);
+    const scope = root && root.querySelectorAll ? root : document;
+    $$("[data-reveal]:not(.is-in)", scope).forEach((el) => {
+      if (visibleReveal(el)) {
+        el.classList.add("is-in");
+        animateInside(el);
+      } else {
+        io.observe(el);
+      }
+    });
+    flushReveal(scope);
   }
 
   function flushReveal(root = document) {
-    const vh = window.innerHeight || 800;
-    $$("[data-reveal]:not(.is-in)", root).forEach((el) => {
-      const r = el.getBoundingClientRect();
-      if (r.top < vh * 1.05 && r.bottom > -vh * 0.25) {
-        el.classList.add("is-in");
-        animateInside(el);
-      }
+    const scope = root && root.querySelectorAll ? root : document;
+    $$("[data-reveal]:not(.is-in)", scope).forEach((el) => {
+      if (!visibleReveal(el)) return;
+      el.classList.add("is-in");
+      animateInside(el);
+      try { io.unobserve(el); } catch {}
     });
   }
 
@@ -257,12 +277,14 @@ const UI = (() => {
   });
 
   function animateInside(scope) {
-    $$(".stat-num[data-to]", scope).forEach((el) => countUp(el));
-    $$(".stat-bar i", scope).forEach((el, i) => setTimeout(() => (el.style.width = el.dataset.w + "%"), 60 * i));
-    $$(".rank-meter i", scope).forEach((el) => (el.style.width = el.dataset.w + "%"));
-    $$(".skill-bar i", scope).forEach((el) => (el.style.width = el.dataset.w + "%"));
-    $$(".lvl-bar i", scope).forEach((el) => (el.style.width = el.dataset.w + "%"));
+    const root = scope && scope.querySelectorAll ? scope : document;
+    $$(".stat-num[data-to]", root).forEach((el) => countUp(el));
+    $$(".stat-bar i", root).forEach((el, i) => setTimeout(() => (el.style.width = el.dataset.w + "%"), 60 * i));
+    $$(".rank-meter i", root).forEach((el) => (el.style.width = el.dataset.w + "%"));
+    $$(".skill-bar i", root).forEach((el) => (el.style.width = el.dataset.w + "%"));
+    $$(".lvl-bar i", root).forEach((el) => (el.style.width = el.dataset.w + "%"));
   }
+
 
   function countUp(el) {
     const to = +el.dataset.to;
@@ -304,10 +326,19 @@ const UI = (() => {
   function setPanel(name) {
     $$(".acc-tab").forEach((t) => t.classList.toggle("is-active", t.dataset.apanel === name));
     $$(".acc-panel").forEach((p) => p.classList.toggle("is-active", p.dataset.apanel === name));
-    animateInside($(`.acc-panel[data-apanel="${name}"]`));
+    const panel = $(`.acc-panel[data-apanel="${name}"]`);
+    if (panel) {
+      observe(panel);
+      flushReveal(panel);
+      animateInside(panel);
+    }
     if (name === "badge") Account.renderBadge();
   }
-  function openPanel(name) { go("account"); setTimeout(() => setPanel(name), 260); }
+  function openPanel(name) {
+    go("account");
+    setTimeout(() => { setPanel(name); flushReveal(document.getElementById("view-account")); }, 260);
+  }
+
 
   document.addEventListener("pointermove", (e) => {
     const g = e.target.closest(".glass");

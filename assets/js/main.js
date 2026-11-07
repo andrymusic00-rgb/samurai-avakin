@@ -1,5 +1,5 @@
 (() => {
-  const { $, $$, store, toast, openModal, observe, countAll, setPanel, go } = UI;
+  const { $, $$, store, toast, openModal, closeModal, observe, countAll, setPanel, go } = UI;
   const artCache = new Map();
 
   const pic = (item) => {
@@ -10,7 +10,18 @@
     return artCache.get(key);
   };
 
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const escapeHtml = esc;
+  const num = (n) => {
+    const v = Number(n);
+    return Number.isFinite(v) ? v.toLocaleString("it-IT") : String(n ?? 0);
+  };
+  const revealScope = (scope) => {
+    const root = scope && scope.nodeType ? scope : document;
+    observe(root);
+    UI.animateInside(root);
+    countAll(root);
+  };
 
   const MARQUEE = DATA.marquee.map((t) => `<span class="marquee-item"><i></i>${t}</span>`).join("");
 
@@ -141,8 +152,7 @@
           </div>
           <div class="grid g-auto-lg leader-category-grid">
             ${leaders.map((l, i) => `
-               <article class="leader glass" data-leader="${escapeHtml(l.nome)}" data-reveal style="--d:${i * 70}ms">
-                <div class="leader-av">${l.kanji}</div>
+               <article class="leader glass" data-leader="${esc(l.nome)}" data-reveal style="--d:${i * 70}ms">                <div class="leader-av">${l.kanji}</div>
                 <b>${l.nome}</b>
                 <small>${l.ruolo}</small>
                 <span class="tag silver" style="margin-top:4px">${l.da}</span>
@@ -221,7 +231,9 @@
 
   function paintGallery() {
     const all = gAll();
-    $("#galleryGrid").innerHTML = all.map((g) => `
+    const grid = $("#galleryGrid");
+    if (!grid) return;
+    grid.innerHTML = all.map((g) => `
       <figure class="gal-item" data-cat="${g.cat}" data-id="${g.id}" tabindex="0" role="button" aria-label="${esc(g.titolo)}">
         <img loading="lazy" src="${g.src}" alt="${esc(g.titolo)}" width="${g.w}" height="${g.h}" onerror="this.src='/assets/icons/icon-512.png';this.onerror=null;">
         <span class="gal-zoom" aria-hidden="true">⤢</span>
@@ -232,6 +244,7 @@
         </figcaption>
       </figure>`).join("");
     applyFilter(gFilter);
+    revealScope(grid);
   }
 
   function applyFilter(cat) {
@@ -478,6 +491,7 @@
     }).join("");
     grid.querySelectorAll(".vp-preview").forEach((v) => { v.muted = true; v.loop = true; v.play().catch(() => {}); });
     bindVideoPostActions();
+    revealScope(grid);
   }
 
   function bindVideoPostActions() {
@@ -575,6 +589,7 @@
 
   function renderVideoGridOnly(list, gridId, emptyText) {
     const grid = $("#" + gridId);
+    if (!grid) return;
     if (!list.length) {
       grid.innerHTML = `<div class="empty-state" style="text-align:center;padding:40px 20px"><span style="font-size:2rem">🎬</span><h3>${emptyText}</h3></div>`;
       return;
@@ -596,6 +611,7 @@
           </div>
         </article>`;
     }).join("");
+    revealScope(grid);
   }
 
   function openLightbox(id) {
@@ -674,7 +690,8 @@
          </section>`
       : "";
 
-    $("#videoGrid").innerHTML = rest.map((v, i) => `
+    const videoGrid = $("#videoGrid");
+    if (videoGrid) videoGrid.innerHTML = rest.map((v, i) => `
       <article class="vid-card" data-vcat="${v.cat}" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
         <div class="vid-thumb">
           <img src="${v.thumb}" alt="${esc(v.titolo)}" loading="lazy">
@@ -693,7 +710,7 @@
 
     if (creativeVideos.length) {
       const cg = $("#videoGridCreativi");
-      cg.innerHTML = creativeVideos.map((v, i) => `
+      if (cg) cg.innerHTML = creativeVideos.map((v, i) => `
         <article class="vid-card vid-card-creativo" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
           <div class="vid-thumb vid-thumb-creativo" style="aspect-ratio:16/9">
             <span class="vid-play-badge">▶</span>
@@ -708,11 +725,12 @@
             </div>
           </div>
         </article>`).join("");
+      if (cg) revealScope(cg);
     }
 
     if (userVideos.length) {
       const mg = $("#videoGridMiei");
-      mg.innerHTML = userVideos.map((v, i) => `
+      if (mg) mg.innerHTML = userVideos.map((v, i) => `
         <article class="vid-card vid-card-mio" data-vid="${v.id}" data-reveal style="--d:${i * 60}ms" tabindex="0">
           <div class="vid-thumb vid-thumb-mio" style="aspect-ratio:16/9;background:#01030a">
             <img src="${v.thumb || "/assets/icons/icon-512.png"}" alt="${esc(v.titolo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
@@ -727,7 +745,9 @@
             </div>
           </div>
         </article>`).join("");
+      if (mg) revealScope(mg);
     }
+    if (videoGrid) revealScope(videoGrid);
   }
 
   function playVideo(id) {
@@ -825,12 +845,19 @@
     document.title = `Samurai di Avakin — ${DATA.nav.find((n) => n.id === view).label}`;
     if (view === "account") { Account.fillForm(); Account.renderBadge(); Account.renderSessions(); }
     Views.onRoute(view);
-    if (view === "video") renderVideos();
-    observe($(`#view-${view}`));
-    UI.animateInside($(`#view-${view}`));
-    countAll($(`#view-${view}`));
+    if (view === "video") renderVideos().catch((err) => console.warn("[Samurai] renderVideos:", err));
+    const scope = $(`#view-${view}`) || document;
+    observe(scope);
+    UI.animateInside(scope);
+    countAll(scope);
     window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      observe(scope);
+      UI.animateInside(scope);
+      countAll(scope);
+    });
   }
+
 
   function bind() {
     window.addEventListener("hashchange", navigate);
@@ -1050,8 +1077,7 @@
     renderHome();
     renderAbout();
     renderGallery();
-    renderVideos();
-    renderSeasonSelector("#seasonSelector");
+    renderVideos().catch((err) => console.warn("[Samurai] renderVideos:", err));    renderSeasonSelector("#seasonSelector");
     UI.initFaq();
     UI.typing();
     Views.init();
