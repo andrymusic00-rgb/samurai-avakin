@@ -1347,42 +1347,28 @@
 
 <div class="modal violet" id="applyModal" role="dialog" aria-modal="true" aria-labelledby="apTitle">
   <div class="modal-backdrop" data-close></div>
-  <div class="modal-box glass violet">
+  <div class="modal-box glass violet" style="width:min(960px,96vw);max-height:92vh;display:flex;flex-direction:column;padding:20px 20px 16px">
     <button class="modal-x" data-close aria-label="Chiudi">✕</button>
-    <div class="modal-head">
+    <div class="modal-head" style="margin-bottom:12px">
       <span class="eyebrow violet">Reclutamento</span>
-      <h3 id="apTitle">Candidati al clan</h3>
-      <p>Compila il modulo: il capitano ti scriverà su Avakin entro 48 ore.</p>
+      <h3 id="apTitle" style="margin-bottom:4px">Candidati al clan</h3>
+      <p style="margin:0">Compila il modulo Google ufficiale del clan. Se non si carica, aprilo in una nuova scheda.</p>
     </div>
-    <form id="applyForm" novalidate>
-      <div class="stack" style="gap:16px">
-        <div class="form-grid">
-          <div class="field"><label for="ap-name">Nickname Avakin</label><input class="input violet" id="ap-name" required placeholder="Il tuo nick"><span class="err-msg" data-for="ap-name"></span></div>
-          <div class="field"><label for="ap-id">ID</label><input class="input violet" id="ap-id" required placeholder="Numerico"><span class="err-msg" data-for="ap-id"></span></div>
-        </div>
-        <div class="form-grid">
-          <div class="field"><label for="ap-region">Server</label><select class="input violet" id="ap-region"><option>Europa</option><option>America</option><option>Asia</option><option>Oceania</option><option>MENA</option></select></div>
-          <div class="field"><label for="ap-device">Dispositivo</label><select class="input violet" id="ap-device"><option>iOS</option><option>Android</option><option>PC</option><option>Console</option></select></div>
-        </div>
-        <div class="field">
-          <label for="ap-main">Personaggio principale</label>
-          <select class="input violet" id="ap-main">
-            <option>Troppa ⋆ ⋆ ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆ ⋆ ⋆</option>
-            <option>Troppa ⋆ ⋆ ⋆</option><option>Troppa ⋆ ⋆</option><option>Troppa ⋆</option>
-            <option>Senza scudiero</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="ap-why">Perché vuoi entrare?</label>
-          <textarea class="input violet" id="ap-why" maxlength="400" required placeholder="Due righe sincere bastano."></textarea>
-          <span class="err-msg" data-for="ap-why"></span>
-        </div>
-        <button class="btn btn-violet btn-block btn-lg" type="submit">Invia la candidatura</button>
-        <p class="mono" style="font-size:10px;color:var(--silver-600);text-align:center">
-          Risposta entro 48 ore · i dati restano riservati al comando
-        </p>
-      </div>
-    </form>
+    <div class="apply-frame-wrap" style="flex:1;min-height:min(70vh,680px);border:1px solid var(--glass-violet-brd, rgba(192,132,252,.2));border-radius:14px;overflow:hidden;background:#0b1020">
+      <iframe
+        id="applyFormFrame"
+        title="Modulo candidatura Samurai di Avakin"
+        data-src="https://docs.google.com/forms/d/e/1FAIpQLSca-zTqYpOtbJV1oPlxfyatOACahHUHcy_Ltjns6jKtdqAoeQ/viewform?embedded=true"
+        src="about:blank"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allow="clipboard-write"
+        style="width:100%;height:100%;min-height:min(70vh,680px);border:0;display:block;background:#fff"
+      ></iframe>
+    </div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <a class="btn btn-ghost btn-sm" href="https://docs.google.com/forms/d/e/1FAIpQLSca-zTqYpOtbJV1oPlxfyatOACahHUHcy_Ltjns6jKtdqAoeQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">Apri in nuova scheda</a>
+    </div>
   </div>
 </div>
 

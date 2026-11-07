@@ -150,7 +150,11 @@ const UI = (() => {
     { label: "Vedi i prossimi eventi", hint: "門", k: "E1", act: () => go("eventi") },
     { label: "Classifica del clan", hint: "戦", k: "K1", act: () => go("classifica") },
     { label: "Scarica il calendario eventi", hint: "⇩", k: "I", act: () => { location.href = "/api/clan/events.ics"; } },
-    { label: "Candidati al clan", hint: "志", k: "C1", act: () => openModal("applyModal") },
+    { label: "Candidati al clan", hint: "志", k: "C1", act: () => {
+      const frame = $("#applyFormFrame");
+      if (frame?.dataset.src && frame.getAttribute("src") !== frame.dataset.src) frame.src = frame.dataset.src;
+      openModal("applyModal");
+    } },
     { label: "Collega account Avakin", hint: "連", k: "L", act: () => openModal("linkModal") },
     { label: "Carica una foto in gallery", hint: "画", k: "U", act: () => openModal("uploadModal") },
     { label: "Genera il tuo badge", hint: "✧", k: "B", act: () => { go("account"); setTimeout(() => setPanel("badge"), 420); } },

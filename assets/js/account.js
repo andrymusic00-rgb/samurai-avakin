@@ -106,30 +106,37 @@ const Account = (() => {
     await API.probe();
     remote = API.online();
 
-    // Gestisce il ritorno dal callback OAuth di produzione
-    const params = new URLSearchParams(location.search);
-    if (params.get("social") === "1") {
-      const provider = params.get("provider") || "social";
-      const ok = params.get("ok") === "1";
-      const dev = params.get("dev") === "1";
+    // Gestisce il ritorno dal callback OAuth (query o hash: il server redirige a /#/account?...).
+    const socialParams = (() => {
+      const q = new URLSearchParams(location.search);
+      if (q.get("social") || q.get("social_link")) return q;
+      const h = String(location.hash || "");
+      const i = h.indexOf("?");
+      return i >= 0 ? new URLSearchParams(h.slice(i + 1)) : q;
+    })();
+    if (socialParams.get("social") === "1") {
+      const provider = socialParams.get("provider") || "social";
+      const ok = socialParams.get("ok") === "1";
+      const dev = socialParams.get("dev") === "1";
+      const created = socialParams.get("created") === "1";
       if (ok) {
-        toast("Accesso social completato", `Account collegato/creato con ${provider}.`, dev ? "warn" : "ok", 6000);
+        toast(created ? "Profilo Samurai creato" : "Accesso social completato", created ? `Benvenuto: account creato con ${provider}.` : `Account collegato/acceduto con ${provider}.`, dev ? "warn" : "ok", 6500);
       } else {
         toast("Accesso social", `Tentativo con ${provider} non completato.`, "warn", 5000);
       }
-      history.replaceState(null, "", location.pathname);
+      history.replaceState(null, "", location.pathname + (location.hash ? "#/account" : ""));
     }
-    if (params.get("social_link") === "1") {
-      const provider = params.get("provider") || "social";
-      const ok = params.get("ok") === "1";
-      const dev = params.get("dev") === "1";
+    if (socialParams.get("social_link") === "1") {
+      const provider = socialParams.get("provider") || "social";
+      const ok = socialParams.get("ok") === "1";
+      const dev = socialParams.get("dev") === "1";
       if (ok) {
         toast("Account social collegato", `${provider} è ora collegato al tuo profilo.`, dev ? "warn" : "ok", 6000);
         if (remote && authed) await refreshAccount();
       } else {
         toast("Collegamento social", `${provider} non è stato collegato.`, "warn", 5000);
       }
-      history.replaceState(null, "", location.pathname);
+      history.replaceState(null, "", location.pathname + (location.hash ? "#/account" : ""));
     }
 
     const me = await guard(() => API.get("/api/auth/me"));
@@ -758,8 +765,9 @@ const Account = (() => {
       if (!b) return;
       const a = b.dataset.action;
       if (a === "apply") {
-        window.open("https://docs.google.com/forms/d/e/1FAIpQLSca-zTqYpOtbJV1oPlxfyatOACahHUHcy_Ltjns6jKtdqAoeQ/viewform?usp=publish-editor", "_blank", "noopener,noreferrer");
-        if (typeof toast === "function") toast("Candidatura", "Modulo di reclutamento aperto in una nuova scheda.", "ok");
+        const frame = $("#applyFormFrame");
+        if (frame && frame.dataset.src && frame.getAttribute("src") !== frame.dataset.src) frame.src = frame.dataset.src;
+        openModal("applyModal");
       }
       if (a === "login") { showLoginTab(); openModal("enterModal"); }
       if (a === "register") { showRegisterTab(); openModal("enterModal"); }
@@ -1125,46 +1133,7 @@ const Account = (() => {
   function bindApply() {
     const form = $("#applyForm");
     if (!form) return;
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const n = $("#ap-name").value.trim();
-      const id = $("#ap-id").value.trim();
-      const why = $("#ap-why").value.trim();
-      let ok = fail("ap-name", n.length >= 3 ? "" : "Nickname troppo corto.");
-      ok = fail("ap-id", /^\d{4,10}$/.test(id) ? "" : "ID non valido (4-10 cifre).") && ok;
-      ok = fail("ap-why", why.length >= 20 ? "" : "Scrivi almeno 20 caratteri.") && ok;
-      if (!ok) return;
-
-      const btn = form.querySelector('button[type="submit"]');
-      btn.disabled = true;
-
-      if (!remote) {
-        const pending = store.get("applications", []);
-        pending.push({ nickname: n, avakinId: id, message: why, status: "in_bozza", createdAt: new Date().toISOString() });
-        store.set("applications", pending);
-        btn.disabled = false;
-        closeModal("applyModal");
-        form.reset();
-        toast("Candidatura salvata in locale", `Avvia il server per inviarla davvero, ${n}.`, "warn", 6000);
-        return;
-      }
-
-      const res = await guard(() =>
-        API.post("/api/clan/applications", {
-          nickname: n,
-          avakinId: id,
-          message: why,
-          region: $("#ap-region")?.value || "Europa",
-          mainChar: $("#ap-main")?.value || "",
-          device: $("#ap-device")?.value || ""
-        })
-      );
-      btn.disabled = false;
-      if (!res) return;
-      closeModal("applyModal");
-      form.reset();
-      toast("Candidatura inviata", res.message || `Grazie ${n}. Risposta entro 48 ore.`, "ok", 5200);
-    });
+    // Form Google embedded in #applyModal; legacy handler kept inert.
   }
 
 
