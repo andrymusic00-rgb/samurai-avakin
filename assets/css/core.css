@@ -539,15 +539,18 @@ body.season-spring .roster-card b,
 body.season-spring .sess-info b {
   color: var(--sumi) !important;
 }
+body.season-spring {
+  color: #1e2a44;
+}
 body.season-spring .section-title {
-  background: linear-gradient(135deg, var(--sumi) 0%, var(--kura) 50%, var(--kigumi) 100%) !important;
+  background: linear-gradient(135deg, #1D4ED8 0%, #475569 50%, #8B9DC3 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
   animation: none !important;
 }
 body.season-spring .testo-luminoso {
-  background: linear-gradient(135deg, var(--sumi) 0%, var(--kura) 60%, var(--kigumi) 100%) !important;
+  background: linear-gradient(135deg, #1D4ED8 0%, #475569 60%, #8B9DC3 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
