@@ -838,22 +838,72 @@
 
 <div class="modal violet" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
   <div class="modal-backdrop" data-close></div>
-  <div class="modal-box glass violet welcome-box">
+  <div class="modal-box glass violet welcome-box" style="position:relative;overflow:hidden">
+    <button class="modal-x" type="button" data-close aria-label="Chiudi popup" style="z-index:5">✕</button>
     <img src="/assets/icons/i-samurai-logo.svg" alt="Samurai di Avakin" class="welcome-logo" width="96" height="96" style="display:block;margin:0 auto 14px;width:96px;height:96px" aria-hidden="true">
-    <span class="eyebrow violet" style="justify-content:center">Benvenuto</span>
+    <span class="eyebrow violet" style="justify-content:center">Benvenuto nel Cerchio</span>
     <h2 class="welcome-title violet-text" id="welcomeTitle">Il cerchio ti stava aspettando</h2>
     <p class="welcome-lead">
-      Sei arrivato alla Gate dei Samurai di Avakin. Prima di entrare, dimmi come
-      vuoi che questa esperienza si comporti.
+      Sei arrivato alla Gate dei Samurai di Avakin. Prima di entrare, personalizza la tua esperienza e scopri l'anteprima esclusiva in arrivo.
     </p>
     <div class="welcome-opts">
       <div class="welcome-opt violet"><b>① Scegli il tuo nome</b><small>Personalizza il profilo nel pannello Account.</small></div>
       <div class="welcome-opt violet"><b>② Collega Avakin</b><small>Registra ID, server e personaggio principale.</small></div>
       <div class="welcome-opt violet"><b>③ Goditi lo spettacolo</b><small>Motion graphic, vetro liquido e zero noia.</small></div>
     </div>
-    <div class="row" style="justify-content:center;margin-top:6px">
-      <button class="btn btn-violet btn-lg" data-close>Entra nella Gate</button>
-      <button class="btn btn-ghost" id="welcomeSilent">Non mostrare più</button>
+    <div class="welcome-song-teaser" aria-label="Anteprima canzone dei Samurai">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="welcome-song-ico" aria-hidden="true">🎶</div>
+          <div>
+            <span class="eyebrow violet" style="font-size:.68rem;margin-bottom:2px;justify-content:flex-start">In Arrivo sul Gate</span>
+            <h4 style="color:var(--shiro-kabe,#e2e8f0);font-family:var(--ff-display,serif);font-size:1.05rem;margin:0">La Canzone dei Samurai</h4>
+            <small style="color:var(--suna,#94a3b8);font-size:.78rem">Anteprima video &amp; sound design immersivo in preparazione...</small>
+          </div>
+        </div>
+        <div class="audio-wave-preview" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:6px;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-violet btn-lg" type="button" data-close data-welcome-enter>Entra nella Gate</button>
+      <button class="btn btn-ghost" type="button" id="welcomeSilent">Non mostrare più</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="songAnnounceModal" role="dialog" aria-modal="true" aria-labelledby="songAnnounceTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box song-announce-box" style="position:relative;width:min(96vw,860px);max-height:92vh;padding:0;overflow:hidden">
+    <button class="modal-x" type="button" data-close aria-label="Chiudi annuncio" style="z-index:40">✕</button>
+    <div class="song-announce-shell">
+      <div class="song-announce-ambient" aria-hidden="true"></div>
+      <div class="song-announce-head" style="padding:22px 22px 10px;position:relative;z-index:2">
+        <div class="song-announce-badge"><span class="song-announce-dot"></span><span>Anteprima Esclusiva Samurai</span></div>
+        <h2 id="songAnnounceTitle" class="song-announce-title">NON È PAURA</h2>
+        <p class="song-announce-sub">La Canzone dei Samurai — anteprima ufficiale con atmosfera cristallo platino e riflessi viola.</p>
+      </div>
+      <div style="padding:0 22px 10px;position:relative;z-index:2">
+        <div class="song-announce-player">
+          <div class="song-announce-spark s1"></div><div class="song-announce-spark s2"></div><div class="song-announce-spark s3"></div>
+          <video id="songAnnounceVideo" class="song-announce-video" playsinline controls preload="metadata" poster="/assets/icons/i-samurai-logo.svg">
+            <source src="/assets/media/i-samurai-animation_song_1.mp4" type="video/mp4">
+            Il tuo browser non supporta il video.
+          </video>
+          <div class="song-announce-meta">
+            <div>
+              <h3 style="margin:0;color:#fff;font-size:1rem">La Canzone dei Samurai</h3>
+              <p style="margin:4px 0 0;color:rgba(227,227,230,.72);font-size:.8rem">Anteprima video in riproduzione dal player del popup.</p>
+            </div>
+            <div class="song-announce-wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="justify-content:flex-end;padding:8px 22px 22px;gap:10px;position:relative;z-index:2;flex-wrap:wrap">
+        <button class="btn btn-violet" type="button" id="songAnnounceReplay">Riproduci</button>
+        <button class="btn btn-ghost" type="button" data-close>Chiudi</button>
+      </div>
     </div>
   </div>
 </div>

@@ -100,15 +100,22 @@ const UI = (() => {
     let target = m || modalStack[modalStack.length - 1];
     if (typeof target === "string") target = document.getElementById(target);
     if (!target || !target.classList) return;
+    if (target.id === "songAnnounceModal") {
+      store.set(SONG_ANNOUNCE_KEY, true);
+      const v = $("#songAnnounceVideo");
+      if (v && !v.paused) try { v.pause(); } catch {}
+    }
     target.classList.remove("is-open");
+    target.setAttribute("aria-hidden", "true");
     if (target.id === "welcomeModal") store.set("welcomeDone", true);
+    const closedId = target.id || "";
     const i = modalStack.indexOf(target);
     if (i > -1) modalStack.splice(i, 1);
     else while (modalStack.length) modalStack.pop();
     if (!modalStack.length) document.body.classList.remove("is-locked");
-    // Il focus torna al pulsante che ha aperto la modale.
     const back = target.dataset.prevFocus && document.getElementById(target.dataset.prevFocus);
     if (back) back.focus({ preventScroll: true });
+    if (closedId) document.dispatchEvent(new CustomEvent("sam:modal-closed", { detail: { id: closedId } }));
   }
 
   document.addEventListener("click", (e) => {
@@ -423,16 +430,73 @@ const UI = (() => {
     location.hash = "#/" + view;
   }
 
+  const SONG_ANNOUNCE_KEY = "songAnnounceDone";
+  let _songAnnouncePending = false;
+
+  function openSongAnnounce() {
+    if (store.get(SONG_ANNOUNCE_KEY, false)) return;
+    if ($("#songAnnounceModal")?.classList.contains("is-open")) return;
+    openModal("songAnnounceModal");
+    const v = $("#songAnnounceVideo");
+    if (v) {
+      try { v.currentTime = 0; } catch {}
+      const p = v.play?.();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    }
+  }
+
+  function pauseSongAnnounce() {
+    const v = $("#songAnnounceVideo");
+    if (v && !v.paused) try { v.pause(); } catch {}
+  }
+
+  function dismissSongAnnounce() {
+    store.set(SONG_ANNOUNCE_KEY, true);
+    pauseSongAnnounce();
+    closeModal("songAnnounceModal");
+  }
+
+  function bindSongAnnounce() {
+    const modal = $("#songAnnounceModal");
+    if (!modal || modal.dataset.bound === "1") return;
+    modal.dataset.bound = "1";
+    modal.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]") || e.target === modal) {
+        e.preventDefault();
+        dismissSongAnnounce();
+      }
+    });
+    $("#songAnnounceReplay")?.addEventListener("click", () => {
+      const v = $("#songAnnounceVideo");
+      if (!v) return;
+      try { v.currentTime = 0; } catch {}
+      v.play?.().catch?.(() => {});
+    });
+  }
+
   function initWelcome() {
+    bindSongAnnounce();
     if (store.get("welcomeDone", false)) return;
+    _songAnnouncePending = false;
     setTimeout(() => openModal("welcomeModal"), 1200);
-    $("#welcomeSilent").addEventListener("click", () => {
+    $("#welcomeModal")?.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]") || e.target === e.currentTarget) _songAnnouncePending = true;
+    }, true);
+    $("#welcomeSilent")?.addEventListener("click", () => {
       store.set("welcomeDone", true);
       store.set("welcomeSilent", true);
+      _songAnnouncePending = true;
       closeModal("welcomeModal");
       toast("Ok, nessun benvenuto la prossima volta", "Il Gate resta comunque aperta.", "ok");
     });
   }
+
+  document.addEventListener("sam:modal-closed", (e) => {
+    if (e.detail?.id === "welcomeModal" && _songAnnouncePending) {
+      _songAnnouncePending = false;
+      setTimeout(openSongAnnounce, 220);
+    }
+  });
 
   function setAccent(hex) {
     document.documentElement.style.setProperty("--accent", hex);

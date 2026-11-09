@@ -1468,3 +1468,86 @@ body.compact .view-pad { padding-top: calc(var(--topbar-h) + 28px); }
   cursor: pointer;
 }
 .vp-btn:hover { border-color: rgba(90,168,255,.35); color: var(--silver-100, #fff); }
+
+/* Welcome popup: teaser + song announce */
+@keyframes pulseWave {
+  0% { transform: scaleY(.32); opacity: .45; }
+  100% { transform: scaleY(1.28); opacity: 1; filter: drop-shadow(0 0 6px rgba(168,85,247,.85)); }
+}
+@keyframes songGlow {
+  0%,100% { opacity: .35; filter: brightness(1); }
+  50% { opacity: .85; filter: brightness(1.25); }
+}
+@keyframes songSparkle {
+  0%,100% { opacity: .18; transform: scale(.75); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+.welcome-song-teaser {
+  margin: 22px 0; padding: 18px; border-radius: var(--r-md, 14px);
+  background: linear-gradient(145deg, rgba(35,5,61,.72), rgba(12,14,20,.78));
+  border: 1px solid rgba(233,213,255,.24);
+  box-shadow: 0 0 30px -10px rgba(168,85,247,.28), inset 0 1px 0 rgba(255,255,255,.08);
+  text-align: left; position: relative; overflow: hidden;
+  transition: border-color .35s var(--ease, ease), box-shadow .35s var(--ease, ease), transform .35s var(--ease, ease);
+}
+.welcome-song-teaser:hover { border-color: rgba(233,213,255,.48); box-shadow: 0 0 34px -6px rgba(168,85,247,.42); transform: translateY(-2px); }
+.welcome-song-ico {
+  width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, rgba(233,213,255,.5), rgba(35,5,61,.92));
+  border: 1px solid rgba(233,213,255,.42); box-shadow: 0 0 20px rgba(168,85,247,.5); font-size: 1.2rem;
+}
+.audio-wave-preview { display:flex; align-items:center; gap:3px; height:26px; padding:0 8px; }
+.audio-wave-preview span { width:3px; height:12px; background: var(--murasaki-light, #c084fc); border-radius:2px; animation: pulseWave 1s infinite alternate; transform-origin:center; }
+.audio-wave-preview span:nth-child(2){ height:22px; animation-duration:.72s; animation-delay:.12s; background:var(--fuji,#d8b4fe); }
+.audio-wave-preview span:nth-child(3){ height:15px; animation-duration:.88s; animation-delay:.26s; background:var(--shiro-kabe,#f8fafc); }
+.audio-wave-preview span:nth-child(4){ height:24px; animation-duration:.64s; animation-delay:.06s; }
+.audio-wave-preview span:nth-child(5){ height:11px; animation-duration:1.08s; animation-delay:.2s; background:var(--fuji,#d8b4fe); }
+
+/* Song announce modal: platinum crystal + dark/violet */
+#songAnnounceModal .modal-backdrop { background: rgba(4,4,8,.86); backdrop-filter: blur(22px) saturate(130%); -webkit-backdrop-filter: blur(22px) saturate(130%); }
+.song-announce-box {
+  background: rgba(18,19,24,.92); border: 1px solid rgba(199,200,205,.18);
+  box-shadow: 0 30px 80px -18px rgba(0,0,0,.9), 0 0 40px rgba(168,85,247,.12), inset 0 1px 0 rgba(255,255,255,.12);
+  border-radius: 24px;
+}
+.song-announce-shell { position: relative; background: linear-gradient(180deg, rgba(17,18,24,.96), rgba(11,11,14,.98)); }
+.song-announce-ambient { position:absolute; inset:0; pointer-events:none; background:
+  radial-gradient(ellipse at 20% 0%, rgba(163,165,173,.16), transparent 42%),
+  radial-gradient(ellipse at 85% 100%, rgba(168,85,247,.14), transparent 45%),
+  radial-gradient(circle at 50% 30%, rgba(255,255,255,.04), transparent 35%);
+  animation: songGlow 4s ease-in-out infinite; }
+.song-announce-badge {
+  display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
+  background: rgba(10,10,14,.72); border:1px solid rgba(255,255,255,.1); color:#d4d4d8; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+}
+.song-announce-dot { width:7px; height:7px; border-radius:50%; background:#fbbf24; box-shadow:0 0 10px rgba(251,191,36,.8); }
+.song-announce-title {
+  margin:10px 0 4px; font-size: clamp(1.8rem, 4.8vw, 3rem); font-weight: 800; letter-spacing: -.02em;
+  background: linear-gradient(135deg,#ffffff 0%,#c7c8cd 48%,#7e818d 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.song-announce-sub { margin:0; color:#a1a1aa; font-size:.92rem; max-width:62ch; }
+.song-announce-player {
+  position:relative; border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.1);
+  background: linear-gradient(180deg,#09090b,#121318,#09090b); box-shadow: 0 20px 45px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.song-announce-video { display:block; width:100%; max-height:min(52vh,460px); background:#000; object-fit:contain; }
+.song-announce-meta { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border-top:1px solid rgba(255,255,255,.08); background: rgba(10,10,14,.55); }
+.song-announce-wave { display:flex; align-items:flex-end; gap:3px; height:28px; padding:6px 10px; border-radius:10px; background: rgba(24,24,27,.85); border:1px solid rgba(255,255,255,.06); }
+.song-announce-wave span { width:3px; height:8px; border-radius:999px; background: linear-gradient(180deg,#fff,#a3a5ad); animation: pulseWave 1s infinite alternate; }
+.song-announce-wave span:nth-child(2){height:16px;animation-duration:.7s}
+.song-announce-wave span:nth-child(3){height:26px;animation-duration:.95s;background:linear-gradient(180deg,#fff,#c084fc)}
+.song-announce-wave span:nth-child(4){height:12px;animation-duration:.62s}
+.song-announce-wave span:nth-child(5){height:22px;animation-duration:1.05s}
+.song-announce-wave span:nth-child(6){height:14px;animation-duration:.78s}
+.song-announce-wave span:nth-child(7){height:19px;animation-duration:.88s}
+.song-announce-spark { position:absolute; width:5px; height:5px; border-radius:50%; background:#fff; z-index:3; pointer-events:none; animation:songSparkle 2.2s infinite ease-in-out; box-shadow:0 0 10px rgba(255,255,255,.6); }
+.song-announce-spark.s1 { top:14px; left:18px; }
+.song-announce-spark.s2 { top:28px; right:26px; animation-delay:.7s; }
+.song-announce-spark.s3 { bottom:70px; left:28%; animation-delay:1.3s; }
+@media (max-width: 620px) {
+  .song-announce-meta { flex-direction:column; align-items:flex-start; }
+  .song-announce-head, #songAnnounceModal .row, #songAnnounceModal [style*="padding:0 22px 10px"] { padding-left:14px !important; padding-right:14px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .audio-wave-preview span, .song-announce-wave span, .song-announce-ambient, .song-announce-spark { animation: none !important; }
+}
